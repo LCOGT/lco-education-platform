@@ -1,15 +1,21 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 import App from './App.vue'
+import vuetify from './plugins/vuetify'
+import { loadFonts } from './plugins/webfontloader'
+import router from './router'
+import 'leaflet/dist/leaflet.css'
 
-// Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import './assets/css/custom-colors.css'
 
-const vuetify = createVuetify({
-  components,
-  directives,
-})
+loadFonts()
 
-createApp(App).use(vuetify).mount('#app')
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedState)
+
+createApp(App)
+  .use(vuetify)
+  .use(pinia)
+  .use(router)
+  .mount('#app')
