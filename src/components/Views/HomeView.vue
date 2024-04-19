@@ -23,9 +23,9 @@
 <section class="about">
     <h2>About Photon Ranch</h2>
     <div class="about-ptr">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/wupToqz1e2g" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-    <p class="about-ptr-section">Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur necessitatibus beatae voluptatum, quis incidunt provident ex nemo molestias maxime quasi ipsam. Vitae id quam autem qui, recusandae natus architecto. Magni.</p>
-</div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/wupToqz1e2g" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <p class="about-ptr-section">Ponam in culpa idiota aliis pravitatis. Principium ponere culpam in se justum praeceptum. Neque improperes et aliis qui non perfecte ipse docuit. Quod Enchiridion Epictetus stoici scripsit. Rodrigo Abela et Technologiae apud Massachusetts instituta Opera collectio. Ex anglicus latine translata sunt.</p>
+    </div>
 </section>
 </template>
 
