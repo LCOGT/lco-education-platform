@@ -47,12 +47,12 @@ p {
 }
 
 .columns {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.625em;
 }
 
 .column {
-    flex: 1;
     margin: 0 0.625em;
     padding: 1em;
     background-color: #f0f0f0;
