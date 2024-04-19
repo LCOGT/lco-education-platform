@@ -1,9 +1,11 @@
 <script setup>
 import HomeView from './components/Views/HomeView.vue';
+import RealTimeInterfaceView from './components/Views/RealTimeInterfaceView.vue';
 </script>
 
 <template>
   <HomeView/>
+  <RealTimeInterfaceView/>
 </template>
 
 <style>
