@@ -5,7 +5,6 @@ import TimePicker from '../RealTimeInterface/TimePicker.vue';
 
 <template>
     <div>
-        <p>Select a date and time</p>
         <TimePicker />
     </div>
 </template>
