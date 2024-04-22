@@ -7,8 +7,15 @@ const date = ref();
 </script>
 
 <template>
-    <div>
-      <Datepicker v-model="date" />
+    <div class="datepicker">
+      <Datepicker v-model="date" class="date"/>
     </div>
-  </template>
+</template>
+
+<style scoped>
+.datepicker {
+    margin-left: 5em;
+    max-width: 5%;
+}
+</style>
   
