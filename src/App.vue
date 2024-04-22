@@ -1,11 +1,14 @@
 <script setup>
-import HomeView from './components/Views/HomeView.vue';
-import RealTimeInterfaceView from './components/Views/RealTimeInterfaceView.vue';
+// import HomeView from './components/views/HomeView.vue';
+// import RealTimeInterfaceView from './components/views/RealTimeInterfaceView.vue';
 </script>
 
 <template>
-  <HomeView/>
-  <RealTimeInterfaceView/>
+   <nav>
+      <router-link to="/">Home</router-link> |
+      <router-link to="/rti">RTI</router-link>
+    </nav>
+    <router-view/>
 </template>
 
 <style>
