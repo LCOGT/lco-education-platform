@@ -4,10 +4,9 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 </script>
 
 <template>
-    <div class="my-gallery">
+<div class="wrapper">
         <!-- define what recent means - ask Edward -->
         <h3 class="my-gallery-text">My Recent Real Time Images</h3>
-    </div>
     <div class="gallery">
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
@@ -22,13 +21,15 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
     </div>
+</div>
 </template>
 
 <style scoped>
-.my-gallery {
+.wrapper {
     display: flex;
-    justify-content: flex-start;
-    margin-left: 1em;
+    flex-direction: column;
+}
+.my-gallery-text {
     margin-top: 1em;
 }
 .gallery {
@@ -43,5 +44,4 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 .thumbnail {
     max-width: 12em;
 }
-
 </style>

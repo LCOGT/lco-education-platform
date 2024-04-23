@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import MyGallery from '../Dashboard/MyGallery.vue';
+import UpcomingBookings from '../Dashboard/UpcomingBookings.vue';
 
 const activeTab = ref('dashboard');
 
@@ -16,8 +17,9 @@ const activeTab = ref('dashboard');
         </div>
 
         <div class="tab-content">
-            <div v-if="activeTab === 'dashboard'">
+            <div v-if="activeTab === 'dashboard'" class="dashboard-container">
                 <MyGallery />
+                <UpcomingBookings />
             </div>
             <div v-if="activeTab === 'realtime'">
                 <!-- Real Time content goes here -->
@@ -45,11 +47,14 @@ const activeTab = ref('dashboard');
     cursor: pointer;
     margin: 1em 1em 0 1em;
     width: 50vw;
-
 }
 
 .tab.active {
     background-color: #ccc;
 }
-
+.dashboard-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
 </style>
