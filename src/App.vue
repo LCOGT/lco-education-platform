@@ -1,14 +1,13 @@
 <script setup>
-import DashboardView from './components/views/DashboardView.vue';
 </script>
 
 <template>
    <nav>
       <router-link to="/">Home</router-link> |
       <router-link to="/rti">RTI</router-link>
+      <router-link to="/dashboard">Dashboard</router-link>
     </nav>
     <router-view/>
-    <DashboardView />
 </template>
 
 <style>
