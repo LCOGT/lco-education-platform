@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/Views/HomeView.vue'
-import RealTimeInterface from '../components/Views/RealTimeInterfaceView.vue'
+import Home from '../components/views/HomeView.vue'
+import RealTimeInterface from '../components/views/RealTimeInterfaceView.vue'
 
 const routes = [
   {
