@@ -1,6 +1,5 @@
 <script setup>
-// import HomeView from './components/views/HomeView.vue';
-// import RealTimeInterfaceView from './components/views/RealTimeInterfaceView.vue';
+import DashboardView from './components/views/DashboardView.vue';
 </script>
 
 <template>
@@ -9,6 +8,7 @@
       <router-link to="/rti">RTI</router-link>
     </nav>
     <router-view/>
+    <DashboardView />
 </template>
 
 <style>
