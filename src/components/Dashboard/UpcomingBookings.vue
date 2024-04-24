@@ -1,8 +1,6 @@
 <script setup>
 // TO DO: store bookings in pinia store and fetch them here
-
 import { useRouter } from 'vue-router';
-
 
 const router = useRouter();
 
