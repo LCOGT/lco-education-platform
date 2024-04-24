@@ -1,12 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
-import Datepicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
 
 const date = ref(null);
-
-// Set the current date and time
-const today = new Date();
 
 const bookDate = () => {
     if (date.value) {
@@ -25,7 +20,7 @@ const formattedDate = computed(() => {
 <template>
     <p class="date-text">Select a date and time:</p>
     <div class="datepicker">
-      <Datepicker v-model="date" :min-date="today" minutes-increment="15"/>
+      <v-date-picker color="indigo" v-model="date"/>
     </div>
     <p v-if="date" class="selected-date">Selected for {{ formattedDate }}</p>
     <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
