@@ -21,6 +21,7 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
         <img :src="thumbnail" alt="Gallery thumbnail" class="thumbnail" />
     </div>
+    <v-btn variant="tonal" color="indigo" class="rtg-button"> Real Time Gallery </v-btn>
 </div>
 </template>
 
@@ -29,6 +30,9 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
     flex: 1 1 50%;
     max-width: 50%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 .my-gallery-text {
     margin-top: 2em;
@@ -44,6 +48,10 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 }
 .thumbnail {
     max-width: 12em;
+}
+.rtg-button {
+    align-self: flex-start;
+    margin-left: 1em;
 }
 @media (max-width: 1200px) {
     .thumbnail {
