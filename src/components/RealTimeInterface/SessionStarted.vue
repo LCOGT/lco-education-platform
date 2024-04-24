@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 const timeRemaining = ref(20);
 
 let timeRemainingInterval;
-// TO DO: Change timeRemaining to actual session time
+// TO DO: Change timeRemaining to actual session time remaining
 onMounted(() => {
     timeRemainingInterval = setInterval(() => {
         timeRemaining.value--;
