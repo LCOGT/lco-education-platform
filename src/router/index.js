@@ -10,7 +10,7 @@ const routes = [
     component: Home
   },
   {
-    path: '/rti',
+    path: '/realtime',
     name: 'RealTimeInterface',
     component: RealTimeInterface
   },

@@ -5,14 +5,14 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const redirectToRTI = () => {
-    router.push('/rti');
+    router.push('/realtime');
 };
 
 </script>
 
 <template>
 <div class="wrapper">
-    <v-btn variant="tonal" color="indigo" class="book-slot-button"> Book Slot </v-btn>
+    <v-btn variant="tonal" color="indigo" class="book-slot-button" @click="redirectToRTI"> Book Slot </v-btn>
     <h3 class="upcoming-bookings-text">Upcoming Bookings</h3>
     <div class="bookings">
         <div class="booking">
@@ -37,7 +37,7 @@ const redirectToRTI = () => {
         <div class="booking">
             <p class="booking-text">Booking 7</p>
         </div>
-        <v-btn variant="tonal" color="indigo" class="schedule-observations-btn" @click="redirectToRTI">Schedule Observations</v-btn>
+        <v-btn variant="tonal" color="indigo" class="schedule-observations-btn" >Schedule Observations</v-btn>
     </div>
 </template>
 

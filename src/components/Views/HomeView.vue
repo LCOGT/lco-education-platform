@@ -1,3 +1,7 @@
+<script setup>
+
+
+</script>
 
 <template>
 <div class="columns">
@@ -9,7 +13,7 @@
     </section>
     <section>
         <div class="column">
-            <h3>Observing</h3>
+            <h3>Observe</h3>
             <p>Explore astronomy with our activities linked to observing</p>
         </div>
     </section>
