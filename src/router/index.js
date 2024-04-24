@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/views/HomeView.vue'
-import RealTimeInterface from '../components/views/RealTimeInterfaceView.vue'
-import Dashboard from '../components/views/DashboardView.vue'
+import Home from '../components/Views/HomeView.vue'
+import RealTimeInterface from '../components/Views/RealTimeInterfaceView.vue'
+import Dashboard from '../components/Views/DashboardView.vue'
 
 const routes = [
   {
