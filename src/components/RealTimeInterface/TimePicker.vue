@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import SessionStatus from './SessionStatus.vue';
 
 const date = ref(null);
 const time = ref(null);
+const currentView = ref('scheduling')
 
 // Automatically format the date whenever it changes
 const formattedDate = computed(() => {
@@ -28,13 +30,12 @@ const selectTime = (selectedTime) => {
 };
 
 const bookDate = () => {
-    if (formattedDate.value) {
-        console.log(`Booking for: ${formattedDate.value}`);
-    }
+   currentView.value = 'sessionstatus';
 };
 </script>
 
 <template>
+<div v-if="currentView === 'scheduling'">
     <h2>Book your real-time session</h2>
     <p class="date-text">Select a date and time:</p>
     <div class="datepicker">
@@ -46,8 +47,14 @@ const bookDate = () => {
             <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
         </v-btn-group>
     </div>
-    <p v-if="formattedDate && time" class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
-    <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
+    <div v-if="formattedDate && time">
+        <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
+        <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
+    </div>
+</div>
+<div v-else-if="currentView === 'sessionstatus'">
+    <SessionStatus />
+</div>
 </template>
 
 <style scoped>
