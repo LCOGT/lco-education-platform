@@ -1,15 +1,27 @@
 <script setup>
-// import HomeView from './components/views/HomeView.vue';
-// import RealTimeInterfaceView from './components/views/RealTimeInterfaceView.vue';
 </script>
 
 <template>
-   <nav>
-      <router-link to="/">Home</router-link> |
-      <router-link to="/rti">RTI</router-link>
+   <nav class="navbar">
+      <router-link to="/" class="nav-item">Home</router-link>
+      <router-link to="/rti" class="nav-item">RTI</router-link>
+      <router-link to="/dashboard" class="nav-item">Dashboard</router-link>
     </nav>
     <router-view/>
 </template>
+
+<style scoped>
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+}
+.nav-item {
+  margin: 0 1em 0 1em;
+  text-decoration: none;
+  color: #000;
+  text-align: center;
+}
+</style>
 
 <style>
 #app {
