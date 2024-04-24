@@ -54,6 +54,7 @@ const activeTab = ref('dashboard');
 }
 .dashboard-container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
 }

@@ -26,11 +26,12 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 
 <style scoped>
 .wrapper {
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 50%;
+    max-width: 50%;
+    box-sizing: border-box;
 }
 .my-gallery-text {
-    margin-top: 1em;
+    margin-top: 2em;
 }
 .gallery {
     margin: 2em 0 1em 1em;
@@ -43,5 +44,15 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 }
 .thumbnail {
     max-width: 12em;
+}
+@media (max-width: 1200px) {
+    .thumbnail {
+        max-width: 11em;
+    }
+}
+@media (max-width: 900px) {
+    .thumbnail {
+        max-width: 8em;
+    }
 }
 </style>
