@@ -1,8 +1,19 @@
 <script setup>
+import { ref } from 'vue';
+import AboutView from './components/Views/AboutView.vue';
 
+const showNavTabs = ref(false);
+
+function handleObserveClick() {
+  showNavTabs.value = true;
+}
 </script>
 
 <template>
+  <div v-if="!showNavTabs">
+  <AboutView @observeClicked="handleObserveClick"/>
+  </div>
+  <div v-else-if="showNavTabs">
    <nav class="navbar">
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/" class="nav-item">Learn</router-link>
@@ -18,6 +29,7 @@
     </nav>
     <router-view/>
   </div>
+</div>
 
 </template>
 

@@ -2,13 +2,12 @@
 import MyGallery from '../Dashboard/MyGallery.vue';
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue';
 
-
 </script>
 
 <template>
     <div class="dashboard-container">
         <MyGallery />
-<UpcomingBookings />
+        <UpcomingBookings />
     </div>
 </template>
 

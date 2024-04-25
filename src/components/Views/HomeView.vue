@@ -1,36 +1,16 @@
-<script setup>
-
-
-</script>
-
 <template>
-<div class="columns">
+    <div class="columns">
     <section>
         <div class="column">
-            <h3>Learn Astronomy</h3>
-            <p>Use Photon Ranch in Real Time or schedule observations</p>
+            <p>Remote control a telescope</p>
         </div>
     </section>
-    <section>
-        <div class="column">
-            <h3>Observe</h3>
-            <p>Explore astronomy with our activities linked to observing</p>
-        </div>
-    </section>
-    <section>
-        <div class="column">
-            <h3>Data Lab</h3>
-            <p>Analyze your data using browser based tools</p>
-        </div>
-    </section>
+<section>
+    <div class="column">
+    <p>Schedule an observation</p>
 </div>
-<section class="about">
-    <h2>About Photon Ranch</h2>
-    <div class="about-ptr">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/wupToqz1e2g" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <p class="about-ptr-section">Ponam in culpa idiota aliis pravitatis. Principium ponere culpam in se justum praeceptum. Neque improperes et aliis qui non perfecte ipse docuit. Quod Enchiridion Epictetus stoici scripsit. Rodrigo Abela et Technologiae apud Massachusetts instituta Opera collectio. Ex anglicus latine translata sunt.</p>
-    </div>
 </section>
+</div>
 </template>
 
 <style scoped>
@@ -39,42 +19,46 @@ section {
     padding: 1.25em;
     background-color: #f0f0f0;
     border-radius: 0.3125em;
-}
-h2 {
-    margin-bottom: 0.625em;
-}
-p {
-    line-height: 1.5;
+    height: 15vh;
 }
 .columns {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.625em;
+    grid-template-columns: repeat(2, minmax(0, 20%));
+    gap: 10em;
+    grid-auto-rows: minmax(0, 1fr);
+    justify-content: center;
 }
 .column {
     margin: 0 0.625em;
-    padding: 1em;
     background-color: #f0f0f0;
     border-radius: 0.3125em;
 }
-.about {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1em;
-    margin-bottom: 1em;
+@media (max-width: 1200px) {
+    .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 40%));
+    gap: 6em;
+    grid-auto-rows: minmax(0, 1fr);
+    justify-content: center;
 }
-.about-ptr {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1em;
-    margin-bottom: 1em;
+.column {
+    margin: 0 0.625em;
+    background-color: #f0f0f0;
+    border-radius: 0.3125em;
 }
-.about-ptr-section {
-    text-align: left;
-    margin-left: 1em;
+}
+@media (max-width: 900px) {
+    .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 45%));
+    gap: 2em;
+    grid-auto-rows: minmax(0, 1fr);
+    justify-content: center;
+}
+.column {
+    margin: 0 0.625em;
+    background-color: #f0f0f0;
+    border-radius: 0.3125em;
+}
 }
 </style>
