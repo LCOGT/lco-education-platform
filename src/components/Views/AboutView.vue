@@ -61,6 +61,7 @@ p {
     padding: 1em;
     background-color: #f0f0f0;
     border-radius: 0.3125em;
+    cursor: pointer;
 }
 .about {
     display: flex;

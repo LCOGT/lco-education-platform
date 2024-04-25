@@ -37,7 +37,7 @@ section {
     background-color: #f0f0f0;
     border-radius: 0.3125em;
     height: 15vh;
-    cursor: grab;
+    cursor: pointer;
 }
 .columns {
     position: relative;
