@@ -50,6 +50,10 @@ section {
 .route {
     text-decoration: none !important;
 }
+.route:link, .route:visited {
+    color: #000;
+    text-decoration: none;
+}
 img {
     max-width: 20%
 }
