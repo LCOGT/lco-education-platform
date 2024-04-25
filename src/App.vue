@@ -1,14 +1,33 @@
 <script setup>
+import { ref } from 'vue';
+import AboutView from './components/Views/AboutView.vue';
+import HomeView from './components/Views/HomeView.vue';
 
+const showNavTabs = ref(false);
+
+function handleObserveClick() {
+  showNavTabs.value = true;
+}
+
+const homeIsVisible = ref(true);
+
+function closeHomeView() {
+    homeIsVisible.value = false;
+}
 </script>
 
 <template>
-   <nav class="navbar">
+  <div v-if="!showNavTabs">
+  <AboutView @observeClicked="handleObserveClick"/>
+  </div>
+  <div v-else-if="showNavTabs">
+   <!-- <nav class="navbar">
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/" class="nav-item">Learn</router-link>
       <router-link to="/" class="nav-item">Observe</router-link>
       <router-link to="/" class="nav-item">DataLab</router-link>
-    </nav>
+    </nav> -->
+    <HomeView v-if="homeIsVisible" @close="closeHomeView"/>
     <div>
       <nav class="tabs">
       <router-link to="/dashboard" class="tab">Dashboard</router-link>
@@ -18,6 +37,7 @@
     </nav>
     <router-view/>
   </div>
+</div>
 
 </template>
 

@@ -1,36 +1,33 @@
 <script setup>
+import { defineEmits } from 'vue'
+import calendar from '../../assets/Icons/Calendar.png'
+import remote from '../../assets/Icons/Remote.png'
 
 
+const emit = defineEmits(['close'])
+
+function hideView() {
+  emit('close')
+}
 </script>
-
 <template>
-<div class="columns">
-    <section>
-        <div class="column">
-            <h3>Learn Astronomy</h3>
-            <p>Use Photon Ranch in Real Time or schedule observations</p>
-        </div>
-    </section>
-    <section>
-        <div class="column">
-            <h3>Observe</h3>
-            <p>Explore astronomy with our activities linked to observing</p>
-        </div>
-    </section>
-    <section>
-        <div class="column">
-            <h3>Data Lab</h3>
-            <p>Analyze your data using browser based tools</p>
-        </div>
-    </section>
-</div>
-<section class="about">
-    <h2>About Photon Ranch</h2>
-    <div class="about-ptr">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/wupToqz1e2g" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        <p class="about-ptr-section">Ponam in culpa idiota aliis pravitatis. Principium ponere culpam in se justum praeceptum. Neque improperes et aliis qui non perfecte ipse docuit. Quod Enchiridion Epictetus stoici scripsit. Rodrigo Abela et Technologiae apud Massachusetts instituta Opera collectio. Ex anglicus latine translata sunt.</p>
+    <div class="columns" >
+        <router-link to="/realtime" class="route">
+        <section>
+            <div class="column">
+                <img :src="remote"/>
+                <p>Remote control a telescope</p>
+            </div>
+        </section>
+    </router-link>
+        <section>
+            <div class="column">
+                <img :src="calendar"/>
+                <p>Schedule an observation</p>
+            </div>
+        </section>
+        <button class="close-button" @click="hideView">x</button>
     </div>
-</section>
 </template>
 
 <style scoped>
@@ -39,42 +36,55 @@ section {
     padding: 1.25em;
     background-color: #f0f0f0;
     border-radius: 0.3125em;
-}
-h2 {
-    margin-bottom: 0.625em;
-}
-p {
-    line-height: 1.5;
+    height: 15vh;
+    cursor: grab;
 }
 .columns {
+    position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.625em;
+    grid-template-columns: repeat(2, minmax(0, 20%));
+    gap: 10em;
+    grid-auto-rows: minmax(0, 1fr);
+    justify-content: center;
+}
+.route {
+    text-decoration: none !important;
+}
+.route:link, .route:visited {
+    color: #000;
+    text-decoration: none;
+}
+img {
+    max-width: 20%
 }
 .column {
     margin: 0 0.625em;
-    padding: 1em;
     background-color: #f0f0f0;
     border-radius: 0.3125em;
 }
-.about {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1em;
-    margin-bottom: 1em;
+.close-button {
+    background-color: transparent;
+    font-size: 1.5em;
+    position: absolute;
+    top: 0;
+    right: 15%;
 }
-.about-ptr {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 1em;
-    margin-bottom: 1em;
+@media (max-width: 1200px) {
+    .columns {
+    grid-template-columns: repeat(2, minmax(0, 40%));
+    gap: 6em;
 }
-.about-ptr-section {
-    text-align: left;
-    margin-left: 1em;
+.close-button {
+    right: 5%;
+}
+}
+@media (max-width: 900px) {
+    .columns {
+    grid-template-columns: repeat(2, minmax(0, 45%));
+    gap: 2em;
+}
+.close-button {
+    right: 2%;
+}
 }
 </style>
