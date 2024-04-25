@@ -1,37 +1,37 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import SessionStatus from './SessionStatus.vue';
+import { ref, computed, watch } from 'vue'
+import SessionStatus from './SessionStatus.vue'
 
-const date = ref(null);
-const time = ref(null);
+const date = ref(null)
+const time = ref(null)
 const currentView = ref('scheduling')
 
 // Automatically format the date whenever it changes
 const formattedDate = computed(() => {
-    if (date.value) {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return date.value.toLocaleDateString('en-US', options);
-    }
-    return null;
-});
+  if (date.value) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' }
+    return date.value.toLocaleDateString('en-US', options)
+  }
+  return null
+})
 
 // Watch for changes in the date and reset the time if it changes
 watch(date, (newDate, oldDate) => {
-    if (newDate !== oldDate) {
-        time.value = null;
-    }
-});
+  if (newDate !== oldDate) {
+    time.value = null
+  }
+})
 
 // Dummy data for available times
-const times = ['12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30'];
+const times = ['12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30']
 
 const selectTime = (selectedTime) => {
-    time.value = selectedTime;
-};
+  time.value = selectedTime
+}
 
 const bookDate = () => {
-   currentView.value = 'sessionstatus';
-};
+  currentView.value = 'sessionstatus'
+}
 </script>
 
 <template>

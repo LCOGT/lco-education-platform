@@ -1,12 +1,12 @@
 <script setup>
 // TO DO: store bookings in pinia store and fetch them here
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
 const redirectToRTI = () => {
-    router.push('/realtime');
-};
+  router.push('/realtime')
+}
 
 </script>
 

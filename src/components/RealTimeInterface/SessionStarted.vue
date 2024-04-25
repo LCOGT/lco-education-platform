@@ -1,18 +1,18 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue'
 
-const timeRemaining = ref(20);
+const timeRemaining = ref(20)
 
-let timeRemainingInterval;
+let timeRemainingInterval
 // TO DO: Change timeRemaining to actual session time remaining
 onMounted(() => {
-    timeRemainingInterval = setInterval(() => {
-        timeRemaining.value--;
-        if (timeRemaining.value === 0) {
-            clearInterval(timeRemainingInterval);
-        }
-    }, 1000);
-});
+  timeRemainingInterval = setInterval(() => {
+    timeRemaining.value--
+    if (timeRemaining.value === 0) {
+      clearInterval(timeRemainingInterval)
+    }
+  }, 1000)
+})
 </script>
 
 <template>
