@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue';
+import calendar from '../../assets/Icons/Calendar.png'
+import remote from '../../assets/Icons/Remote.png'
 
 const isVisible = ref(true);
 
@@ -12,11 +14,13 @@ function hideView() {
     <div v-if="isVisible" class="columns" >
         <section>
             <div class="column">
+                <img :src="remote"/>
                 <p>Remote control a telescope</p>
             </div>
         </section>
         <section>
             <div class="column">
+                <img :src="calendar"/>
                 <p>Schedule an observation</p>
             </div>
         </section>
@@ -39,6 +43,9 @@ section {
     gap: 10em;
     grid-auto-rows: minmax(0, 1fr);
     justify-content: center;
+}
+img {
+    max-width: 20%
 }
 .column {
     margin: 0 0.625em;
