@@ -8,6 +8,12 @@ const showNavTabs = ref(false);
 function handleObserveClick() {
   showNavTabs.value = true;
 }
+
+const homeIsVisible = ref(true);
+
+function closeHomeView() {
+    homeIsVisible.value = false;
+}
 </script>
 
 <template>
@@ -21,8 +27,8 @@ function handleObserveClick() {
       <router-link to="/" class="nav-item">Observe</router-link>
       <router-link to="/" class="nav-item">DataLab</router-link>
     </nav> -->
+    <HomeView v-if="homeIsVisible" @close="closeHomeView"/>
     <div>
-      <HomeView/>
       <nav class="tabs">
       <router-link to="/dashboard" class="tab">Dashboard</router-link>
       <router-link to="/realtime" class="tab">Real Time</router-link>

@@ -1,17 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { defineEmits } from 'vue'
 import calendar from '../../assets/Icons/Calendar.png'
 import remote from '../../assets/Icons/Remote.png'
 
-const isVisible = ref(true);
+
+const emit = defineEmits(['close'])
 
 function hideView() {
-    isVisible.value = false;
+  emit('close')
 }
-
 </script>
 <template>
-    <div v-if="isVisible" class="columns" >
+    <div class="columns" >
         <section>
             <div class="column">
                 <img :src="remote"/>
