@@ -1,21 +1,34 @@
 <template>
-  <div id="aladin-lite-div" style="width: 400px; height: 400px;"></div>
+  <div ref="aladinContainer" class="aladin-container"></div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { initializeAladin } from '../../utils/aladinUtility.js'
+
+const aladinContainer = ref(null)
 
 onMounted(() => {
-  // Initialize Aladin Lite in the onMounted lifecycle hook
-  const aladin = A.aladin('#aladin-lite-div', {
+  initializeAladin(aladinContainer.value, {
     survey: 'P/DSS2/color',
-    showFullscreenControl: true,
-    showLayersControl: true,
-    showGotoControl: true,
-    fov: 60 // field of view in degrees
+    fov: 10,
+    target: 'M33',
+    cooFrame: 'ICRSd',
+    showFullscreenControl: false,
+    showGotoControl: false,
+    showSimbadPointerControl: true
   })
-
-  // You can add additional code here to configure Aladin as needed,
-  // for example, to set up event listeners or to interact with the Aladin instance programmatically.
+    .then(aladin => {
+      console.log('Aladin initialized:', aladin)
+    })
+    .catch(error => {
+      console.error('Failed to initialize Aladin:', error)
+    })
 })
 </script>
+
+<style scoped>
+.aladin-container {
+  max-width: 50%;
+}
+</style>

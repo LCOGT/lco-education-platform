@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 
 const timeRemaining = ref(20)
 
@@ -21,4 +22,5 @@ onMounted(() => {
       <p>You are controlling Eltham College telescope 1 in Australia</p>
       <p>Time Remaining in session {{ timeRemaining }}</p>
   </div>
+  <AladinSkyMap />
 </template>
