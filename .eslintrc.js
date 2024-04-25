@@ -9,7 +9,7 @@ module.exports = {
     'standard'
   ],
   globals: {
-    'A': true // Aladin script
+    'A': 'readonly' // Aladin script
   },
   parserOptions: {
     ecmaVersion: 12,
@@ -30,6 +30,8 @@ module.exports = {
     'vue/order-in-components': 'off',
     'vue/multi-word-component-names': 'off',
     'no-unused-vars': 'off',
+    'vue/no-multiple-template-root': 'off',
+    'new-cap': 'off',
 
     /* Don't automatically fix these when running `eslint --fix`, but keep the warning/error */
 
