@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import AboutView from './components/Views/AboutView.vue';
+import HomeView from './components/Views/HomeView.vue';
 
 const showNavTabs = ref(false);
 
@@ -14,13 +15,14 @@ function handleObserveClick() {
   <AboutView @observeClicked="handleObserveClick"/>
   </div>
   <div v-else-if="showNavTabs">
-   <nav class="navbar">
+   <!-- <nav class="navbar">
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/" class="nav-item">Learn</router-link>
       <router-link to="/" class="nav-item">Observe</router-link>
       <router-link to="/" class="nav-item">DataLab</router-link>
-    </nav>
+    </nav> -->
     <div>
+      <HomeView/>
       <nav class="tabs">
       <router-link to="/dashboard" class="tab">Dashboard</router-link>
       <router-link to="/realtime" class="tab">Real Time</router-link>
