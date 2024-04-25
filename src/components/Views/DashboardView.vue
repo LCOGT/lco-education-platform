@@ -1,6 +1,6 @@
 <script setup>
-import MyGallery from '../Dashboard/MyGallery.vue';
-import UpcomingBookings from '../Dashboard/UpcomingBookings.vue';
+import MyGallery from '../Dashboard/MyGallery.vue'
+import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 
 </script>
 

@@ -3,10 +3,9 @@ import { defineEmits } from 'vue'
 import calendar from '../../assets/Icons/Calendar.png'
 import remote from '../../assets/Icons/Remote.png'
 
-
 const emit = defineEmits(['close'])
 
-function hideView() {
+function hideView () {
   emit('close')
 }
 </script>

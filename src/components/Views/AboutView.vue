@@ -3,7 +3,7 @@ import { defineEmits } from 'vue'
 
 const emit = defineEmits(['observeClicked'])
 
-function emitObserve() {
+function emitObserve () {
   emit('observeClicked')
 }
 </script>

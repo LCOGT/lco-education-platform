@@ -1,18 +1,18 @@
 <script setup>
-import { ref } from 'vue';
-import AboutView from './components/Views/AboutView.vue';
-import HomeView from './components/Views/HomeView.vue';
+import { ref } from 'vue'
+import AboutView from './components/Views/AboutView.vue'
+import HomeView from './components/Views/HomeView.vue'
 
-const showNavTabs = ref(false);
+const showNavTabs = ref(false)
 
-function handleObserveClick() {
-  showNavTabs.value = true;
+function handleObserveClick () {
+  showNavTabs.value = true
 }
 
-const homeIsVisible = ref(true);
+const homeIsVisible = ref(true)
 
-function closeHomeView() {
-    homeIsVisible.value = false;
+function closeHomeView () {
+  homeIsVisible.value = false
 }
 </script>
 
