@@ -8,7 +8,6 @@ import vuetify from './plugins/vuetify'
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedState)
 
-
 createApp(App)
   .use(pinia)
   .use(router)

@@ -1,5 +1,5 @@
 <script setup>
-import TimePicker from '../RealTimeInterface/TimePicker.vue';
+import TimePicker from '../RealTimeInterface/TimePicker.vue'
 
 </script>
 

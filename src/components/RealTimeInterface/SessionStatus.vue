@@ -1,12 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
 import SessionPending from './SessionPending.vue'
 import SessionStarted from './SessionStarted.vue'
 
-const sessionStatus = ref('pending');
+const sessionStatus = ref('pending')
 
 const updateSessionStatus = (newStatus) => {
-  sessionStatus.value = newStatus;
+  sessionStatus.value = newStatus
 }
 </script>
 

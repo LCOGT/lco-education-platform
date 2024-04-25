@@ -36,7 +36,7 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 }
 .my-gallery-text {
     margin-top: 2em;
-    margin-left: 1em;
+    margin-left: 1em
 }
 .gallery {
     margin: 2em 0 1em 1em;
