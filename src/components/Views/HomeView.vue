@@ -12,12 +12,14 @@ function hideView() {
 </script>
 <template>
     <div class="columns" >
+        <router-link to="/realtime" class="route">
         <section>
             <div class="column">
                 <img :src="remote"/>
                 <p>Remote control a telescope</p>
             </div>
         </section>
+    </router-link>
         <section>
             <div class="column">
                 <img :src="calendar"/>
@@ -35,6 +37,7 @@ section {
     background-color: #f0f0f0;
     border-radius: 0.3125em;
     height: 15vh;
+    cursor: grab;
 }
 .columns {
     position: relative;
@@ -43,6 +46,9 @@ section {
     gap: 10em;
     grid-auto-rows: minmax(0, 1fr);
     justify-content: center;
+}
+.route {
+    text-decoration: none !important;
 }
 img {
     max-width: 20%
