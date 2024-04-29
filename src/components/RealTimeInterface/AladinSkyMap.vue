@@ -24,7 +24,7 @@ onMounted(() => {
 })
 
 function parseRa (raString) {
-  const coordinates = raString.toString().match(/(\d+.*)h (\d+.*)m (\d+.*)s/)
+  const coordinates = raString.toString().match(/(\d+.*)h\s(\d+.*)m\s(\d+.*)s/)
   if (!coordinates) return null
 
   const hours = parseInt(coordinates[1], 10)
