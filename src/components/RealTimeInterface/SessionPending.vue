@@ -3,7 +3,7 @@ import { onMounted, ref, defineEmits } from 'vue'
 
 const emits = defineEmits(['update-status'])
 
-const countdown = ref(10)
+const countdown = ref(1)
 
 let countdownInterval
 // TO DO: Change countdown to actual session time
