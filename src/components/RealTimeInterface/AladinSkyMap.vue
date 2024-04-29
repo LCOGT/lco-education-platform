@@ -16,7 +16,6 @@ onMounted(() => {
     showSimbadPointerControl: true
   })
     .then(aladin => {
-      console.log('Aladin initialized:', aladin)
       aladinInstance = aladin
     })
     .catch(error => {
@@ -49,7 +48,6 @@ function parseDec (decString) {
 function goToRaDec (ra, dec) {
   const raNumber = parseRa(ra)
   const decNumber = parseDec(dec)
-  console.log('RA:', raNumber, 'DEC:', decNumber)
 
   if (aladinInstance && raNumber && decNumber) {
     aladinInstance.gotoRaDec(raNumber, decNumber)
