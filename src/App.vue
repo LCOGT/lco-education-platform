@@ -17,6 +17,7 @@ function closeHomeView () {
 </script>
 
 <template>
+    <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
   <div v-if="!showNavTabs">
   <AboutView @observeClicked="handleObserveClick"/>
   </div>
@@ -38,19 +39,18 @@ function closeHomeView () {
     <router-view/>
   </div>
 </div>
-
+</v-main>
 </template>
 
 <style scoped>
-.navbar {
-  display: flex;
-  justify-content: flex-end;
+
+html{
+  background-color: #3B4249;
 }
-.nav-item {
-  margin: 0 1em 0 1em;
-  text-decoration: none;
-  color: #000;
-  text-align: center;
+.v-app-bar {
+  background-color: #13181D;
+  padding: 10px;
+  margin-bottom: 20px;
 }
 .tabs {
   display: flex;
@@ -71,16 +71,5 @@ function closeHomeView () {
 .tab.router-link-active {
   background-color: darkgray;
   color: #000;
-}
-</style>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

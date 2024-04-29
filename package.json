@@ -5,13 +5,18 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-bulma": "sass --load-path=node_modules src/assets/ptr_main.scss src/assets/ptr_main.css",
+    "start": "npm run build-bulma -- --watch"
   },
   "dependencies": {
+    "bulma": "^1.0.0",
     "core-js": "^3.8.3",
     "d3-celestial": "^0.7.35",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
+    "sass": "^1.75.0",
+    "sass-loader": "^14.2.1",
     "vue": "^3.2.13",
     "vue-router": "^4.3.2",
     "vuetify": "^3.5.16"
