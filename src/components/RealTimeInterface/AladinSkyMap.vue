@@ -16,6 +16,7 @@ onMounted(() => {
     showSimbadPointerControl: true
   })
     .then(aladin => {
+      console.log('Aladin initialized', aladin)
       aladinInstance = aladin
     })
     .catch(error => {
@@ -50,6 +51,7 @@ function goToRaDec (ra, dec) {
   const decNumber = parseDec(dec)
 
   if (aladinInstance && raNumber && decNumber) {
+    // Aladin's built-in method to go to a specific RA/DEC
     aladinInstance.gotoRaDec(raNumber, decNumber)
   } else {
     console.error('Invalid RA/DEC values or Aladin instance not initialized')
