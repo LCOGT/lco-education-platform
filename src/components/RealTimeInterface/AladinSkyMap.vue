@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { initializeAladin } from '../../utils/aladinUtility.js'
 
 const aladinContainer = ref(null)
+let aladinInstance = null
 
 onMounted(() => {
   initializeAladin(aladinContainer.value, {
@@ -15,11 +16,50 @@ onMounted(() => {
     showSimbadPointerControl: true
   })
     .then(aladin => {
-      console.log('Aladin initialized:', aladin)
+      console.log('Aladin initialized', aladin)
+      aladinInstance = aladin
     })
     .catch(error => {
       console.error('Failed to initialize Aladin:', error)
     })
+})
+
+function parseRa (raString) {
+  const coordinates = raString.toString().match(/(\d+.*)h\s(\d+.*)m\s(\d+.*)s/)
+  if (!coordinates) return null
+
+  const hours = Number(coordinates[1], 10)
+  const minutes = Number(coordinates[2], 10)
+  const seconds = Number(coordinates[3], 10)
+
+  return 15 * (hours + minutes / 60 + seconds / 3600)
+}
+
+function parseDec (decString) {
+  const coordinates = decString.toString().match(/([+-]?\d+.*)°\s(\d+.*)['′]\s(\d+.*)[″"].*/)
+  if (!coordinates) return null
+
+  const degrees = Number(coordinates[1], 10)
+  const arcminutes = Number(coordinates[2], 10)
+  const arcseconds = Number(coordinates[3], 10)
+
+  return degrees + (degrees < 0 ? -1 : 1) * (arcminutes / 60 + arcseconds / 3600)
+}
+
+function goToRaDec (ra, dec) {
+  const raNumber = parseRa(ra)
+  const decNumber = parseDec(dec)
+
+  if (aladinInstance && raNumber && decNumber) {
+    // Aladin's built-in method to go to a specific RA/DEC
+    aladinInstance.gotoRaDec(raNumber, decNumber)
+  } else {
+    console.error('Invalid RA/DEC values or Aladin instance not initialized')
+  }
+}
+
+defineExpose({
+  goToRaDec
 })
 </script>
 

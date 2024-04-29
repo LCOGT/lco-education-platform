@@ -1,24 +1,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import celestial from 'd3-celestial' // Adjust the import if necessary
+import celestial from 'd3-celestial'
 
-// Initialize the Celestial object, similar to how the original script does it
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
 
-// Data
 const lat = ref(35)
 const lng = ref(-105)
 const hours_offset = ref(0)
 const timezone = 'America/Denver'
 
-// Computed offset
 function getOffset (timeZone = 'UTC', date = new Date()) {
   const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
   const tzDate = new Date(date.toLocaleString('en-US', { timeZone }))
   return (tzDate - utcDate) / 60000
 }
 
-// Methods
 function now () {
   Celestial.date(new Date())
 }
@@ -102,7 +98,7 @@ onMounted(() => {
   }
 
   Celestial.display(config)
-  updateLocation() // To set initial position and time
+  updateLocation()
 })
 </script>
 
