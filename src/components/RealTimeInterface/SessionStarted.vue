@@ -5,7 +5,6 @@ import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 
 const timeRemaining = ref(20)
 const aladinRef = ref(null)
-const objectLookup = ref('')
 const ra = ref('')
 const dec = ref('')
 
