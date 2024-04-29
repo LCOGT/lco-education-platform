@@ -27,9 +27,9 @@ function parseRa (raString) {
   const coordinates = raString.toString().match(/(\d+.*)h\s(\d+.*)m\s(\d+.*)s/)
   if (!coordinates) return null
 
-  const hours = parseInt(coordinates[1], 10)
-  const minutes = parseInt(coordinates[2], 10)
-  const seconds = parseInt(coordinates[3], 10)
+  const hours = Number(coordinates[1], 10)
+  const minutes = Number(coordinates[2], 10)
+  const seconds = Number(coordinates[3], 10)
 
   return 15 * (hours + minutes / 60 + seconds / 3600)
 }
@@ -38,9 +38,9 @@ function parseDec (decString) {
   const coordinates = decString.toString().match(/([+-]?\d+.*)°\s(\d+.*)['′]\s(\d+.*)[″"].*/)
   if (!coordinates) return null
 
-  const degrees = parseInt(coordinates[1], 10)
-  const arcminutes = parseInt(coordinates[2], 10)
-  const arcseconds = parseInt(coordinates[3], 10)
+  const degrees = Number(coordinates[1], 10)
+  const arcminutes = Number(coordinates[2], 10)
+  const arcseconds = Number(coordinates[3], 10)
 
   return degrees + (degrees < 0 ? -1 : 1) * (arcminutes / 60 + arcseconds / 3600)
 }
