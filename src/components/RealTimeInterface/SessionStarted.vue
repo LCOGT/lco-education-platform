@@ -4,9 +4,11 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 
 const timeRemaining = ref(20)
+const aladinRef = ref(null)
+const ra = ref('')
+const dec = ref('')
 
 let timeRemainingInterval
-// TO DO: Change timeRemaining to actual session time remaining
 onMounted(() => {
   timeRemainingInterval = setInterval(() => {
     timeRemaining.value--
@@ -15,14 +17,26 @@ onMounted(() => {
     }
   }, 1000)
 })
+
+// This function will trigger the goToRaDec method in the AladinSkyMap component
+function goToLocation () {
+  if (aladinRef.value && aladinRef.value.goToRaDec) {
+    aladinRef.value.goToRaDec(ra.value, dec.value)
+  } else {
+    console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
+  }
+}
 </script>
 
 <template>
   <div>
     <h2>Real Time Session</h2>
-      <p>You are controlling Eltham College telescope 1 in Australia</p>
-      <p>Time Remaining in session {{ timeRemaining }}</p>
+    <p>You are controlling Eltham College telescope 1 in Australia</p>
+    <p>Time Remaining in session: {{ timeRemaining }}</p>
+    <SkyChart />
+    <input type="text" v-model="ra" placeholder="RA">
+    <input type="text" v-model="dec" placeholder="DEC">
+    <button @click="goToLocation">Go to RA/Dec</button>
+    <AladinSkyMap ref="aladinRef"/>
   </div>
-  <SkyChart />
-  <AladinSkyMap />
 </template>
