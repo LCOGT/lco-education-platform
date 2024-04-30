@@ -10,42 +10,56 @@ function hideView () {
 }
 </script>
 <template>
-    <div class="columns" >
-        <router-link to="/realtime" class="route">
-        <section>
-            <div class="column">
-                <img :src="remote"/>
-                <p>Remote control a telescope</p>
+<section class="hero">
+    <div class="container">
+        <div class="columns">
+            <div class="column is-one-quarter">
+                <h1 class="title">Observe</h1>
             </div>
-        </section>
-    </router-link>
-        <section>
             <div class="column">
-                <img :src="calendar"/>
-                <p>Schedule an observation</p>
+                <div class="tabs">
+                <ul>
+                <li class="is-active"><a>Dashboard</a></li>
+                <li><a>Real-Time</a></li>
+                <li><a>Schedule</a></li>
+                <li><a>Images</a></li>
+            </ul>
             </div>
-        </section>
-        <button class="close-button" @click="hideView">x</button>
+            </div>
+        </div>
     </div>
+</section>
+<section class="hero highlight">
+    <div class="container">
+        <div class="hero-body">
+            <div class="columns">
+                <div class="column">
+                    <router-link to="/realtime" class="route">
+                        <div class="card">
+                            <div class="card-content">
+                                <img :src="remote"/>
+                                <p>Remote control a telescope</p>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                <div class="column">
+                    <div class="card">
+                        <div class="card-content">
+                            <img :src="calendar"/>
+                            <p>Schedule an observation</p>
+                        </div>
+                    </div>
+                </div>
+        <button class="close-button" @click="hideView">x</button>
+            </div>
+        </div>
+    </div>
+    </section>
 </template>
 
 <style scoped>
-section {
-    margin: 1.25em;
-    padding: 1.25em;
-    background-color: #f0f0f0;
-    border-radius: 0.3125em;
-    height: 15vh;
-    cursor: pointer;
-}
-.columns {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 20%));
-    gap: 10em;
-    grid-auto-rows: minmax(0, 1fr);
-    justify-content: center;
-}
+
 .route {
     text-decoration: none !important;
 }
@@ -56,11 +70,7 @@ section {
 img {
     max-width: 20%
 }
-.column {
-    margin: 0 0.625em;
-    background-color: #f0f0f0;
-    border-radius: 0.3125em;
-}
+
 .close-button {
     background-color: transparent;
     font-size: 1.5em;
@@ -69,19 +79,12 @@ img {
     right: 15%;
 }
 @media (max-width: 1200px) {
-    .columns {
-    grid-template-columns: repeat(2, minmax(0, 40%));
-    gap: 6em;
-}
+
 .close-button {
     right: 5%;
 }
 }
 @media (max-width: 900px) {
-    .columns {
-    grid-template-columns: repeat(2, minmax(0, 45%));
-    gap: 2em;
-}
 .close-button {
     right: 2%;
 }

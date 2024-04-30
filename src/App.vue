@@ -17,7 +17,33 @@ function closeHomeView () {
 </script>
 
 <template>
-    <v-main class="d-flex align-center justify-center" style="min-height: 300px;">
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="/">
+      <img src="@/assets/ptr_logo.png" alt="Kiosk logo"/>
+    </a>
+
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+  <div class="navbar-start">
+    <!-- navbar items -->
+  </div>
+
+  <div class="navbar-end">
+    <a class="navbar-item" href="/">Home</a>
+    <a class="navbar-item" href="/">Learn</a>
+    <a class="navbar-item" href="/">Observe</a>
+    <a class="navbar-item" href="/">DataLab</a>
+    <a class="navbar-item button" href="/">Login</a>
+  </div>
+</div>
+</nav>
   <div v-if="!showNavTabs">
   <AboutView @observeClicked="handleObserveClick"/>
   </div>
@@ -39,7 +65,6 @@ function closeHomeView () {
     <router-view/>
   </div>
 </div>
-</v-main>
 </template>
 
 <style scoped>

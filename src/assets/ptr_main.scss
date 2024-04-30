@@ -2,26 +2,66 @@
 @charset "utf-8";
 
 // Import a Google Font
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+@import url('https://fonts.googleapis.com/css2?family=Unica+One&display=swap');
 
 // Set your brand colors
-$purple: #8A4D76;
-$pink: #FA7C91;
-$brown: #757763;
-$beige-light: #D0D1CD;
-$colour-level3: #262e35;
+$blue: #00ADEF;
+$red: #EF4123;
+$green: #A6CE39;
+$off-white: #fcfcfc;
+$grey-level1: #3b4249;
+$grey-level2: #262e35;
+$grey-level3: #192026;
+$grey-level4: #13181D;
 
 // Update Bulma's global variables
 $family-sans-serif: "Nunito", sans-serif;
-$grey-dark: $brown;
-$grey-light: $beige-light;
-$primary: $purple;
-$link: $pink;
+$grey-dark: $grey-level3;
+$grey-light: $grey-level1;
+$primary: $blue;
+$link: $red;
 $widescreen-enabled: false;
 $fullhd-enabled: false;
+$bulma-navbar-height: 8rem;
 
 // Update some of Bulma's component variables
-$body-background-color: $colour-level3;
+$body-background-color: $grey-level2;
 $control-border-width: 2px;
 $input-border-color: transparent;
 $input-shadow: none;
+
+$font-stack: Helvetica, sans-serif;
+$primary-color: #333;
+
+
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Unica One', sans-serif;
+}
+
+h3 {
+    font-size: 1.5rem;
+    color: $off-white;
+}
+
+p {
+    font-size: 1.2rem;
+    color: $off-white;
+}
+
+section.highlight {
+    background-color: $grey-level1;
+}
+
+nav {
+    background-color: $grey-level4;
+
+    .navbar{
+        min-height:2rem;
+    }
+}

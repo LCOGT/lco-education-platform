@@ -1,3 +1,27 @@
-@import url("https://fonts.googleapis.com/css?family=Nunito:400,700");
+@import url("https://fonts.googleapis.com/css2?family=Unica+One&display=swap");
+body {
+  font: 100% Helvetica, sans-serif;
+  color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Unica One", sans-serif;
+}
+
+p {
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+section.highlight {
+  background-color: #3b4249;
+}
+
+nav {
+  background-color: #13181D;
+}
+nav .navbar {
+  min-height: 2rem;
+}
 
 /*# sourceMappingURL=ptr_main.css.map */
