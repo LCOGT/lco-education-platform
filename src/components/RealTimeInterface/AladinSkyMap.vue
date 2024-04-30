@@ -82,4 +82,11 @@ defineExpose({
   width: 30em;
   background-color: #000;
 }
+@media (max-width: 1200px) {
+  .aladin-map {
+    height: 20em;
+    width: 19.7em;
+  }
+}
+
 </style>

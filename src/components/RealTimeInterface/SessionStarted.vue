@@ -50,7 +50,6 @@ function goToLocation () {
 .sky-wrapper {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
 }
 .maps-container {
@@ -58,11 +57,15 @@ function goToLocation () {
   justify-content: space-around;
   align-items: stretch;
 }
-
 .controls-container {
   display: flex;
   justify-content: flex-end;
   margin-top: 1.25em;
 }
-
+@media (max-width: 900px) {
+  .maps-container {
+    display: flex;
+    flex-direction: column;
+  }
+}
 </style>
