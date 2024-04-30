@@ -27,16 +27,42 @@ function goToLocation () {
   }
 }
 </script>
-
 <template>
   <div>
     <h2>Real Time Session</h2>
     <p>You are controlling Eltham College telescope 1 in Australia</p>
     <p>Time Remaining in session: {{ timeRemaining }}</p>
-    <SkyChart />
-    <input type="text" v-model="ra" placeholder="RA">
-    <input type="text" v-model="dec" placeholder="DEC">
-    <button @click="goToLocation">Go to RA/Dec</button>
-    <AladinSkyMap ref="aladinRef"/>
+    <div class="sky-wrapper">
+      <div class="maps-container">
+        <SkyChart />
+        <AladinSkyMap ref="aladinRef" />
+      </div>
+      <div class="controls-container">
+        <input type="text" v-model="ra" placeholder="RA">
+        <input type="text" v-model="dec" placeholder="DEC">
+        <button @click="goToLocation">GO</button>
+      </div>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.sky-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.maps-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+}
+
+.controls-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25em;
+}
+
+</style>

@@ -78,7 +78,8 @@ defineExpose({
 
 <style scoped>
 .aladin-map {
-  height: 500px;
+  height: 31.25em;
+  width: 30em;
   background-color: #000;
 }
 </style>

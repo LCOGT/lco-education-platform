@@ -7,17 +7,17 @@ const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
 const lat = ref(35)
 const lng = ref(-105)
 const hours_offset = ref(0)
-const timezone = 'America/Denver'
+// const timezone = 'America/Denver'
 
-function getOffset (timeZone = 'UTC', date = new Date()) {
-  const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
-  const tzDate = new Date(date.toLocaleString('en-US', { timeZone }))
-  return (tzDate - utcDate) / 60000
-}
+// function getOffset (timeZone = 'UTC', date = new Date()) {
+//   const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+//   const tzDate = new Date(date.toLocaleString('en-US', { timeZone }))
+//   return (tzDate - utcDate) / 60000
+// }
 
-function now () {
-  Celestial.date(new Date())
-}
+// function now () {
+//   Celestial.date(new Date())
+// }
 
 function updateLocation () {
   const time = new Date()
@@ -104,13 +104,13 @@ onMounted(() => {
 
 <template>
     <div id="celestial-map"></div>
-    <input label="lng" type="number" v-model.number="lng" />
+    <!-- <input label="lng" type="number" v-model.number="lng" />
     <input label="lat" type="number" v-model.number="lat" />
     <input label="+ hours" type="number" v-model.number="hours_offset" />
     <button @click="updateLocation">go</button>
     <button @click="now">now</button>
     <div>{{ [lat, lng] }}</div>
-    <div>{{ getOffset(timezone) }}</div>
+    <div>{{ getOffset(timezone) }}</div> -->
   </template>
 
 <style scoped>
