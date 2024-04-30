@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
+import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 
 const timeRemaining = ref(20)
 const aladinRef = ref(null)
@@ -9,6 +10,9 @@ const ra = ref('')
 const dec = ref('')
 
 let timeRemainingInterval
+
+const moveTelescope = ref(false)
+
 onMounted(() => {
   timeRemainingInterval = setInterval(() => {
     timeRemaining.value--
@@ -28,7 +32,7 @@ function goToLocation () {
 }
 </script>
 <template>
-  <div>
+  <div v-if="moveTelescope === false">
     <h2>Real Time Session</h2>
     <p>You are controlling Eltham College telescope 1 in Australia</p>
     <p>Time Remaining in session: {{ timeRemaining }}</p>
@@ -43,6 +47,10 @@ function goToLocation () {
         <button @click="goToLocation">GO</button>
       </div>
     </div>
+    <v-btn color="indigo" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
+  </div>
+  <div v-else-if="moveTelescope === true">
+    <SessionImageCapture />
   </div>
 </template>
 
