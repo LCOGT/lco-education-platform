@@ -4,6 +4,10 @@ import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 import router from './router/index'
 import App from './App.vue'
 import vuetify from './plugins/vuetify'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faBook, faStar, faChartLine } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faBook, faStar, faChartLine)
 
 require('@/assets/ptr_main.scss')
 

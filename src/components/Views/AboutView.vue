@@ -1,6 +1,7 @@
 require('@/assets/ptr_main.scss')
 <script setup>
 import { defineEmits } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emit = defineEmits(['observeClicked'])
 
@@ -17,6 +18,7 @@ function emitObserve () {
                     <div class="column">
                         <div class="card">
                             <div class="card-content">
+                                <FontAwesomeIcon icon="fa-solid fa-book" class="red highlight" />
                                 <h3>Learn Astronomy</h3>
                                 <p>Use Photon Ranch in Real Time or schedule observations</p>
                             </div>
@@ -25,7 +27,9 @@ function emitObserve () {
 
                     <div class="column" @click="emitObserve">
                         <div class="card">
-                            <div class="card-content">
+                            <div class="card-content is-clickable">
+                                <FontAwesomeIcon icon="fa-solid fa-star" class="blue" />
+
                         <h3>Observe</h3>
                         <p>Explore astronomy with our activities linked to observing</p>
                         </div>
@@ -34,6 +38,8 @@ function emitObserve () {
                     <div class="column">
                         <div class="card">
                             <div class="card-content">
+                                <FontAwesomeIcon icon="fa-solid fa-chart-line" class="green" />
+
                         <h3>Data Lab</h3>
                         <p>Analyze your data using browser based tools</p>
                         </div>

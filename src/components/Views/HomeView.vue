@@ -1,7 +1,6 @@
 <script setup>
 import { defineEmits } from 'vue'
 import calendar from '../../assets/Icons/Calendar.png'
-import remote from '../../assets/Icons/Remote.png'
 
 const emit = defineEmits(['close'])
 
@@ -10,25 +9,6 @@ function hideView () {
 }
 </script>
 <template>
-<section class="hero">
-    <div class="container">
-        <div class="columns">
-            <div class="column is-one-quarter">
-                <h1 class="title">Observe</h1>
-            </div>
-            <div class="column">
-                <div class="tabs">
-                <ul>
-                <li class="is-active"><a>Dashboard</a></li>
-                <li><a>Real-Time</a></li>
-                <li><a>Schedule</a></li>
-                <li><a>Images</a></li>
-            </ul>
-            </div>
-            </div>
-        </div>
-    </div>
-</section>
 <section class="hero highlight">
     <div class="container">
         <div class="hero-body">
@@ -36,8 +16,8 @@ function hideView () {
                 <div class="column">
                     <router-link to="/realtime" class="route">
                         <div class="card">
-                            <div class="card-content">
-                                <img :src="remote"/>
+                            <div class="card-content is-clickable">
+                                <FontAwesomeIcon icon={faPhone} />
                                 <p>Remote control a telescope</p>
                             </div>
                         </div>
