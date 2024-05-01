@@ -5,7 +5,7 @@ import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 const progressBar = ref(0)
 
 const numberOfThumbnails = computed(() => {
-  return progressBar.value / 10
+  return Math.floor(progressBar.value / 10)
 })
 
 onMounted(() => {
@@ -21,7 +21,9 @@ onMounted(() => {
 <template>
 <div class="wrapper">
     <div class="thumbnail-container">
-      <img v-for="n in numberOfThumbnails" :key="n" :src="thumbnail" class="thumbnail" />
+        <transition-group name="slide-in" tag="div" class="thumbnails">
+        <img v-for="n in numberOfThumbnails" :key="n" :src="thumbnail" class="thumbnail" />
+        </transition-group>
     </div>
     <div class="progress-wrapper">
         <p class="progress">Progress</p>
@@ -36,7 +38,7 @@ onMounted(() => {
         ></v-progress-linear>
     </div>
 </div>
- </template>
+</template>
 
 <style scoped>
 .wrapper {
@@ -46,14 +48,18 @@ onMounted(() => {
 }
 .thumbnail-container {
     flex: 1;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+.thumbnails {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
     align-items: center;
 }
 .thumbnail {
     width: 12em;
     margin: 1em;
+    transition: transform 0.5s, opacity 0.5s;
+    display: inline-block;
 }
 .progress-wrapper {
     flex: 1;
@@ -68,5 +74,12 @@ onMounted(() => {
 }
 .progress-bar {
   width: 30%;
+}
+.slide-in-enter-active, .slide-in-leave-active {
+  transition: transform 0.5s, opacity 0.5s;
+}
+.slide-in-enter, .slide-in-leave-to{
+  transform: translateX(50px);
+  opacity: 0;
 }
 </style>
