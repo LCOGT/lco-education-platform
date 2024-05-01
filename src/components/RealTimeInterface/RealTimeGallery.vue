@@ -50,6 +50,7 @@ onMounted(() => {
     flex: 1;
     overflow-x: auto;
     white-space: nowrap;
+    margin-top: 3em;
 }
 .thumbnails {
     display: flex;
@@ -81,5 +82,10 @@ onMounted(() => {
 .slide-in-enter, .slide-in-leave-to{
   transform: translateX(50px);
   opacity: 0;
+}
+@media (max-width: 1200px) {
+.thumbnail {
+    width: 8em;
+}
 }
 </style>
