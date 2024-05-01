@@ -47,7 +47,7 @@ function goToLocation () {
         <button @click="goToLocation">GO</button>
       </div>
     </div>
-    <v-btn color="indigo" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
+    <v-btn :disabled="ra === '' || dec === ''" color="indigo" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
   </div>
   <div v-else-if="moveTelescope === true">
     <SessionImageCapture />
