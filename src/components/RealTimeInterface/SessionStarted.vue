@@ -35,7 +35,6 @@ function goToLocation () {
 }
 </script>
 <template>
-  <div v-if="captureImages === false">
   <h2>Real Time Session</h2>
   <p>You are controlling Eltham College telescope 1 in Australia</p>
   <p>Time Remaining in session: {{ timeRemaining }}</p>
@@ -57,7 +56,6 @@ function goToLocation () {
     <SessionImageCapture />
     <v-btn class="go-button" color="indigo" @click="captureImages = true">GO</v-btn>
   </div>
-</div>
   <div v-else-if="captureImages === true">
     <RealTimeGallery />
   </div>
