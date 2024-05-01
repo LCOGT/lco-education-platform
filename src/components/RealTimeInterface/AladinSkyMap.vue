@@ -61,14 +61,23 @@ function goToRaDec (ra, dec) {
   }
 }
 
+function setFov (fov) {
+  if (aladinInstance) {
+    aladinInstance.setFov(fov)
+  } else {
+    console.error('Aladin instance not initialized')
+  }
+}
+
 defineExpose({
-  goToRaDec
+  goToRaDec,
+  setFov
 })
 </script>
 
 <template>
   <v-container class="pa-0 aladin-container" fluid>
-    <v-row justify="center" align="center" class="fill-height">
+    <v-row class="fill-height">
       <v-col cols="12" sm="10" md="8" lg="6" xl="4">
         <div ref="aladinContainer" class="aladin-map"></div>
       </v-col>
