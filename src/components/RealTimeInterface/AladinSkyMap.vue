@@ -11,12 +11,15 @@ onMounted(() => {
     fov: 1,
     target: 'M33',
     cooFrame: 'ICRSd',
-    showFullscreenControl: false,
-    showGotoControl: false,
-    showSimbadPointerControl: true
+    showProjectionControl: false,
+    showZoomControl: true,
+    // ask Edward
+    showFullscreenControl: true,
+    showLayersControl: false,
+    showGotoControl: true,
+    showFrame: false
   })
     .then(aladin => {
-      console.log('Aladin initialized', aladin)
       aladinInstance = aladin
     })
     .catch(error => {
