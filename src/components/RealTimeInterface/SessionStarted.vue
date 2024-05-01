@@ -33,10 +33,10 @@ function goToLocation () {
 }
 </script>
 <template>
+  <h2>Real Time Session</h2>
+  <p>You are controlling Eltham College telescope 1 in Australia</p>
+  <p>Time Remaining in session: {{ timeRemaining }}</p>
   <div v-if="moveTelescope === false">
-    <h2>Real Time Session</h2>
-    <p>You are controlling Eltham College telescope 1 in Australia</p>
-    <p>Time Remaining in session: {{ timeRemaining }}</p>
     <div class="sky-wrapper">
       <div class="maps-container">
         <SkyChart />

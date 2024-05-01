@@ -42,7 +42,7 @@ const selectedFilter = ref('')
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 1.25em;
+    padding: 3em;
 }
 .aladin-container, .controls-container {
     flex: 1;
@@ -59,5 +59,10 @@ input, select {
     padding: 0.5em;
     margin-top: 0.125em;
     border: 1px solid gray;
+}
+@media (max-width: 1200px) {
+input, select {
+    width: 50%;
+}
 }
 </style>
