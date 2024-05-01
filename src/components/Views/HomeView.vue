@@ -15,9 +15,9 @@ function hideView () {
             <div class="columns">
                 <div class="column">
                     <router-link to="/realtime" class="route">
-                        <div class="card">
+                        <div class="card highlight-box">
                             <div class="card-content is-clickable">
-                                <FontAwesomeIcon icon="fa-solid fa-book" class="red icon-highlight" />
+                                <FontAwesomeIcon icon="fa-solid fa-gamepad" class="blue icon-highlight" />
                                 <h3>Remote control a telescope</h3>
                             </div>
                         </div>
@@ -25,7 +25,7 @@ function hideView () {
                 </div>
                 <div class="column">
                     <div class="card">
-                        <div class="card-content">
+                        <div class="card-content highlight-box">
                             <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="red icon-highlight" />
                             <h3>Schedule an observation</h3>
                         </div>

@@ -41,28 +41,24 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Unica One', sans-serif;
+  text-transform: uppercase;
+  color: $off-white;
 }
 
 h1 {
     font-size:3.5em;
-    color: $off-white;
-
   }
   h2 {
     font-size:2.75em;
-    color: $off-white;
 }
   h3 {
     font-size:2.25em;
-    color: $off-white;
   }
   h4{
     font-size:1.75em;
-    color: $off-white;
   }
   h5{
     font-size: 1.125em;
-    color: $off-white;
   }
 
 p {
@@ -109,6 +105,11 @@ nav {
 
 .green-bg{
     background-color: $green;
+}
+
+.highlight-box {
+    background-color: $grey-level2;
+    text-align: center;
 }
 
 [class^="icon-"], [class*=" icon-"] {

@@ -55,12 +55,12 @@ function closeHomeView () {
                 <h1>Observe</h1>
             </div>
             <div class="column">
-                <div class="tabs">
+                <div class="tabs is-left">
                 <ul>
-                <li class="is-active"><a>Dashboard</a></li>
-                <li><a>Real-Time</a></li>
-                <li><a>Schedule</a></li>
-                <li><a>Images</a></li>
+                  <li class="is-active"><a>Dashboard</a></li>
+                  <li><a>Real-Time</a></li>
+                  <li><a>Schedule</a></li>
+                  <li><a>Images</a></li>
             </ul>
             </div>
             </div>
