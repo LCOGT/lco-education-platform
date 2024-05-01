@@ -32,6 +32,7 @@ $input-border-color: transparent;
 $input-shadow: none;
 
 $font-stack: "Noto Sans", sans-serif;
+$font-headers: 'Unica One', sans-serif;
 
 body {
   font: 100% $font-stack;
@@ -39,7 +40,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Unica One', sans-serif;
+  font-family: $font-headers;
   text-transform: uppercase;
   color: $off-white;
 }
@@ -114,6 +115,16 @@ nav {
     color: $off-white
 }
 
+/* Highlight boxes */
+
+.highlight-title {
+    color: $off-white;
+    font-family: $font-headers;
+    font-size: 1.75rem;
+    text-transform: uppercase;
+    padding: 0.5em 0;
+}
+
 .highlight-box {
     background-color: $grey-level2;
     text-align: center;
@@ -134,15 +145,13 @@ nav {
     font-size: 75%;
 }
 
-.bookings {
-    margin: 3em 0;
+.bookings, .observations {
+    margin: 1em 0;
     padding: 1em;
 }
-.booking {
-    margin:0.2em 0;
-}
 
-.observation-summary {
+
+.table-summary {
     display: table; 
     width: 100%;
     border-collapse: separate;

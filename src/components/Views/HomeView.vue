@@ -18,7 +18,7 @@ function hideView () {
                         <div class="card highlight-box">
                             <div class="card-content is-clickable">
                                 <FontAwesomeIcon icon="fa-solid fa-gamepad" class="blue icon-highlight" />
-                                <h3>Remote control a telescope</h3>
+                                <div class="highlight-title">Remote control a telescope</div>
                             </div>
                         </div>
                     </router-link>
@@ -27,7 +27,7 @@ function hideView () {
                     <div class="card">
                         <div class="card-content highlight-box">
                             <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="red icon-highlight" />
-                            <h3>Schedule an observation</h3>
+                            <div class="highlight-title">Schedule an observation</div>
                         </div>
                     </div>
                 </div>

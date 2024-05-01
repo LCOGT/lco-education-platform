@@ -17,7 +17,7 @@ const items = ref([
 ])
 
 const observations = ref([
-  { id: 1, title: 'M83', progress: 10 },
+  { id: 1, title: 'M83', progress: 10, state: 'scheduled' },
   { id: 2, title: 'NGC891', progress: 30 },
   { id: 3, title: 'Andromeda in RGB', progress: 80 },
   { id: 4, title: 'M16', progress: 30 }
@@ -27,17 +27,19 @@ const observations = ref([
 
 <template>
     <button class="button red-bg" @click="redirectToRTI"> Book Slot </button>
-    <div class="bookings grey-bg">
-        <h3 class="upcoming-bookings-text">Upcoming Bookings</h3>
-        <div class="booking" v-for="({id, date, telescope}) in items" :key="id">
-            <p class="booking-text"><a >{{ date }}</a> - {{ telescope }}</p>
+    <div class="bookings">
+        <h3>Upcoming Bookings</h3>
+        <div class="table-summary">
+        <div v-for="({id, date, telescope}) in items" :key="id">
+            <div><a>{{ date }}</a></div><div>{{ telescope }}</div>
+        </div>
         </div>
     </div>
     <button class="button red-bg">Schedule Observations</button>
 
     <div class="observations">
         <h3>Scheduled Observations</h3>
-        <div class="observation-summary">
+        <div class="table-summary">
             <div v-for="({id, title, progress}) in observations" :key="id">
                 <div>{{ title }}</div><div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
             </div>
