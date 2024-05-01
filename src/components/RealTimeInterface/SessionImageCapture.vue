@@ -6,12 +6,31 @@ const exposureTime = ref('')
 const exposureCount = ref('')
 const selectedFilter = ref('')
 
+const aladinRef = ref(null)
+
+function changeFov (fov) {
+  if (aladinRef.value && aladinRef.value.setFov) {
+    aladinRef.value.setFov(fov)
+  }
+}
+
 </script>
 
 <template>
     <div class="wrapper">
         <div class="aladin-container">
             <AladinSkyMap ref="aladinRef" />
+            <div class="mosaic-wrapper">
+                <p class="mosaic"> Mosaic </p>
+                <div class="text-wrapper">
+                    <span class="material-icons-round icon" @click="changeFov(1.0)">square</span>
+                    <p class="mosaic">Single shot</p>
+                </div>
+                <div class="text-wrapper">
+                    <span class="material-icons-round icon" @click="changeFov(2.0)">grid_view</span>
+                    <p class="mosaic">2 x 2 mosaic</p>
+                </div>
+            </div>
         </div>
         <div class="controls-container">
             <div class="input-group">
@@ -42,10 +61,30 @@ const selectedFilter = ref('')
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 3em;
+    padding: 2em 0 0 7em;
 }
 .aladin-container, .controls-container {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.mosaic-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-self:flex-start;
+    margin-top: 1em;
+}
+.text-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+p.mosaic {
+    cursor: default;
+    font-size: 1.5em;
+}
+.icon {
+    font-size: 2.5em;
+    cursor: pointer;
 }
 .input-group {
     margin-bottom: 0.625em;
