@@ -31,7 +31,7 @@ function hideView () {
                         </div>
                     </div>
                 </div>
-        <button class="close-button" @click="hideView">x</button>
+            <button class="close-button" @click="hideView">x</button>
             </div>
         </div>
     </div>

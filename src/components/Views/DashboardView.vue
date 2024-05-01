@@ -5,17 +5,14 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 </script>
 
 <template>
-    <div class="dashboard-container">
-        <MyGallery />
-        <UpcomingBookings />
+    <div class="container">
+        <div class="columns">
+            <div class="column is-three-fifths">
+                <MyGallery />
+            </div>
+            <div class="column">
+                <UpcomingBookings />
+            </div>
+        </div>
     </div>
 </template>
-
-<style scoped>
-.dashboard-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    width: 100%;
-}
-</style>

@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import AboutView from './components/Views/AboutView.vue'
 import HomeView from './components/Views/HomeView.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const showNavTabs = ref(false)
 
@@ -40,7 +41,9 @@ function closeHomeView () {
     <a class="navbar-item" href="/">Learn</a>
     <a class="navbar-item" href="/">Observe</a>
     <a class="navbar-item" href="/">DataLab</a>
-    <a class="navbar-item button" href="/">Login</a>
+    <div class="buttons">
+      <a class="navbar-item button red-bg" href="/">Login</a>
+    </div>
   </div>
 </div>
 </nav>
@@ -50,17 +53,17 @@ function closeHomeView () {
   <div v-else-if="showNavTabs">
   <section class="hero">
     <div class="container">
-        <div class="columns">
+        <div class="columns is-vcentered">
             <div class="column is-one-quarter">
-                <h1>Observe</h1>
+                <h1>Observe  <FontAwesomeIcon icon="fa-solid fa-chevron-right" class="blue small" /></h1>
             </div>
             <div class="column">
                 <div class="tabs is-left">
                 <ul>
-                  <li class="is-active"><a>Dashboard</a></li>
-                  <li><a>Real-Time</a></li>
-                  <li><a>Schedule</a></li>
-                  <li><a>Images</a></li>
+                  <li><router-link to="/dashboard" class="is-active">Dashboard</router-link></li>
+                  <li><router-link to="/realtime">Real Time</router-link></li>
+                  <li><router-link to="/schedule">Schedule</router-link></li>
+                  <li><router-link to="/images">Images</router-link></li>
             </ul>
             </div>
             </div>

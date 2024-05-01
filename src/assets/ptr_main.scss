@@ -1,7 +1,7 @@
 @charset "utf-8";
 
 // Import a Google Font
-@import url('https://fonts.googleapis.com/css2?family=Unica+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Unica+One&display=swap');
 
 // Set your brand colors
 $blue: #00ADEF;
@@ -14,7 +14,7 @@ $grey-level3: #192026;
 $grey-level4: #13181D;
 
 // Update Bulma's global variables
-$family-sans-serif: "Nunito", sans-serif;
+$family-sans-serif: "Noto Sans", sans-serif;
 $grey-dark: $grey-level3;
 $grey-light: $grey-level1;
 $primary: $blue;
@@ -22,6 +22,8 @@ $link: $red;
 $widescreen-enabled: false;
 $fullhd-enabled: false;
 $bulma-navbar-height: 8rem;
+$tabs-border-bottom-color: $blue;
+$bulma-progress-value-background-color: $green;
 
 // Update some of Bulma's component variables
 $body-background-color: $grey-level2;
@@ -29,14 +31,11 @@ $control-border-width: 2px;
 $input-border-color: transparent;
 $input-shadow: none;
 
-$font-stack: Helvetica, sans-serif;
-$primary-color: #333;
-
-
+$font-stack: "Noto Sans", sans-serif;
 
 body {
   font: 100% $font-stack;
-  color: $primary-color;
+  color: $off-white;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -89,6 +88,7 @@ nav {
 
 .red-bg{
     background-color: $red;
+    color: $off-white
 }
 
 .blue {
@@ -97,6 +97,7 @@ nav {
 
 .blue-bg{
     background-color: $blue;
+    color: $off-white
 }
 
 .green{
@@ -105,6 +106,12 @@ nav {
 
 .green-bg{
     background-color: $green;
+    color: $off-white
+}
+
+.grey-bg{
+    background-color: $grey-level2;
+    color: $off-white
 }
 
 .highlight-box {
@@ -122,3 +129,33 @@ nav {
     padding: 0.5em 0;
     text-align: center;
 }
+
+.small {
+    font-size: 75%;
+}
+
+.bookings {
+    margin: 3em 0;
+    padding: 1em;
+}
+.booking {
+    margin:0.2em 0;
+}
+
+.observation-summary {
+    display: table; 
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.2rem;
+    div { 
+        display: table-row; 
+        background-color: $grey-level2;
+        color: $off-white;
+        div { 
+            display: table-cell;
+            padding: 5px;
+            width: 50%;
+        }
+    }
+}
+

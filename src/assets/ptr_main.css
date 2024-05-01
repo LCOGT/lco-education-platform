@@ -1,16 +1,43 @@
-@import url("https://fonts.googleapis.com/css2?family=Unica+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Unica+One&display=swap");
 body {
-  font: 100% Helvetica, sans-serif;
-  color: #333;
+  font: 100% "Noto Sans", sans-serif;
+  color: #fcfcfc;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: "Unica One", sans-serif;
+  text-transform: uppercase;
+  color: #fcfcfc;
+}
+
+h1 {
+  font-size: 3.5em;
+}
+
+h2 {
+  font-size: 2.75em;
+}
+
+h3 {
+  font-size: 2.25em;
+}
+
+h4 {
+  font-size: 1.75em;
+}
+
+h5 {
+  font-size: 1.125em;
 }
 
 p {
   font-size: 1.2rem;
-  color: #ffffff;
+  color: #fcfcfc;
+}
+
+section {
+  padding: 2rem;
+  margin-bottom: 2rem;
 }
 
 section.highlight {
@@ -22,6 +49,82 @@ nav {
 }
 nav .navbar {
   min-height: 2rem;
+}
+
+.red {
+  color: #EF4123;
+}
+
+.red-bg {
+  background-color: #EF4123;
+  color: #fcfcfc;
+}
+
+.blue {
+  color: #00ADEF;
+}
+
+.blue-bg {
+  background-color: #00ADEF;
+  color: #fcfcfc;
+}
+
+.green {
+  color: #A6CE39;
+}
+
+.green-bg {
+  background-color: #A6CE39;
+  color: #fcfcfc;
+}
+
+.grey-bg {
+  background-color: #262e35;
+  color: #fcfcfc;
+}
+
+.highlight-box {
+  background-color: #262e35;
+  text-align: center;
+}
+
+[class^=icon-], [class*=" icon-"] {
+  display: inline-block;
+  width: 100%;
+}
+
+.icon-highlight {
+  font-size: 3rem;
+  padding: 0.5em 0;
+  text-align: center;
+}
+
+.small {
+  font-size: 75%;
+}
+
+.bookings {
+  margin: 3em 0;
+  padding: 1em;
+}
+
+.booking {
+  margin: 0.2em 0;
+}
+
+.observation-summary {
+  display: table;
+  width: 100%;
+}
+.observation-summary div {
+  display: table-row;
+  background-color: #262e35;
+  color: #fcfcfc;
+}
+.observation-summary div div {
+  display: table-cell;
+  padding: 5px;
+  width: 50%;
 }
 
 /*# sourceMappingURL=ptr_main.css.map */
