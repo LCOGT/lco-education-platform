@@ -1,6 +1,6 @@
 <script setup>
 import { defineEmits } from 'vue'
-import calendar from '../../assets/Icons/Calendar.png'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emit = defineEmits(['close'])
 
@@ -17,8 +17,8 @@ function hideView () {
                     <router-link to="/realtime" class="route">
                         <div class="card">
                             <div class="card-content is-clickable">
-                                <FontAwesomeIcon icon={faPhone} />
-                                <p>Remote control a telescope</p>
+                                <FontAwesomeIcon icon="fa-solid fa-book" class="red icon-highlight" />
+                                <h3>Remote control a telescope</h3>
                             </div>
                         </div>
                     </router-link>
@@ -26,8 +26,8 @@ function hideView () {
                 <div class="column">
                     <div class="card">
                         <div class="card-content">
-                            <img :src="calendar"/>
-                            <p>Schedule an observation</p>
+                            <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="red icon-highlight" />
+                            <h3>Schedule an observation</h3>
                         </div>
                     </div>
                 </div>

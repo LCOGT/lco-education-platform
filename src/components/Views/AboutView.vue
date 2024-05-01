@@ -18,7 +18,7 @@ function emitObserve () {
                     <div class="column">
                         <div class="card">
                             <div class="card-content">
-                                <FontAwesomeIcon icon="fa-solid fa-book" class="red highlight" />
+                                <FontAwesomeIcon icon="fa-solid fa-book" class="red icon-highlight" />
                                 <h3>Learn Astronomy</h3>
                                 <p>Use Photon Ranch in Real Time or schedule observations</p>
                             </div>
@@ -28,7 +28,7 @@ function emitObserve () {
                     <div class="column" @click="emitObserve">
                         <div class="card">
                             <div class="card-content is-clickable">
-                                <FontAwesomeIcon icon="fa-solid fa-star" class="blue" />
+                                <FontAwesomeIcon icon="fa-solid fa-star" class="blue icon-highlight" />
 
                         <h3>Observe</h3>
                         <p>Explore astronomy with our activities linked to observing</p>
@@ -38,7 +38,7 @@ function emitObserve () {
                     <div class="column">
                         <div class="card">
                             <div class="card-content">
-                                <FontAwesomeIcon icon="fa-solid fa-chart-line" class="green" />
+                                <FontAwesomeIcon icon="fa-solid fa-chart-line" class="green icon-highlight" />
 
                         <h3>Data Lab</h3>
                         <p>Analyze your data using browser based tools</p>

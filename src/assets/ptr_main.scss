@@ -111,7 +111,13 @@ nav {
     background-color: $green;
 }
 
+[class^="icon-"], [class*=" icon-"] {
+    display: inline-block;
+    width: 100%;
+}
+
 .icon-highlight {
-    font-size: 2rem;
+    font-size: 3rem;
+    padding: 0.5em 0;
     text-align: center;
 }
