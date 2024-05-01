@@ -6,6 +6,7 @@ import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 
 const timeRemaining = ref(20)
 const aladinRef = ref(null)
+// TO DO: Save these values in the store
 const ra = ref('')
 const dec = ref('')
 
