@@ -32,7 +32,6 @@ const selectedFilter = ref('')
     flex-direction: row;
     align-items: center;
     justify-items: space-between;
-    flex: 0.7 0.3;
 }
 .options-wrapper {
     display: flex;
