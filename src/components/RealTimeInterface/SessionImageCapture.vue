@@ -10,6 +10,7 @@ const selectedFilter = ref('')
 
 const aladinRef = ref(null)
 
+// TO DO: add more conditions where we check for ranges and valid values
 const allFieldsFilled = computed(() => {
   const filled = exposureTime.value.trim() !== '' && exposureCount.value.trim() !== '' && selectedFilter.value.trim() !== ''
   emits('update:renderGallery', filled)
