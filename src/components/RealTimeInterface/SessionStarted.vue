@@ -4,6 +4,7 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
+import MyGallery from '../RealTimeInterface/MyGallery.vue'
 
 const timeRemaining = ref(20)
 const aladinRef = ref(null)
@@ -64,11 +65,11 @@ function goToLocation () {
     <SessionImageCapture @update:renderGallery="renderGallery = $event"/>
     <v-btn class="go-button" color="indigo" @click="captureImages = true" :disabled="!renderGallery" >GO</v-btn>
   </div>
-  <div v-else-if="captureImages === true && progressBar <= 100">
+  <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
   </div>
   <div v-if="progressBar === 100">
-    <p>Hello world</p>
+    <MyGallery />
   </div>
 </template>
 
