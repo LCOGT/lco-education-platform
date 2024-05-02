@@ -17,8 +17,6 @@ function handleProgressUpdate (progress) {
   progressBar.value = progress
 }
 
-// let timeRemainingInterval
-
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 
