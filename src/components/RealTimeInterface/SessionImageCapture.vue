@@ -1,6 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, defineEmits, computed, watch } from 'vue'
 import AladinSkyMap from './AladinSkyMap.vue'
+
+const emits = defineEmits(['update:renderGallery'])
 
 const exposureTime = ref('')
 const exposureCount = ref('')
@@ -8,11 +10,22 @@ const selectedFilter = ref('')
 
 const aladinRef = ref(null)
 
+// TO DO: add more conditions where we check for ranges and valid values
+const allFieldsFilled = computed(() => {
+  const filled = exposureTime.value.trim() !== '' && exposureCount.value.trim() !== '' && selectedFilter.value.trim() !== ''
+  emits('update:renderGallery', filled)
+  return filled
+})
+
 function changeFov (fov) {
   if (aladinRef.value && aladinRef.value.setFov) {
     aladinRef.value.setFov(fov)
   }
 }
+
+watch([exposureTime, exposureCount, selectedFilter], () => {
+  emits('update:renderGallery', allFieldsFilled.value)
+})
 
 </script>
 
