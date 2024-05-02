@@ -11,6 +11,7 @@ const handleViewChange = (view) => {
   currentView.value = view
 }
 
+// TO DO: Instead of having a set time, get the actual length of the time
 const countdown = setInterval(() => {
   if (currentView.value === 'sessionstarted') {
     timeRemaining.value--
@@ -27,10 +28,10 @@ const countdown = setInterval(() => {
     <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
     <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
     <div v-else-if="currentView === 'sessionstarted'">
-    <h2>Real Time Session</h2>
-    <p>You are controlling Eltham College telescope 1 in Australia</p>
-    <p>Time Remaining in session: {{ timeRemaining }}</p>
-    <SessionStarted @changeView="handleViewChange" />
+        <h2>Real Time Session</h2>
+        <p>You are controlling Eltham College telescope 1 in Australia</p>
+        <p>Time Remaining in session: {{ timeRemaining }}</p>
+        <SessionStarted @changeView="handleViewChange" />
     </div>
 </div>
 </template>
