@@ -5,17 +5,32 @@ import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
 const currentView = ref('scheduling')
+const timeRemaining = ref(20)
 
 const handleViewChange = (view) => {
   currentView.value = view
 }
 
+const countdown = setInterval(() => {
+  if (currentView.value === 'sessionstarted') {
+    timeRemaining.value--
+    if (timeRemaining.value === 0) {
+      clearInterval(countdown)
+    }
+  }
+}, 1000)
+
 </script>
 
 <template>
-    <div>
-        <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
-        <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
-        <SessionStarted v-else-if="currentView === 'sessionstarted'" @changeView="handleViewChange" />
+<div>
+    <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
+    <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
+    <div v-else-if="currentView === 'sessionstarted'">
+    <h2>Real Time Session</h2>
+    <p>You are controlling Eltham College telescope 1 in Australia</p>
+    <p>Time Remaining in session: {{ timeRemaining }}</p>
+    <SessionStarted @changeView="handleViewChange" />
     </div>
+</div>
 </template>
