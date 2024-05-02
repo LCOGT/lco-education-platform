@@ -16,6 +16,8 @@ let timeRemainingInterval
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 
+const renderGallery = ref(false)
+
 onMounted(() => {
   timeRemainingInterval = setInterval(() => {
     timeRemaining.value--
@@ -53,8 +55,8 @@ function goToLocation () {
     <v-btn :disabled="ra === '' || dec === ''" color="indigo" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture />
-    <v-btn class="go-button" color="indigo" @click="captureImages = true">GO</v-btn>
+    <SessionImageCapture @update:renderGallery="renderGallery = $event"/>
+    <v-btn class="go-button" color="indigo" @click="captureImages = true" :disabled="!renderGallery" >GO</v-btn>
   </div>
   <div v-else-if="captureImages === true">
     <RealTimeGallery />
