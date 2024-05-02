@@ -16,7 +16,6 @@ onMounted(() => {
     showFullscreenControl: false,
     showLayersControl: false,
     showGotoControl: false,
-    showLocation: false,
     showFrame: false
   })
     .then(aladin => {
