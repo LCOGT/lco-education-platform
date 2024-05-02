@@ -11,6 +11,12 @@ const aladinRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 
+const progressBar = ref(0)
+
+function handleProgressUpdate (progress) {
+  progressBar.value = progress
+}
+
 let timeRemainingInterval
 
 const moveTelescope = ref(false)
@@ -58,8 +64,11 @@ function goToLocation () {
     <SessionImageCapture @update:renderGallery="renderGallery = $event"/>
     <v-btn class="go-button" color="indigo" @click="captureImages = true" :disabled="!renderGallery" >GO</v-btn>
   </div>
-  <div v-else-if="captureImages === true">
-    <RealTimeGallery />
+  <div v-else-if="captureImages === true && progressBar <= 100">
+    <RealTimeGallery @updateProgress="handleProgressUpdate" />
+  </div>
+  <div v-if="progressBar === 100">
+    <p>Hello world</p>
   </div>
 </template>
 
