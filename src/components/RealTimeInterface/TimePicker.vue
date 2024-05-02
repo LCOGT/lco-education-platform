@@ -1,10 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
-import SessionStatus from './SessionStatus.vue'
+import { ref, computed, watch, defineEmits } from 'vue'
 
 const date = ref(null)
 const time = ref(null)
-const currentView = ref('scheduling')
+const emits = defineEmits(['changeView'])
 
 // Automatically format the date whenever it changes
 const formattedDate = computed(() => {
@@ -29,13 +28,13 @@ const selectTime = (selectedTime) => {
   time.value = selectedTime
 }
 
+// TO DO: change the status dynamically
 const bookDate = () => {
-  currentView.value = 'sessionstatus'
+  emits('changeView', 'sessionpending')
 }
 </script>
 
 <template>
-<div v-if="currentView === 'scheduling'">
     <h2>Book your real-time session</h2>
     <p class="date-text">Select a date and time:</p>
     <div class="datepicker">
@@ -51,10 +50,6 @@ const bookDate = () => {
         <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
         <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
     </div>
-</div>
-<div v-else-if="currentView === 'sessionstatus'">
-    <SessionStatus />
-</div>
 </template>
 
 <style scoped>

@@ -1,12 +1,11 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
 import MyGallery from '../RealTimeInterface/MyGallery.vue'
 
-const timeRemaining = ref(20)
 const aladinRef = ref(null)
 // TO DO: Save these values in the store
 const ra = ref('')
@@ -18,21 +17,10 @@ function handleProgressUpdate (progress) {
   progressBar.value = progress
 }
 
-let timeRemainingInterval
-
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 
 const renderGallery = ref(false)
-
-onMounted(() => {
-  timeRemainingInterval = setInterval(() => {
-    timeRemaining.value--
-    if (timeRemaining.value === 0) {
-      clearInterval(timeRemainingInterval)
-    }
-  }, 1000)
-})
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
@@ -44,9 +32,6 @@ function goToLocation () {
 }
 </script>
 <template>
-  <h2>Real Time Session</h2>
-  <p>You are controlling Eltham College telescope 1 in Australia</p>
-  <p>Time Remaining in session: {{ timeRemaining }}</p>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="sky-wrapper">
       <div class="maps-container">
