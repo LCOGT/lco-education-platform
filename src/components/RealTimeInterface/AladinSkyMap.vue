@@ -13,10 +13,9 @@ onMounted(() => {
     cooFrame: 'ICRSd',
     showProjectionControl: false,
     showZoomControl: true,
-    // ask Edward
-    showFullscreenControl: true,
+    showFullscreenControl: false,
     showLayersControl: false,
-    showGotoControl: true,
+    showGotoControl: false,
     showFrame: false
   })
     .then(aladin => {
