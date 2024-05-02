@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineEmits } from 'vue'
 import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 
 const progressBar = ref(0)
+const emits = defineEmits(['updateProgress'])
 
 const numberOfThumbnails = computed(() => {
   return Math.floor(progressBar.value / 10)
@@ -11,6 +12,7 @@ const numberOfThumbnails = computed(() => {
 onMounted(() => {
   const interval = setInterval(() => {
     progressBar.value += 10
+    emits('updateProgress', progressBar.value)
     if (progressBar.value >= 100) {
       clearInterval(interval)
     }
