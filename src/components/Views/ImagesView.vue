@@ -4,9 +4,8 @@ import MyGallery from '../Images/MyGallery.vue'
 
 <template>
   <div>
-    <h2>Images</h2>
-    <p>View images taken during your session</p>
-    <p>HELLO WORLD</p>
+    <h2>Photon Ranch Gallery</h2>
+    <v-btn color="indigo">Image Archive</v-btn>
     <MyGallery />
   </div>
 </template>
