@@ -10,7 +10,12 @@ import MyGallery from '../Images/MyGallery.vue'
         <v-btn color="indigo"><a href="https://archive.photonranch.org/" target="_blank" class="ptr-archive">Image Archive</a></v-btn>
     </div>
     <div class="gallery-content">
-      <MyGallery />
+        <MyGallery class="my-gallery"/>
+        <div class="button-wrapper">
+            <v-btn color="indigo" class="button">Load more</v-btn>
+            <v-btn color="indigo" class="button">Download</v-btn>
+            <v-btn color="indigo" class="button">Open in DataLab</v-btn>
+        </div>
     </div>
   </div>
 </template>
@@ -30,6 +35,19 @@ import MyGallery from '../Images/MyGallery.vue'
 }
 .gallery-content {
   display: flex;
+  width: 100%;
+}
+.my-gallery {
   width: 50%;
+}
+.button-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+.button {
+    width: 20%;
+    margin: 1em;
+    cursor: pointer;
 }
 </style>
