@@ -1,6 +1,9 @@
 <script setup>
 import MyGallery from '../Images/MyGallery.vue'
 
+// TO DO: Add actual download functionality
+// Store images in store key is project name and value is an array of images
+// Change image archive to actual redirection
 </script>
 
 <template>
