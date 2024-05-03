@@ -7,7 +7,7 @@ import MyGallery from '../Images/MyGallery.vue'
   <div class="gallery-container">
     <div class="gallery-header">
         <h2>Photon Ranch Gallery</h2>
-        <v-btn color="indigo"><a href="https://archive.photonranch.org/" target="_blank" class="ptr-archive">Image Archive</a></v-btn>
+        <v-btn color="indigo" class="archive-button"><a href="https://archive.photonranch.org/" target="_blank" class="ptr-archive">Image Archive</a></v-btn>
     </div>
     <div class="gallery-content">
         <MyGallery class="my-gallery"/>
@@ -27,7 +27,11 @@ import MyGallery from '../Images/MyGallery.vue'
   height: 100%;
 }
 .gallery-header {
-  margin-bottom: 1em;
+  margin: 1em;
+}
+.archive-button {
+  display: flex;
+  margin-left: 1em;
 }
 .ptr-archive {
   text-decoration: none;
