@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
-import MyGallery from '../RealTimeInterface/MyGallery.vue'
+import ImagesView from '../Views/ImagesView.vue'
 
+const router = useRouter()
 const aladinRef = ref(null)
 // TO DO: Save these values in the store
 const ra = ref('')
@@ -15,6 +17,9 @@ const progressBar = ref(0)
 
 function handleProgressUpdate (progress) {
   progressBar.value = progress
+  if (progress === 100) {
+    router.push('/images')
+  }
 }
 
 const moveTelescope = ref(false)
@@ -52,9 +57,6 @@ function goToLocation () {
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
-  </div>
-  <div v-if="progressBar === 100">
-    <MyGallery />
   </div>
 </template>
 

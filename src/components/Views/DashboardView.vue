@@ -1,13 +1,13 @@
 <script setup>
-import MyGallery from '../Dashboard/MyGallery.vue'
+import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 
 </script>
 
 <template>
     <div class="dashboard-container">
-        <MyGallery />
-        <UpcomingBookings />
+        <MyGallery class="my-gallery"/>
+        <UpcomingBookings class="upcoming-bookings"/>
     </div>
 </template>
 
@@ -17,5 +17,9 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
     flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
+}
+
+.my-gallery, .upcoming-bookings {
+    width: 48%;
 }
 </style>

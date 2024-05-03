@@ -1,6 +1,7 @@
 <script setup>
 import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 
+// TO DO: get images from api and sort them by
 const numberOfThumbnails = 10
 </script>
 
@@ -11,12 +12,29 @@ const numberOfThumbnails = 10
 </template>
 
 <style scoped>
-.thumbnail {
-    width: 12em;
+.image-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    padding: 1em;
+    box-sizing: border-box;
 }
+
+.thumbnail {
+    flex: 1 1 12em;
+    max-width: 12em;
+    height: auto;
+}
+
 @media (max-width: 1200px) {
-.thumbnail {
-    width: 8em;
+    .thumbnail {
+        max-width: 9em;
+    }
 }
+
+@media (max-width: 900px) {
+    .thumbnail {
+        max-width: 7em;
+    }
 }
 </style>
