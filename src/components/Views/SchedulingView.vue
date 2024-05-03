@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 
+// TO DO (near future): Save this value in the store
+// TO DO (future): Get level depending on course completion
 const level = ref('')
 
 </script>
