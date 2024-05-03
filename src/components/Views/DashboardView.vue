@@ -20,14 +20,6 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 }
 
 .my-gallery, .upcoming-bookings {
-    /* flex-basis: 48%; */
     width: 48%;
-}
-
-@media (max-width: 900px) {
-    .my-gallery, .upcoming-bookings {
-        flex-basis: 100%;
-        width: 100%;
-    }
 }
 </style>
