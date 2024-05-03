@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 
 // TO DO (near future): Save this value in the store
 // TO DO (future): Get level depending on course completion
@@ -17,7 +18,7 @@ const level = ref('')
         <p>Beginner level</p>
     </div>
     <div v-else-if="level === 'advanced'">
-        <p>Advanced Mode</p>
+        <AdvancedScheduling />
     </div>
 </template>
 
