@@ -57,4 +57,9 @@ import MyGallery from '../Images/MyGallery.vue'
     margin: 1em;
     cursor: pointer;
 }
+@media (max-width: 1200px) {
+  .button {
+    width: 40%;
+  }
+}
 </style>

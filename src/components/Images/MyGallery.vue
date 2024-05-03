@@ -28,7 +28,7 @@ const numberOfThumbnails = 10
 
 @media (max-width: 1200px) {
     .thumbnail {
-        max-width: 11em;
+        max-width: 9em;
     }
 }
 
