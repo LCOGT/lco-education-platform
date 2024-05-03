@@ -6,8 +6,8 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 
 <template>
     <div class="dashboard-container">
-        <MyGallery />
-        <UpcomingBookings />
+        <MyGallery class="my-gallery"/>
+        <UpcomingBookings class="upcoming-bookings"/>
     </div>
 </template>
 
@@ -17,5 +17,17 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
     flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
+}
+
+.my-gallery, .upcoming-bookings {
+    /* flex-basis: 48%; */
+    width: 48%;
+}
+
+@media (max-width: 900px) {
+    .my-gallery, .upcoming-bookings {
+        flex-basis: 100%;
+        width: 100%;
+    }
 }
 </style>
