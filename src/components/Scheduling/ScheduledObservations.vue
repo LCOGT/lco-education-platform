@@ -1,4 +1,5 @@
 <script setup>
+// TO DO: Save project details to store and display here
 </script>
 
 <template>
