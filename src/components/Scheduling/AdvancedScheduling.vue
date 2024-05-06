@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, defineEmits } from 'vue'
 
 // TO DO: Save project details to store
 const projectName = ref('')
@@ -8,6 +8,8 @@ const targets = reactive([{ name: '', saved: false }])
 const settings = reactive([{ filter: '', exposure: '', count: '', saved: false }])
 
 const showNext = ref(0)
+
+const emits = defineEmits(['scheduled'])
 
 const saveProjectName = () => {
   if (projectName.value.trim() !== '') {
@@ -41,7 +43,7 @@ const addNewTarget = () => {
 
 const saveSettings = (index) => {
   const setting = settings[index]
-  if (setting.filter !== 'Choose a filter' && setting.exposure.trim() !== '' && setting.count.trim() !== '') {
+  if (setting.filter !== 'Choose a filter' && setting.filter !== '' && setting.exposure.trim() !== '' && setting.count.trim() !== '') {
     setting.saved = true
     showNext.value += 1
   }
@@ -57,11 +59,17 @@ const addNewSettings = () => {
   }
 }
 
+const scheduleObservation = () => {
+  if (nameEntered.value && targets.every(t => t.saved) && settings.every(s => s.saved)) {
+    emits('scheduled')
+  }
+}
+
 </script>
 
 <template>
   <h2>Photon Ranch Scheduling Observation</h2>
-  <div class="input-wrapper" v-if="!nameEntered">
+  <div class="input-wrapper project-wrapper" v-if="!nameEntered">
     <p class="p-text">Project Name:</p>
     <input type="text" v-model="projectName" placeholder="Enter project name" class="scheduling-inputs">
     <v-btn @click="saveProjectName" color="indigo">Save</v-btn>
@@ -112,7 +120,7 @@ const addNewSettings = () => {
     </div>
 </div>
   <v-btn v-if="settings[settings.length - 1].saved" @click="addNewSettings" color="indigo">Add Another Exposure</v-btn>
-  <v-btn :disabled="!nameEntered || !targets.every(t => t.saved) || !settings.every(s => s.saved)" color="indigo">Schedule my observation!</v-btn>
+  <v-btn :disabled="!nameEntered || !targets.every(t => t.saved) || !settings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 
 <style scoped>
