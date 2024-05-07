@@ -1,6 +1,7 @@
 <script setup>
 import { ref, defineEmits } from 'vue'
 
+// TO DO: Save selections to store
 const categories = ref([
   {
     location: 'Deep Space',
