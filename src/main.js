@@ -11,6 +11,7 @@ library.add(faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRig
 
 require('@/assets/ptr_main.scss')
 
+
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedState)
 

@@ -13,10 +13,9 @@ onMounted(() => {
     cooFrame: 'ICRSd',
     showProjectionControl: false,
     showZoomControl: true,
-    // ask Edward
-    showFullscreenControl: true,
+    showFullscreenControl: false,
     showLayersControl: false,
-    showGotoControl: true,
+    showGotoControl: false,
     showFrame: false
   })
     .then(aladin => {
@@ -61,8 +60,17 @@ function goToRaDec (ra, dec) {
   }
 }
 
+function setFov (fov) {
+  if (aladinInstance) {
+    aladinInstance.setFov(fov)
+  } else {
+    console.error('Aladin instance not initialized')
+  }
+}
+
 defineExpose({
-  goToRaDec
+  goToRaDec,
+  setFov
 })
 </script>
 
@@ -78,7 +86,15 @@ defineExpose({
 
 <style scoped>
 .aladin-map {
-  height: 500px;
+  height: 31.25em;
+  width: 30em;
   background-color: #000;
 }
+@media (max-width: 1200px) {
+  .aladin-map {
+    height: 20em;
+    width: 19.7em;
+  }
+}
+
 </style>

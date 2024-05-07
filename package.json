@@ -16,6 +16,7 @@
     "bulma": "^1.0.0",
     "core-js": "^3.8.3",
     "d3-celestial": "^0.7.35",
+    "material-icons": "^1.13.12",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sass": "^1.75.0",
