@@ -24,14 +24,16 @@ const countdown = setInterval(() => {
 </script>
 
 <template>
-<div>
-    <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
-    <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
-    <div v-else-if="currentView === 'sessionstarted'">
-        <h2>Real Time Session</h2>
-        <p>You are controlling Eltham College telescope 1 in Australia</p>
-        <p>Time Remaining in session: {{ timeRemaining }}</p>
-        <SessionStarted @changeView="handleViewChange" />
+  <section>
+    <div class="container">
+        <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
+        <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
+        <div v-else-if="currentView === 'sessionstarted'">
+            <h2>Real Time Session</h2>
+            <p>You are controlling Eltham College telescope 1 in Australia</p>
+            <p>Time Remaining in session: {{ timeRemaining }}</p>
+            <SessionStarted @changeView="handleViewChange" />
+        </div>
     </div>
-</div>
+    </section>
 </template>

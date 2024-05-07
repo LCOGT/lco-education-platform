@@ -16,4 +16,3 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
         </div>
     </div>
 </template>
-

@@ -35,21 +35,27 @@ const bookDate = () => {
 </script>
 
 <template>
-    <h2>Book your real-time session</h2>
-    <p class="date-text">Select a date and time:</p>
-    <div class="datepicker">
-      <v-date-picker color="indigo" v-model="date"/>
+  <h2>Book your real-time session</h2>
+  <div class="columns">
+    <div class="column  is-one-third">
+      <p class="date-text">Select a date and time:</p>
+      <div class="datepicker">
+        <v-date-picker color="indigo" v-model="date"/>
+      </div>
     </div>
-    <div v-if="date && time == null" class="selected-date">
-        <p>Select a time:</p>
-        <v-btn-group>
-            <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
-        </v-btn-group>
+    <div class="column">
+      <div v-if="date && time == null" class="selected-date">
+          <p>Select a time:</p>
+          <v-btn-group>
+              <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
+          </v-btn-group>
+      </div>
+      <div v-if="formattedDate && time">
+          <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
+          <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
+      </div>
     </div>
-    <div v-if="formattedDate && time">
-        <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
-        <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
-    </div>
+  </div>
 </template>
 
 <style scoped>
