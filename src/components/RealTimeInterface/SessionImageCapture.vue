@@ -37,12 +37,20 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
             <div class="mosaic-wrapper">
                 <p class="mosaic"> Mosaic </p>
                 <div class="text-wrapper">
-                    <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
-                    <p class="mosaic">Single shot</p>
+                    <span class="icon-text">
+                        <span class="icon">
+                            <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
+                        </span>
+                        <span>Single</span>
+                    </span>
                 </div>
                 <div class="text-wrapper">
-                    <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
-                    <p class="mosaic">2 x 2 mosaic</p>
+                    <span class="icon-text">
+                    <span class="icon">
+                        <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
+                    </span>
+                    <span>2 x 2 mosaic</span>
+                    </span>
                 </div>
             </div>
         </div>
@@ -105,7 +113,6 @@ p.mosaic {
     font-size: 1.5em;
 }
 .icon {
-    font-size: 2.5em;
     cursor: pointer;
 }
 
