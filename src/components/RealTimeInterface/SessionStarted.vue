@@ -1,31 +1,31 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
+import ImagesView from '../Views/ImagesView.vue'
 
-const timeRemaining = ref(20)
+const router = useRouter()
 const aladinRef = ref(null)
 // TO DO: Save these values in the store
 const ra = ref('')
 const dec = ref('')
 
-let timeRemainingInterval
+const progressBar = ref(0)
+
+function handleProgressUpdate (progress) {
+  progressBar.value = progress
+  if (progress === 100) {
+    router.push('/images')
+  }
+}
 
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 
 const renderGallery = ref(false)
-
-onMounted(() => {
-  timeRemainingInterval = setInterval(() => {
-    timeRemaining.value--
-    if (timeRemaining.value === 0) {
-      clearInterval(timeRemainingInterval)
-    }
-  }, 1000)
-})
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
@@ -37,9 +37,6 @@ function goToLocation () {
 }
 </script>
 <template>
-  <h2>Real Time Session</h2>
-  <p>You are controlling Eltham College telescope 1 in Australia</p>
-  <p>Time Remaining in session: {{ timeRemaining }}</p>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="sky-wrapper">
       <div class="maps-container">
@@ -58,8 +55,8 @@ function goToLocation () {
     <SessionImageCapture @update:renderGallery="renderGallery = $event"/>
     <v-btn class="go-button" color="indigo" @click="captureImages = true" :disabled="!renderGallery" >GO</v-btn>
   </div>
-  <div v-else-if="captureImages === true">
-    <RealTimeGallery />
+  <div v-else-if="captureImages === true && progressBar < 100">
+    <RealTimeGallery @updateProgress="handleProgressUpdate" />
   </div>
 </template>
 

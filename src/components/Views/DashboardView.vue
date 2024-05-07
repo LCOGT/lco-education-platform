@@ -1,5 +1,5 @@
 <script setup>
-import MyGallery from '../Dashboard/MyGallery.vue'
+import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 
 </script>
@@ -16,3 +16,4 @@ import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
         </div>
     </div>
 </template>
+

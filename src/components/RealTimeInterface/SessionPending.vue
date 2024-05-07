@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, defineEmits } from 'vue'
 
-const emits = defineEmits(['update-status'])
+const emits = defineEmits(['changeView'])
 
 const countdown = ref(1)
 
@@ -12,7 +12,7 @@ onMounted(() => {
     countdown.value--
     if (countdown.value === 0) {
       clearInterval(countdownInterval)
-      emits('update-status', 'started')
+      emits('changeView', 'sessionstarted')
     }
   }, 1000)
 })
