@@ -1,6 +1,7 @@
 <script setup>
 import { ref, defineEmits, computed, watch } from 'vue'
 import AladinSkyMap from './AladinSkyMap.vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emits = defineEmits(['update:renderGallery'])
 
@@ -30,67 +31,75 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
 </script>
 
 <template>
-    <div class="wrapper">
-        <div class="aladin-container">
+    <div class="columns">
+        <div class="column is-half">
             <AladinSkyMap ref="aladinRef" />
             <div class="mosaic-wrapper">
                 <p class="mosaic"> Mosaic </p>
                 <div class="text-wrapper">
-                    <span class="material-icons-round icon" @click="changeFov(1.0)">square</span>
+                    <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
                     <p class="mosaic">Single shot</p>
                 </div>
                 <div class="text-wrapper">
-                    <span class="material-icons-round icon" @click="changeFov(2.0)">grid_view</span>
+                    <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
                     <p class="mosaic">2 x 2 mosaic</p>
                 </div>
             </div>
         </div>
-        <div class="controls-container">
-            <div class="input-group">
-                <label for="exposureTime">Exposure Time</label>
-                <input id="exposureTime" type="text" v-model="exposureTime">
+        <div class="column">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Exposure Time</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                    <p class="control is-expanded">
+                        <input id="exposureTime" type="text" class="input" v-model="exposureTime">
+                    </p>
+                    </div>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="exposureCount">Exposure Count</label>
-                <input id="exposureCount" type="text" v-model="exposureCount">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Exposure Count</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                    <p class="control is-expanded">
+                        <input id="exposureCount" type="text" class="input" v-model="exposureCount">
+                    </p>
+                    </div>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="filter">Filter</label>
-                <select id="filter" v-model="selectedFilter">
-                    <option disabled value="">Choose a filter</option>
-                    <option value="Blue">Blue</option>
-                    <option value="Green (V)">Green (V)</option>
-                    <option value="Red">Red</option>
-                    <option value="H-Alpha">H-Alpha</option>
-                </select>
-            </div>
+
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Filter</label>
+                </div>
+                <div class="field-body">
+                    <div class="field is-narrow">
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="filter" v-model="selectedFilter">
+                                <option disabled value="">Choose a filter</option>
+                                <option value="RGB">RGB color</option>
+                                <option value="Blue">Blue</option>
+                                <option value="Green (V)">Green (V)</option>
+                                <option value="Red">Red</option>
+                                <option value="H-Alpha">H-Alpha</option>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
         </div>
     </div>
 </template>
 
 <style scoped>
-.wrapper {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 2em 0 0 7em;
-}
-.aladin-container, .controls-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-.mosaic-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-self:flex-start;
-    margin-top: 1em;
-}
-.text-wrapper {
-    display: flex;
-    flex-direction: row;
-}
+
 p.mosaic {
     cursor: default;
     font-size: 1.5em;
@@ -99,22 +108,5 @@ p.mosaic {
     font-size: 2.5em;
     cursor: pointer;
 }
-.input-group {
-    margin-bottom: 0.625em;
-    text-align: left;
-}
-label {
-    display: block;
-}
-input, select {
-    width: 20%;
-    padding: 0.5em;
-    margin-top: 0.125em;
-    border: 1px solid gray;
-}
-@media (max-width: 1200px) {
-input, select {
-    width: 50%;
-}
-}
+
 </style>

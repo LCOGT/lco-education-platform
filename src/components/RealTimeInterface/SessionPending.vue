@@ -22,6 +22,6 @@ onMounted(() => {
   <div>
     <h2>Session Not Started</h2>
     <p>You are controlling Eltham College telescope 1 in Australia</p>
-    <p>Session starts in {{ countdown }}</p>
+    <p class="green-bg">Session starts in {{ countdown }}</p>
   </div>
 </template>

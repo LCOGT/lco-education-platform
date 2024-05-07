@@ -24,12 +24,14 @@ function hideView () {
                     </router-link>
                 </div>
                 <div class="column">
+                    <router-link to="/schedule" class="route">
                     <div class="card">
                         <div class="card-content highlight-box">
                             <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="red icon-highlight" />
                             <div class="highlight-title">Schedule an observation</div>
                         </div>
                     </div>
+                    </router-link>
                 </div>
             <button class="close-button" @click="hideView">x</button>
             </div>

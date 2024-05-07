@@ -38,18 +38,42 @@ function goToLocation () {
 </script>
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
-    <div class="sky-wrapper">
-      <div class="maps-container">
-        <SkyChart />
-        <AladinSkyMap ref="aladinRef" />
+    <div class="columns">
+        <div class="column is-half">
+          <SkyChart />
       </div>
-      <div class="controls-container">
-        <input type="text" v-model="ra" placeholder="RA">
-        <input type="text" v-model="dec" placeholder="DEC">
-        <button @click="goToLocation">GO</button>
+      <div class="column is-half">
+        <AladinSkyMap ref="aladinRef" />
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Right Ascension</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <p class="control is-expanded">
+                <input class="input" type="text" v-model="ra" placeholder="e.g. 12:01:23">
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Declination</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <p class="control is-expanded">
+                <input class="input" type="text" v-model="dec" placeholder="-23:45:01">
+              </p>
+            </div>
+          </div>
+        </div>
+        <button @click="goToLocation" class="button blue-bg">Search</button>
       </div>
     </div>
-    <v-btn :disabled="ra === '' || dec === ''" color="indigo" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
+    <v-btn :disabled="ra === '' || dec === ''" class="red-bg" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
+
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
     <SessionImageCapture @update:renderGallery="renderGallery = $event"/>

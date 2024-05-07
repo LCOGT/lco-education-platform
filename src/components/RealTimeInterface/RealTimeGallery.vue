@@ -21,73 +21,25 @@ onMounted(() => {
 </script>
 
 <template>
-<div class="wrapper">
-    <div class="thumbnail-container">
+    <div class="columns is-multiline">
+      <div class="column is-one-third" v-for="n in numberOfThumbnails" :key="n">
         <transition-group name="slide-in" tag="div" class="thumbnails">
-        <img v-for="n in numberOfThumbnails" :key="n" :src="thumbnail" class="thumbnail" />
-        </transition-group>
-    </div>
-    <div class="progress-wrapper">
-        <p class="progress">Progress</p>
-        <v-progress-linear
-            v-model="progressBar"
-            :value="progressBar"
-            color="teal"
-            bg-color="grey lighten-3"
-            height="20"
-            buffer-value="100"
-            class="progress-bar"
-        ></v-progress-linear>
-    </div>
-</div>
+        <figure class="image">
+              <img :src="thumbnail" class="thumbnail" />
+            </figure>
+          </transition-group>
+      </div>
+      <div class="column">
+          <p class="progress">Progress</p>
+          <v-progress-linear
+              v-model="progressBar"
+              :value="progressBar"
+              color="teal"
+              bg-color="grey green-bg"
+              height="20"
+              buffer-value="100"
+              class="progress-bar"
+          ></v-progress-linear>
+      </div>
+  </div>
 </template>
-
-<style scoped>
-.wrapper {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-}
-.thumbnail-container {
-    flex: 1;
-    overflow-x: auto;
-    white-space: nowrap;
-    margin-top: 3em;
-}
-.thumbnails {
-    display: flex;
-    align-items: center;
-}
-.thumbnail {
-    width: 12em;
-    margin: 1em;
-    transition: transform 0.5s, opacity 0.5s;
-    display: inline-block;
-}
-.progress-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 5em;
-    margin-bottom: 5em;
-}
-.progress {
-    margin-bottom: 1em;
-}
-.progress-bar {
-  width: 30%;
-}
-.slide-in-enter-active, .slide-in-leave-active {
-  transition: transform 0.5s, opacity 0.5s;
-}
-.slide-in-enter, .slide-in-leave-to{
-  transform: translateX(50px);
-  opacity: 0;
-}
-@media (max-width: 1200px) {
-.thumbnail {
-    width: 8em;
-}
-}
-</style>

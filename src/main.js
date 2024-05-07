@@ -5,9 +5,9 @@ import router from './router/index'
 import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight, faSquare, faThLarge } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight)
+library.add(faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight, faSquare, faThLarge)
 
 require('@/assets/ptr_main.scss')
 

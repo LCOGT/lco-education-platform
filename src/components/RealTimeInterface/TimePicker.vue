@@ -40,7 +40,7 @@ const bookDate = () => {
     <div class="column  is-one-third">
       <p class="date-text">Select a date and time:</p>
       <div class="datepicker">
-        <v-date-picker color="indigo" v-model="date"/>
+        <v-date-picker v-model="date" class="blue-bg"/>
       </div>
     </div>
     <div class="column">
@@ -52,7 +52,7 @@ const bookDate = () => {
       </div>
       <div v-if="formattedDate && time">
           <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
-          <v-btn variant="tonal" color="indigo" v-if="date" @click="bookDate">Book</v-btn>
+          <v-btn variant="tonal"  v-if="date" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
     </div>
   </div>
