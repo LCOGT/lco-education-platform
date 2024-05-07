@@ -1,6 +1,8 @@
 <script setup>
 import { ref, defineEmits } from 'vue'
 
+const emits = defineEmits(['scheduled'])
+
 // TO DO: Save selections to store
 const categories = ref([
   {
@@ -24,8 +26,6 @@ const categories = ref([
     ]
   }
 ])
-
-const emits = defineEmits(['scheduled'])
 
 const objectSelection = ref('')
 const objectSelected = ref(false)
