@@ -23,7 +23,7 @@ const handleScheduled = () => {
         <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
     </div>
     <div v-else-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling/>
+        <BeginnerScheduling @scheduled="handleScheduled"/>
     </div>
     <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling @scheduled="handleScheduled"/>

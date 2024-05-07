@@ -1,32 +1,5 @@
 <script setup>
-import { ref } from 'vue'
-
-const objectSelection = ref('')
-const objectSelected = ref(false)
-
-const targetSelection = ref('')
-const targetSelected = ref(false)
-
-const handleObjectSelection = (option) => {
-  if (option) {
-    objectSelection.value = option
-    objectSelected.value = true
-  } else {
-    objectSelection.value = null
-    objectSelected.value = false
-  }
-}
-
-const handleTargetSelection = (target) => {
-  if (target) {
-    targetSelection.value = target
-    targetSelected.value = true
-  } else {
-    targetSelection.value = null
-    targetSelected.value = false
-  }
-  console.log('Target selected:', targetSelected.value)
-}
+import { ref, defineEmits } from 'vue'
 
 const categories = ref([
   {
@@ -50,6 +23,44 @@ const categories = ref([
     ]
   }
 ])
+
+const emits = defineEmits(['scheduled'])
+
+const objectSelection = ref('')
+const objectSelected = ref(false)
+
+const targetSelection = ref('')
+const targetSelected = ref(false)
+
+const handleObjectSelection = (option) => {
+  if (option) {
+    objectSelection.value = option
+    objectSelected.value = true
+    if (!option.targets) {
+      targetSelected.value = true
+      targetSelection.value = option
+    } else {
+      targetSelected.value = false
+      targetSelection.value = null
+    }
+  } else {
+    objectSelection.value = null
+    objectSelected.value = false
+    targetSelected.value = false
+    targetSelection.value = null
+  }
+}
+
+const handleTargetSelection = (target) => {
+  targetSelection.value = target
+  targetSelected.value = true
+}
+
+const scheduleObservation = () => {
+  if (objectSelected.value && (targetSelected.value || !objectSelection.value.targets)) {
+    emits('scheduled')
+  }
+}
 </script>
 
 <template>
@@ -58,7 +69,7 @@ const categories = ref([
       <div v-for="category in categories" :key="category.location">
         <h3>{{ category.location }}</h3>
         <div v-for="option in category.options" :key="option.object">
-          <v-btn @click="() => handleObjectSelection(option)">
+          <v-btn @click="handleObjectSelection(option)">
             {{ option.object }}
           </v-btn>
         </div>
@@ -66,21 +77,17 @@ const categories = ref([
     </div>
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
         <h3>Scheduling Observation of a {{ objectSelection.object }}</h3>
-        <h4>Choose a target</h4>
         <div v-for="target in objectSelection.targets" :key="target.name">
             <v-btn @click="handleTargetSelection(target)">{{ target.name }} - {{ target.type }}</v-btn>
         </div>
         <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
-    <div v-if="targetSelected || (objectSelected && !targetSelected && !objectSelection.targets)">
-        <h3>Photon Ranch </h3>
+    <div v-if="targetSelected || (objectSelected && !objectSelection.targets)">
+        <h3>Photon Ranch</h3>
         <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
         <h4>Photon Ranch will schedule this for you</h4>
-        <div v-if="objectSelected && !targetSelected && !objectSelection.targets">
-            <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
-            <v-btn  @click="handleTargetSelection(objectSelection)">Schedule Observation</v-btn>
-        </div>
-        <v-btn v-if="objectSelection.targets">Schedule Observation</v-btn>
+        <v-btn @click="scheduleObservation">Schedule my observation!</v-btn>
+        <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
 </template>
 
