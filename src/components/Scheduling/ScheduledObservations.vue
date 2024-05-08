@@ -8,12 +8,3 @@
         <p>Your scheduled observations</p>
     </div>
 </template>
-
-<style scoped>
-h1 {
-    color: red;
-}
-p {
-    color: blue;
-}
-</style>

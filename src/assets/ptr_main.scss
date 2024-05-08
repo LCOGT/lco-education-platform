@@ -34,9 +34,14 @@ $input-shadow: none;
 $font-stack: "Noto Sans", sans-serif;
 $font-headers: 'Unica One', sans-serif;
 
+html {
+  background-color: $grey-level3;
+}
+
 body {
   font: 100% $font-stack;
   color: $off-white;
+  background-color: $grey-level2;
 }
 
 h1, h2, h3, h4, h5, h6 {

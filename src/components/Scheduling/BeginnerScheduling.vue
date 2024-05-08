@@ -65,6 +65,7 @@ const scheduleObservation = () => {
 </script>
 
 <template>
+  <div class="container">
     <div v-if="!objectSelected">
       <h2>Photon Ranch Schedule Observation</h2>
       <div v-for="category in categories" :key="category.location">
@@ -78,8 +79,8 @@ const scheduleObservation = () => {
     </div>
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
         <h3>Scheduling Observation of a {{ objectSelection.object }}</h3>
-        <div v-for="target in objectSelection.targets" :key="target.name">
-            <v-btn @click="handleTargetSelection(target)">{{ target.name }} - {{ target.type }}</v-btn>
+        <div class="buttons">
+              <button v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="button">{{ target.name }} - {{ target.type }}</button>
         </div>
         <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
@@ -90,13 +91,5 @@ const scheduleObservation = () => {
         <v-btn @click="scheduleObservation">Schedule my observation!</v-btn>
         <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
+  </div>
 </template>
-
-<style scoped>
-p, h2, h3, h4 {
-    color: red;
-}
-.selection {
-    color: blue;
-}
-</style>
