@@ -34,6 +34,10 @@ $input-shadow: none;
 $font-stack: "Noto Sans", sans-serif;
 $font-headers: 'Unica One', sans-serif;
 
+#app {
+    flex: 1;
+    }
+
 html {
   background-color: $grey-level3;
 }
@@ -42,6 +46,9 @@ body {
   font: 100% $font-stack;
   color: $off-white;
   background-color: $grey-level2;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
 h1, h2, h3, h4, h5, h6 {
