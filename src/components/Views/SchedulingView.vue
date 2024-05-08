@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
+import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
 
 // TO DO (near future): Save this value in the store
@@ -22,7 +23,7 @@ const handleScheduled = () => {
         <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
     </div>
     <div v-else-if="level === 'beginner' && !showScheduled">
-        <p>Beginner level</p>
+        <BeginnerScheduling @scheduled="handleScheduled"/>
     </div>
     <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling @scheduled="handleScheduled"/>

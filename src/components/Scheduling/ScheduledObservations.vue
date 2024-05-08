@@ -4,7 +4,16 @@
 
 <template>
     <div>
-        <h1>Scheduled Observations</h1>
-        <p>Here you can see all the observations you have scheduled.</p>
+        <h1>Photon Ranch - My Projects</h1>
+        <p>Your scheduled observations</p>
     </div>
 </template>
+
+<style scoped>
+h1 {
+    color: red;
+}
+p {
+    color: blue;
+}
+</style>
