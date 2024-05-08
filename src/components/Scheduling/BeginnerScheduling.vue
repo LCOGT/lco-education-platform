@@ -67,20 +67,22 @@ const scheduleObservation = () => {
 <template>
   <div class="container">
     <div v-if="!objectSelected">
-      <h2>Photon Ranch Schedule Observation</h2>
+      <h2>Schedule an Observation</h2>
       <div v-for="category in categories" :key="category.location">
         <h3>{{ category.location }}</h3>
-        <div v-for="option in category.options" :key="option.object">
-          <v-btn @click="handleObjectSelection(option)">
+        <div class="buttons">
+          <button v-for="option in category.options" :key="option.object" @click="handleObjectSelection(option)" class="button">
             {{ option.object }}
-          </v-btn>
+            </button>
         </div>
       </div>
     </div>
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
         <h3>Scheduling Observation of a {{ objectSelection.object }}</h3>
         <div class="buttons">
-              <button v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="button">{{ target.name }} - {{ target.type }}</button>
+            <button v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="button">
+              {{ target.name }} - {{ target.type }}
+            </button>
         </div>
         <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
