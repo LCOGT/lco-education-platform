@@ -111,28 +111,24 @@ const scheduleObservation = () => {
 
 <style scoped>
 h2 {
-    margin-top: 1em;
+  margin-top: 1em;
 }
 .input-wrapper {
-    margin: 1em;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+  margin: 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 .p-text {
-    margin-right: 1em;
-    font-size: 1.2em;
-    cursor: default;
+  margin-right: 1em;
+  font-size: 1.2em;
+  cursor: default;
 }
 .scheduling-inputs {
-    padding: 0.5em;
-    box-sizing: border-box;
-    border: 1px solid gray;
-    border-radius: 0.2em;
-}
-.icon {
-    font-size: 1.5em;
-    cursor: pointer;
+  padding: 0.5em;
+  box-sizing: border-box;
+  border: 1px solid gray;
+  border-radius: 0.2em;
 }
 </style>
