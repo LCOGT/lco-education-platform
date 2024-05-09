@@ -1,9 +1,9 @@
 <script setup>
 import { ref, reactive, defineEmits } from 'vue'
+import ProjectName from './ProjectName.vue'
 
 // TO DO: Save project details to store
 const projectName = ref('')
-const nameEntered = ref(false)
 const targets = reactive([{ name: '', saved: false }])
 const settings = reactive([{ filter: '', exposure: '', count: '', saved: false }])
 
@@ -11,17 +11,15 @@ const showNext = ref(0)
 
 const emits = defineEmits(['scheduled'])
 
-const saveProjectName = () => {
-  if (projectName.value.trim() !== '') {
-    nameEntered.value = true
-    if (showNext.value === 0) {
-      showNext.value += 1
-    }
+const showProjectName = (name) => {
+  projectName.value = name
+  if (showNext.value === 0) {
+    showNext.value += 1
   }
 }
 
 const editProjectName = () => {
-  nameEntered.value = false
+  projectName.value = ''
 }
 
 const saveTarget = (index) => {
@@ -60,7 +58,7 @@ const addNewSettings = () => {
 }
 
 const scheduleObservation = () => {
-  if (nameEntered.value && targets.every(t => t.saved) && settings.every(s => s.saved)) {
+  if (projectName.value && targets.every(t => t.saved) && settings.every(s => s.saved)) {
     emits('scheduled')
   }
 }
@@ -69,16 +67,10 @@ const scheduleObservation = () => {
 
 <template>
   <h2>Photon Ranch Scheduling Observation</h2>
-  <div class="input-wrapper project-wrapper" v-if="!nameEntered">
-    <p class="p-text">Project Name:</p>
-    <input type="text" v-model="projectName" placeholder="Enter project name" class="scheduling-inputs">
-    <v-btn @click="saveProjectName" color="indigo">Save</v-btn>
-  </div>
-  <div v-if="nameEntered">
-    <div class="input-wrapper">
-      <p class="p-text">Project Name: {{ projectName }}</p>
-      <span class="material-icons icon" @click="editProjectName">edit</span>
-    </div>
+  <ProjectName v-if="!projectName" @nameEntered="showProjectName" />
+  <div v-if="projectName">
+    <p class="p-text">Project Name: {{ projectName }}</p>
+    <v-btn color="teal" @click="editProjectName">edit</v-btn>
   </div>
   <div v-for="(target, index) in targets" :key="index">
     <div class="input-wrapper" v-if="!target.saved && showNext >= 1">
