@@ -105,7 +105,7 @@ const scheduleObservation = () => {
     <v-btn v-if="setting.editing" @click="saveEditedSettings(index)" color="indigo">Save</v-btn>
   </div>
   <ExposureSettings v-if="addingNewSetting || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
-  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSetting || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add New Setting</v-btn>
+  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSetting || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
   <v-btn :disabled="!nameEntered || !targets || !exposureSettings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 
