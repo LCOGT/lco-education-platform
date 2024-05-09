@@ -1,10 +1,12 @@
 <script setup>
 import { ref, reactive, defineEmits } from 'vue'
 import ProjectName from './ProjectName.vue'
+import TargetSelection from './TargetSelection.vue'
 
 // TO DO: Save project details to store
 const projectName = ref('')
-const targets = reactive([{ name: '', saved: false }])
+const targets = reactive([])
+const addingNewTarget = ref(false)
 const settings = reactive([{ filter: '', exposure: '', count: '', saved: false }])
 
 const showNext = ref(0)
@@ -21,22 +23,23 @@ const showProjectName = (name) => {
 const editProjectName = () => {
   projectName.value = ''
 }
-
-const saveTarget = (index) => {
-  if (targets[index].name.trim() !== '') {
-    targets[index].saved = true
-    showNext.value += 1
-  }
+const handleTargetAdded = (newTarget) => {
+  targets.push({ name: newTarget, saved: true, editing: false })
+  addingNewTarget.value = false
+  showNext.value = Math.max(showNext.value, 2)
 }
 
 const editTarget = (index) => {
-  targets[index].saved = false
+  targets[index].editing = true
+}
+
+const saveEditedTarget = (index) => {
+  targets[index].saved = true
+  targets[index].editing = false
 }
 
 const addNewTarget = () => {
-  if (targets.length === 0 || targets[targets.length - 1].saved) {
-    targets.push({ name: '', saved: false })
-  }
+  addingNewTarget.value = true
 }
 
 const saveSettings = (index) => {
@@ -72,20 +75,14 @@ const scheduleObservation = () => {
     <p class="p-text">Project Name: {{ projectName }}</p>
     <v-btn color="teal" @click="editProjectName">edit</v-btn>
   </div>
-  <div v-for="(target, index) in targets" :key="index">
-    <div class="input-wrapper" v-if="!target.saved && showNext >= 1">
-      <p class="p-text">Target:</p>
-      <input type="text" v-model="target.name" placeholder="Enter target" class="scheduling-inputs">
-      <v-btn @click="() => saveTarget(index)" color="indigo">Save</v-btn>
-    </div>
-    <div v-if="target.saved">
-      <div class="input-wrapper">
-        <p class="p-text">Target: {{ target.name }}</p>
-        <span class="material-icons icon" @click="() => editTarget(index)" color="indigo">edit</span>
-      </div>
-    </div>
+  <div v-for="(target, index) in targets" :key="index" class="input-wrapper">
+    <p class="p-text">Target: <span v-if="!target.editing">{{ target.name }}</span></p>
+    <input v-if="target.editing" v-model="target.name" class="scheduling-inputs">
+    <v-btn v-if="target.editing" @click="saveEditedTarget(index)" color="indigo">Save</v-btn>
+    <v-btn v-else @click="editTarget(index)" :disabled="addingNewTarget" color="teal">Edit</v-btn>
   </div>
-  <v-btn v-if="targets[targets.length - 1].saved" @click="addNewTarget" color="indigo">Add Another Target</v-btn>
+  <TargetSelection v-if="addingNewTarget || !targets.length && showNext >= 1" @targetAdded="handleTargetAdded" />
+  <v-btn v-if="targets.length && targets[targets.length - 1].saved" :disabled="addingNewTarget || targets.some(t => t.editing === true)" @click="addNewTarget" color="indigo">Add Another Target</v-btn>
   <div v-for="(setting, index) in settings" :key="index">
     <div v-if="!setting.saved && showNext >= 2">
       <div class="input-wrapper">
@@ -112,7 +109,7 @@ const scheduleObservation = () => {
     </div>
 </div>
   <v-btn v-if="settings[settings.length - 1].saved" @click="addNewSettings" color="indigo">Add Another Exposure</v-btn>
-  <v-btn :disabled="!nameEntered || !targets.every(t => t.saved) || !settings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+  <v-btn :disabled="!nameEntered || !targets || !settings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 
 <style scoped>
