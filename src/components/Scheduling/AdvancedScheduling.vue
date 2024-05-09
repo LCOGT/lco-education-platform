@@ -25,11 +25,11 @@ const showProjectName = (name) => {
 const editProjectName = () => {
   projectName.value = ''
 }
+
 const addTarget = (newTarget) => {
   targets.push({ name: newTarget, saved: true, editing: false })
   addingNewTarget.value = false
   showNext.value += 1
-  console.log('show next', showNext.value)
 }
 
 const editTarget = (index) => {
@@ -45,21 +45,21 @@ const addNewTarget = () => {
   addingNewTarget.value = true
 }
 
-const handleSettingsAdded = (newSettings) => {
+const addSettings = (newSettings) => {
   exposureSettings.push({ ...newSettings, saved: true, editing: false })
   addingNewSetting.value = false
 }
 
-const editSetting = (index) => {
+const editSettings = (index) => {
   exposureSettings[index].editing = true
 }
 
-const saveEditedSetting = (index) => {
+const saveEditedSettings = (index) => {
   exposureSettings[index].saved = true
   exposureSettings[index].editing = false
 }
 
-const addNewSetting = () => {
+const addNewSettings = () => {
   addingNewSetting.value = true
 }
 
@@ -91,16 +91,22 @@ const scheduleObservation = () => {
       <p class="p-text">Filter: {{ setting.filter }}</p>
       <p class="p-text">Exposure Time: {{ setting.exposureTime }}</p>
       <p class="p-text">Count: {{ setting.count }}</p>
-      <v-btn @click="editSetting(index)" :disabled="addingNewSetting" color="teal">Edit</v-btn>
+      <v-btn @click="editSettings(index)" :disabled="addingNewSetting" color="teal">Edit</v-btn>
     </div>
-    <input v-if="setting.editing" v-model="setting.filter" class="scheduling-inputs">
+    <select v-if="setting.editing" v-model="setting.filter" class="scheduling-inputs">
+        <option disabled value="">Choose a filter</option>
+        <option value="Blue">Blue</option>
+        <option value="Green (V)">Green (V)</option>
+        <option value="Red">Red</option>
+        <option value="H-Alpha">H-Alpha</option>
+      </select>
     <input v-if="setting.editing" v-model="setting.exposureTime" class="scheduling-inputs">
     <input v-if="setting.editing" v-model="setting.count" class="scheduling-inputs">
-    <v-btn v-if="setting.editing" @click="() => saveEditedSetting(index)" color="indigo">Save</v-btn>
+    <v-btn v-if="setting.editing" @click="saveEditedSettings(index)" color="indigo">Save</v-btn>
   </div>
-  <ExposureSettings v-if="addingNewSetting || !exposureSettings.length && showNext >= 2" @settingsAdded="handleSettingsAdded" />
-  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" @click="addNewSetting" :disabled="exposureSettings.some(s => s.editing)" color="indigo">Add New Setting</v-btn>
-  <v-btn :disabled="!nameEntered || !targets || !settings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+  <ExposureSettings v-if="addingNewSetting || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
+  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSetting || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add New Setting</v-btn>
+  <v-btn :disabled="!nameEntered || !targets || !exposureSettings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 
 <style scoped>

@@ -1,5 +1,7 @@
 <script setup>
-import { reactive, defineEmits } from 'vue'
+import { reactive, defineEmits, computed } from 'vue'
+
+const emits = defineEmits(['settingsAdded'])
 
 const settings = reactive({
   filter: '',
@@ -7,11 +9,14 @@ const settings = reactive({
   count: ''
 })
 
-const emits = defineEmits(['settingsAdded'])
+const isSaveDisabled = computed(() => {
+  return settings.filter === '' || settings.filter === 'Choose a filter' ||
+  settings.exposureTime.trim() === '' ||
+  settings.count.trim() === ''
+})
 
 const saveSettings = () => {
-  if (settings.filter !== 'Choose a filter' && settings.filter !== '' &&
-      settings.exposureTime.trim() !== '' && settings.count.trim() !== '') {
+  if (!isSaveDisabled.value) {
     emits('settingsAdded', { ...settings })
     settings.filter = ''
     settings.exposureTime = ''
@@ -33,6 +38,6 @@ const saveSettings = () => {
       </select>
       <input type="text" v-model="settings.exposureTime" placeholder="Exp time" class="scheduling-inputs">
       <input type="text" v-model="settings.count" placeholder="count" class="scheduling-inputs">
-      <v-btn @click="saveSettings" color="indigo">Save</v-btn>
+      <v-btn color="indigo" :disabled="isSaveDisabled" @click="saveSettings" >Save</v-btn>
     </div>
   </template>
