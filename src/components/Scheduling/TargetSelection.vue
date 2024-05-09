@@ -8,7 +8,6 @@ const emits = defineEmits(['targetAdded'])
 const saveTarget = () => {
   if (newTargetName.value.trim() !== '') {
     emits('targetAdded', newTargetName.value.trim())
-    console.log('Target added:', newTargetName.value.trim())
     newTargetName.value = ''
   }
 }
