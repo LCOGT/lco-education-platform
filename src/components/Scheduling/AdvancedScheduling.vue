@@ -3,6 +3,7 @@ import { ref, reactive, defineEmits, computed } from 'vue'
 import ProjectName from './ProjectName.vue'
 import TargetSelection from './TargetSelection.vue'
 import ExposureSettings from './ExposureSettings.vue'
+import TelescopeSelection from './TelescopeSelection.vue'
 
 const emits = defineEmits(['scheduled'])
 
@@ -12,6 +13,7 @@ const targets = reactive([])
 const addingNewTarget = ref(false)
 const exposureSettings = reactive([])
 const addingNewSettings = ref(false)
+const telescope = ref('')
 
 const showNext = ref(0)
 
@@ -67,8 +69,12 @@ const addNewSettings = () => {
   addingNewSettings.value = true
 }
 
+const addTelescope = (newTelescope) => {
+  telescope.value = newTelescope
+}
+
 const disableButton = computed(() => {
-  return projectName.value === '' || !targets.length || !targets.every(t => t.saved) || addingNewTarget.value || !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value
+  return projectName.value === '' || !targets.length || !targets.every(t => t.saved) || addingNewTarget.value || !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value || telescope.value === ''
 })
 
 const scheduleObservation = () => {
@@ -112,6 +118,10 @@ const scheduleObservation = () => {
   </div>
   <ExposureSettings v-if="addingNewSettings || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
   <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
+  <TelescopeSelection v-if="showNext >=2 && telescope === ''" @telescopeAdded="addTelescope"/>
+  <div v-if="telescope">
+    <p class="p-text">Telescope: {{ telescope }}</p>
+  </div>
   <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 

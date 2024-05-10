@@ -1,10 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, defineEmits } from 'vue'
+
+const emits = defineEmits(['telescopeAdded'])
 
 const telescope = ref('')
 
-const saveTelescope = (selectedTelescope) => {
-  telescope.value = selectedTelescope
+const saveTelescope = () => {
+  if (telescope.value !== '') {
+    emits('telescopeAdded', telescope.value)
+  }
 }
 </script>
 
