@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, defineEmits } from 'vue'
+import { ref, reactive, defineEmits, computed } from 'vue'
 import ProjectName from './ProjectName.vue'
 import TargetSelection from './TargetSelection.vue'
 import ExposureSettings from './ExposureSettings.vue'
@@ -11,7 +11,7 @@ const projectName = ref('')
 const targets = reactive([])
 const addingNewTarget = ref(false)
 const exposureSettings = reactive([])
-const addingNewSetting = ref(false)
+const addingNewSettings = ref(false)
 
 const showNext = ref(0)
 
@@ -34,39 +34,45 @@ const addTarget = (newTarget) => {
 
 const editTarget = (index) => {
   targets[index].editing = true
+  targets[index].saved = false
 }
 
 const saveEditedTarget = (index) => {
   targets[index].saved = true
   targets[index].editing = false
+  addingNewTarget.value = false
 }
 
-const addNewTarget = () => {
+const addAnotherTarget = () => {
   addingNewTarget.value = true
 }
 
 const addSettings = (newSettings) => {
   exposureSettings.push({ ...newSettings, saved: true, editing: false })
-  addingNewSetting.value = false
+  addingNewSettings.value = false
 }
 
 const editSettings = (index) => {
   exposureSettings[index].editing = true
+  exposureSettings[index].saved = false
 }
 
 const saveEditedSettings = (index) => {
   exposureSettings[index].saved = true
   exposureSettings[index].editing = false
+  addingNewSettings.value = false
 }
 
 const addNewSettings = () => {
-  addingNewSetting.value = true
+  addingNewSettings.value = true
 }
 
+const disableButton = computed(() => {
+  return projectName.value === '' || !targets.length || !targets.every(t => t.saved) || addingNewTarget.value || !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value
+})
+
 const scheduleObservation = () => {
-  if (projectName.value && targets.every(t => t.saved) && exposureSettings.every(s => s.saved)) {
-    emits('scheduled')
-  }
+  emits('scheduled')
 }
 
 </script>
@@ -85,13 +91,13 @@ const scheduleObservation = () => {
     <v-btn v-else @click="editTarget(index)" :disabled="addingNewTarget" color="teal">Edit</v-btn>
   </div>
   <TargetSelection v-if="addingNewTarget || !targets.length && showNext >= 1" @targetAdded="addTarget" />
-  <v-btn v-if="targets.length && targets[targets.length - 1].saved" :disabled="addingNewTarget || targets.some(t => t.editing === true)" @click="addNewTarget" color="indigo">Add Another Target</v-btn>
+  <v-btn v-if="targets.length" :disabled="addingNewTarget || targets.some(t => t.editing === true)" @click="addAnotherTarget" color="indigo">Add Another Target</v-btn>
   <div v-for="(setting, index) in exposureSettings" :key="index" class="input-wrapper">
     <div v-if="!setting.editing">
       <p class="p-text">Filter: {{ setting.filter }}</p>
       <p class="p-text">Exposure Time: {{ setting.exposureTime }}</p>
       <p class="p-text">Count: {{ setting.count }}</p>
-      <v-btn @click="editSettings(index)" :disabled="addingNewSetting" color="teal">Edit</v-btn>
+      <v-btn @click="editSettings(index)" :disabled="addingNewSettings" color="teal">Edit</v-btn>
     </div>
     <select v-if="setting.editing" v-model="setting.filter" class="scheduling-inputs">
         <option disabled value="">Choose a filter</option>
@@ -104,9 +110,9 @@ const scheduleObservation = () => {
     <input v-if="setting.editing" v-model="setting.count" class="scheduling-inputs">
     <v-btn v-if="setting.editing" @click="saveEditedSettings(index)" color="indigo">Save</v-btn>
   </div>
-  <ExposureSettings v-if="addingNewSetting || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
-  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSetting || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
-  <v-btn :disabled="!nameEntered || !targets || !exposureSettings.every(s => s.saved)" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+  <ExposureSettings v-if="addingNewSettings || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
+  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
+  <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
 
 <style scoped>
