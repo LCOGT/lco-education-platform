@@ -36,7 +36,6 @@ const bookDate = () => {
 }
 
 const handleSiteSelected = (data) => {
-  console.log('data', data)
   selectedSite.value = data.site
 }
 </script>
