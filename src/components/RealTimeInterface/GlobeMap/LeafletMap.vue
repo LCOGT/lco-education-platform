@@ -8,7 +8,6 @@ const mapContainer = ref(null)
 onMounted(() => {
   const map = L.map(mapContainer.value).setView([0, 0], 2)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
   }).addTo(map)
 })
 
@@ -22,7 +21,7 @@ onMounted(() => {
 
 <style>
 .map-container {
-    height: 100vh;
+    height: 80vh;
     width: 100%;
 }
 </style>
