@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineEmits } from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import availableIcon from '../../../assets/Icons/available_mapmarker.png'
@@ -8,6 +8,8 @@ import unavailableIcon from '../../../assets/Icons/unavailable_mapmarker.png'
 // Paths to the custom icons
 const mapMarkerAvailable = availableIcon
 const mapMarkerUnavailable = unavailableIcon
+
+const emits = defineEmits(['siteSelected'])
 
 const mapContainer = ref(null)
 
@@ -35,20 +37,25 @@ onMounted(() => {
 
   // TO DO: get actual locations
   const locations = [
-    { lat: 34.4208, lng: -119.6982, popupText: 'Santa Barbara, California' },
-    { lat: 35.0844, lng: -106.6504, popupText: 'Albuquerque, New Mexico' },
-    { lat: 21.4389, lng: -158.0001, popupText: 'Oahu, Hawaii' },
-    { lat: -37.8136, lng: 144.9631, popupText: 'Melbourne, Australia' }
+    { lat: 34.4208, lng: -119.6982, site: 'Santa Barbara, California' },
+    { lat: 35.0844, lng: -106.6504, site: 'Albuquerque, New Mexico' },
+    { lat: 21.4389, lng: -158.0001, site: 'Oahu, Hawaii' },
+    { lat: -37.8136, lng: 144.9631, site: 'Melbourne, Australia' }
   ]
 
   // TO DO: Get availability from API and on click of marker, book site with time
   locations.forEach(location => {
     const available = isAvailable()
     const icon = available ? customIconAvailable : customIconUnavailable
-    const popupText = available ? `${location.popupText}<br>available` : `${location.popupText}<br>unavailable`
+    const popupText = available ? `${location.site}<br>available` : `${location.site}<br>unavailable`
 
     const marker = L.marker([location.lat, location.lng], { icon })
     marker.bindPopup(popupText)
+    marker.on('click', () => {
+      if (available) {
+        emits('siteSelected', { site: location.site })
+      }
+    })
     marker.addTo(map)
   })
 })
@@ -64,7 +71,6 @@ onMounted(() => {
 <style>
 .map-container {
     height: 80vh;
-    width: 100%;
-    scale: 0.7;
+    scale: 0.8;
 }
 </style>

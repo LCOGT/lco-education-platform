@@ -4,6 +4,7 @@ import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const date = ref(null)
 const time = ref(null)
+const selectedSite = ref(null)
 const emits = defineEmits(['changeView'])
 
 // Automatically format the date whenever it changes
@@ -33,6 +34,11 @@ const selectTime = (selectedTime) => {
 const bookDate = () => {
   emits('changeView', 'sessionpending')
 }
+
+const handleSiteSelected = (data) => {
+  console.log('data', data)
+  selectedSite.value = data.site
+}
 </script>
 
 <template>
@@ -51,13 +57,13 @@ const bookDate = () => {
               <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
           </v-btn-group>
       </div>
-      <div v-if="formattedDate && time">
-          <p class="selected-datetime">Selected for {{ formattedDate }} at {{ time }}</p>
-          <v-btn variant="tonal"  v-if="date" @click="bookDate" class="blue-bg">Book</v-btn>
+      <div v-if="formattedDate && time" class="column">
+      <p class="selected-datetime"><span v-if="selectedSite">{{ selectedSite }} selected for {{ formattedDate }} at {{ time }}</span><span v-else>booking for {{ formattedDate }} at {{ time }}</span></p>
+      <v-btn variant="tonal"  v-if="date && selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
     </div>
   </div>
-  <LeafletMap v-if="formattedDate && time"/>
+  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected"/>
 </template>
 
 <style scoped>
