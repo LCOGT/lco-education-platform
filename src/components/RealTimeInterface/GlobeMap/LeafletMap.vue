@@ -41,7 +41,7 @@ onMounted(() => {
     { lat: -37.8136, lng: 144.9631, popupText: 'Melbourne, Australia' }
   ]
 
-  // TO DO: Get availability from API
+  // TO DO: Get availability from API and on click of marker, book site with time
   locations.forEach(location => {
     const available = isAvailable()
     const icon = available ? customIconAvailable : customIconUnavailable

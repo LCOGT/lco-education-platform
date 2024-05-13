@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import TimePicker from '../RealTimeInterface/TimePicker.vue'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
-import LeafletMap from '../RealTimeInterface/GlobeMap/LeafletMap.vue'
 
 const currentView = ref('scheduling')
 const timeRemaining = ref(20)
@@ -28,7 +27,6 @@ const countdown = setInterval(() => {
   <section>
     <div class="container">
         <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
-        <LeafletMap v-if="currentView === 'scheduling'"/>
         <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
         <div v-else-if="currentView === 'sessionstarted'">
             <h2>Real Time Session</h2>

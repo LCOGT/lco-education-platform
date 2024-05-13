@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
+import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const date = ref(null)
 const time = ref(null)
@@ -56,6 +57,7 @@ const bookDate = () => {
       </div>
     </div>
   </div>
+  <LeafletMap v-if="formattedDate && time"/>
 </template>
 
 <style scoped>
