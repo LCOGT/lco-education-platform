@@ -17,10 +17,8 @@ const isAvailable = () => Math.random() > 0.5
 onMounted(() => {
   const map = L.map(mapContainer.value).setView([0, 0], 2)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
   }).addTo(map)
 
-  // Define the custom icons
   const customIconAvailable = L.icon({
     iconUrl: mapMarkerAvailable,
     iconSize: [30, 42],
