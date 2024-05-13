@@ -1,27 +1,33 @@
 <script setup>
-import MyGallery from '../Images/MyGallery.vue'
+import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
+import { ref } from 'vue'
 
-// TO DO: Add actual download functionality
-// Store images in store key is project name and value is an array of images
-// Change image archive to actual redirection
+// TO DO: get images from api and sort them by
+const observations = ref([
+  { id: 1, date: 'May 19, 2024', telescope: 'Maui, LCO', num: 3 },
+  { id: 2, date: 'April 3, 2024', telescope: 'Queue', num: 4 },
+  { id: 3, date: 'March 13, 2024', telescope: 'Maui, LCO', num: 6 },
+  { id: 4, date: 'March 12, 2024', telescope: 'Queue', num: 4 }
+])
+
 </script>
 
 <template>
-  <section>
-    <div class="container">
-    <div class="gallery-header">
-        <h2>Photon Ranch Gallery</h2>
-        <v-btn color="indigo" class="archive-button"><a href="https://archive.photonranch.org/" target="_blank" class="ptr-archive">Image Archive</a></v-btn>
-    </div>
-    <div class="gallery-content">
-        <MyGallery class="my-gallery"/>
-        <div class="button-wrapper">
-            <v-btn class="button blue-bg">Load more</v-btn>
-            <v-btn class="button blue-bg">Download</v-btn>
-            <v-btn class="button blue-bg">Open in DataLab</v-btn>
+    <div class="container" v-for="obs in observations" :key="obs.id">
+        <h3>{{ obs.date }}</h3>
+        <div class="columns is-multiline">
+            <div class="column is-one-fifth-desktop is-half-tablet" v-for="n in obs.num" :key="n">
+              <figure class="image is-square">
+                  <img :src="thumbnail" class="thumbnail" />
+              </figure>
+            </div>
+            <div class="column is-one-fifth-desktop is-half-tablet">
+              <div class="button-wrapper">
+                <button v-if="obs.num > 4" class="button blue-bg">Load more</button>
+                <button class="button blue-bg">Download</button>
+                <button class="button blue-bg">Open in DataLab</button>
+              </div>
+            </div>
         </div>
     </div>
-  </div>
-  </section>
-
 </template>

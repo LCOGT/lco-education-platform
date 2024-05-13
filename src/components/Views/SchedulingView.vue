@@ -17,19 +17,22 @@ const handleScheduled = () => {
 </script>
 
 <template>
-    <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
-        <p>What level are you?</p>
-        <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
-        <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
-    </div>
-    <div v-else-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling @scheduled="handleScheduled"/>
-    </div>
-    <div v-else-if="level === 'advanced' && !showScheduled">
-        <AdvancedScheduling @scheduled="handleScheduled"/>
-    </div>
-    <div v-if="showScheduled">
-        <ScheduledObservations />
+    <div class="container">
+        <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
+            <h2>Schedule an Observation</h2>
+            <p>What level are you?</p>
+            <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
+            <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
+        </div>
+        <div v-else-if="level === 'beginner' && !showScheduled">
+            <BeginnerScheduling @scheduled="handleScheduled"/>
+        </div>
+        <div v-else-if="level === 'advanced' && !showScheduled">
+            <AdvancedScheduling @scheduled="handleScheduled"/>
+        </div>
+        <div v-if="showScheduled">
+            <ScheduledObservations />
+        </div>
     </div>
 </template>
 
