@@ -66,8 +66,9 @@ const scheduleObservation = () => {
 
 <template>
   <div class="container">
-    <div v-if="!objectSelected">
+    <div v-if="!objectSelected" class="content">
       <h2>Schedule an Observation</h2>
+      <p>What do you want to take pictures of?</p>
       <div v-for="category in categories" :key="category.location">
         <h3>{{ category.location }}</h3>
         <div class="buttons">
@@ -78,7 +79,7 @@ const scheduleObservation = () => {
       </div>
     </div>
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
-        <h3>Scheduling Observation of a {{ objectSelection.object }}</h3>
+        <h3>Scheduling Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
         <div class="buttons">
             <button v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="button">
               {{ target.name }} - {{ target.type }}
@@ -87,11 +88,12 @@ const scheduleObservation = () => {
         <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
     </div>
     <div v-if="targetSelected || (objectSelected && !objectSelection.targets)">
-        <h3>Photon Ranch</h3>
-        <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
+        <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection blue">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
         <h4>Photon Ranch will schedule this for you</h4>
-        <v-btn @click="scheduleObservation">Schedule my observation!</v-btn>
-        <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
+        <div class="buttons">
+          <button @click="scheduleObservation" class="button">Schedule my observation!</button>
+          <button @click="handleObjectSelection(null)" class="button">Different targets</button>
+        </div>
     </div>
   </div>
 </template>

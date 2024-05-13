@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <div>
+    <div class="container">
         <h1>Photon Ranch - My Projects</h1>
         <p>Your scheduled observations</p>
     </div>
