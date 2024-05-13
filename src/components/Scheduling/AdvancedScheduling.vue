@@ -13,7 +13,7 @@ const targets = reactive([])
 const addingNewTarget = ref(false)
 const exposureSettings = reactive([])
 const addingNewSettings = ref(false)
-const telescope = ref('')
+const telescope = reactive({})
 
 const showNext = ref(0)
 
@@ -69,12 +69,12 @@ const addNewSettings = () => {
   addingNewSettings.value = true
 }
 
-const addTelescope = (newTelescope) => {
-  telescope.value = newTelescope
+const addTelescope = (telescopeSelection) => {
+  telescope.value = telescopeSelection
 }
 
 const disableButton = computed(() => {
-  return projectName.value === '' || !targets.length || !targets.every(t => t.saved) || addingNewTarget.value || !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value || telescope.value === ''
+  return projectName.value === '' || !targets.length || !targets.every(t => t.saved) || addingNewTarget.value || !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value || !telescope.value
 })
 
 const scheduleObservation = () => {
@@ -118,9 +118,10 @@ const scheduleObservation = () => {
   </div>
   <ExposureSettings v-if="addingNewSettings || !exposureSettings.length && showNext >= 2" @settingsAdded="addSettings" />
   <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
-  <TelescopeSelection v-if="showNext >=2 && telescope === ''" @telescopeAdded="addTelescope"/>
-  <div v-if="telescope">
-    <p class="p-text">Telescope: {{ telescope }}</p>
+  <TelescopeSelection v-if="showNext >= 2 && !telescope.value" @telescopeAdded="addTelescope"/>
+  <div v-if="telescope.value">
+    <p class="p-text">Telescope: {{ telescope.value.telescope }}</p>
+    <p class="p-text">Between {{ telescope.value.startDate.toDateString() }} and {{ telescope.value.endDate.toDateString() }}</p>
   </div>
   <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
 </template>
