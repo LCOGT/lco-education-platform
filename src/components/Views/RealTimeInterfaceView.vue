@@ -6,9 +6,16 @@ import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
 const currentView = ref('scheduling')
 const timeRemaining = ref(20)
+const selectedSiteLat = ref(null)
+const selectedSiteLon = ref(null)
 
 const handleViewChange = (view) => {
   currentView.value = view
+}
+
+const handleSiteSelected = (data) => {
+  selectedSiteLat.value = data.lat
+  selectedSiteLon.value = data.lon
 }
 
 // TO DO: Instead of having a set time, get the actual length of the time
@@ -20,20 +27,28 @@ const countdown = setInterval(() => {
     }
   }
 }, 1000)
-
 </script>
 
 <template>
   <section>
     <div class="container">
-        <TimePicker v-if="currentView === 'scheduling'" @changeView="handleViewChange" />
-        <SessionPending v-else-if="currentView === 'sessionpending'" @changeView="handleViewChange" />
-        <div v-else-if="currentView === 'sessionstarted'">
-            <h2>Real Time Session</h2>
-            <p>You are controlling Eltham College telescope 1 in Australia</p>
-            <p>Time Remaining in session: {{ timeRemaining }}</p>
-            <SessionStarted @changeView="handleViewChange" />
-        </div>
+      <TimePicker
+        v-if="currentView === 'scheduling'"
+        @changeView="handleViewChange"
+        @siteSelected="handleSiteSelected"
+      />
+      <SessionPending
+        v-else-if="currentView === 'sessionpending'"
+        @changeView="handleViewChange"
+        :lat="selectedSiteLat"
+        :lon="selectedSiteLon"
+      />
+      <div v-else-if="currentView === 'sessionstarted'">
+        <h2>Real Time Session</h2>
+        <p>You are controlling Eltham College telescope 1 in Australia</p>
+        <p>Time Remaining in session: {{ timeRemaining }}</p>
+        <SessionStarted @changeView="handleViewChange" />
+      </div>
     </div>
-    </section>
+  </section>
 </template>

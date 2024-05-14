@@ -5,7 +5,6 @@ import 'leaflet/dist/leaflet.css'
 import availableIcon from '../../../assets/Icons/available_mapmarker.png'
 import unavailableIcon from '../../../assets/Icons/unavailable_mapmarker.png'
 
-// Paths to the custom icons
 const mapMarkerAvailable = availableIcon
 const mapMarkerUnavailable = unavailableIcon
 
@@ -35,7 +34,7 @@ onMounted(() => {
     popupAnchor: [0, -42]
   })
 
-  // TO DO: get actual locations
+  // TO DO: Get actual locations
   const locations = [
     { lat: 34.4208, lng: -119.6982, site: 'Santa Barbara, California' },
     { lat: 35.0844, lng: -106.6504, site: 'Albuquerque, New Mexico' },
@@ -43,7 +42,7 @@ onMounted(() => {
     { lat: -37.8136, lng: 144.9631, site: 'Melbourne, Australia' }
   ]
 
-  // TO DO: Get availability from API and on click of marker, book site with time
+  // TO DO: Check availability of each site depending on time and date
   locations.forEach(location => {
     const available = isAvailable()
     const icon = available ? customIconAvailable : customIconUnavailable
@@ -53,13 +52,12 @@ onMounted(() => {
     marker.bindPopup(popupText)
     marker.on('click', () => {
       if (available) {
-        emits('siteSelected', { site: location.site })
+        emits('siteSelected', { site: location.site, lat: location.lat, lon: location.lng })
       }
     })
     marker.addTo(map)
   })
 })
-
 </script>
 
 <template>
@@ -70,7 +68,7 @@ onMounted(() => {
 
 <style>
 .map-container {
-    height: 80vh;
-    scale: 0.8;
+  height: 80vh;
+  scale: 0.8;
 }
 </style>

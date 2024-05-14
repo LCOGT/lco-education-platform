@@ -1,11 +1,14 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
+import WindyMap from './GlobeMap/WindyMap.vue'
 
 const date = ref(null)
 const time = ref(null)
 const selectedSite = ref(null)
-const emits = defineEmits(['changeView'])
+const selectedSiteLat = ref(null)
+const selectedSiteLon = ref(null)
+const emits = defineEmits(['changeView', 'siteSelected'])
 
 // Automatically format the date whenever it changes
 const formattedDate = computed(() => {
@@ -33,48 +36,55 @@ const selectTime = (selectedTime) => {
 // TO DO: change the status dynamically
 const bookDate = () => {
   emits('changeView', 'sessionpending')
+  emits('siteSelected', { site: selectedSite.value, lat: selectedSiteLat.value, lon: selectedSiteLon.value })
 }
 
 const handleSiteSelected = (data) => {
   selectedSite.value = data.site
+  selectedSiteLat.value = data.lat
+  selectedSiteLon.value = data.lon
 }
 </script>
 
 <template>
   <h2>Book your real-time session</h2>
   <div class="columns">
-    <div class="column  is-one-third">
+    <div class="column is-one-third">
       <p class="date-text">Select a date and time:</p>
       <div class="datepicker">
-        <v-date-picker v-model="date" class="blue-bg"/>
+        <v-date-picker v-model="date" class="blue-bg" />
       </div>
     </div>
     <div class="column">
       <div v-if="date && time == null" class="selected-date">
-          <p>Select a time:</p>
-          <v-btn-group>
-              <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
-          </v-btn-group>
+        <p>Select a time:</p>
+        <v-btn-group>
+          <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
+        </v-btn-group>
       </div>
       <div v-if="formattedDate && time" class="column">
-      <p class="selected-datetime"><span v-if="selectedSite">{{ selectedSite }} selected for {{ formattedDate }} at {{ time }}</span><span v-else>booking for {{ formattedDate }} at {{ time }}</span></p>
-      <v-btn variant="tonal"  v-if="date && selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
+        <p class="selected-datetime">
+          <span v-if="selectedSite">{{ selectedSite }} selected for {{ formattedDate }} at {{ time }}</span>
+          <span v-else>booking for {{ formattedDate }} at {{ time }}</span>
+        </p>
+        <v-btn variant="tonal" v-if="date && selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
     </div>
   </div>
-  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected"/>
+  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected" />
 </template>
 
 <style scoped>
-.date-text, .selected-date {
-    font-size: 1em;
-    text-align: left;
-    margin: 1em 0 1em 7em;
+.date-text,
+.selected-date {
+  font-size: 1em;
+  text-align: left;
+  margin: 1em 0 1em 7em;
 }
 .datepicker {
-    display: flex;
-    flex-direction: column;
-    max-width: 20%;
-    margin-left: 7em;
+  display: flex;
+  flex-direction: column;
+  max-width: 20%;
+  margin-left: 7em;
 }
 </style>
