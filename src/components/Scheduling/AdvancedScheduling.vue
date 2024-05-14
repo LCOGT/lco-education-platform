@@ -84,7 +84,7 @@ const scheduleObservation = () => {
 </script>
 
 <template>
-  <h2>Photon Ranch Scheduling Observation</h2>
+  <h2>Schedule an Observation</h2>
   <ProjectName v-if="!projectName" @nameEntered="showProjectName" />
   <div v-if="projectName">
     <p class="p-text">Project Name: {{ projectName }}</p>

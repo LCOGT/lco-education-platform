@@ -153,6 +153,25 @@ nav {
     text-align: center;
 }
 
+.target-highlight {
+    background-color: $grey-level1;
+}
+
+.target-highlight:hover {
+    background-color: $blue;
+    color: $grey-level3;
+
+    .card-header-title {
+        color: $grey-level3;
+    }
+}
+
+.target-highlight {
+    .card-header {
+        box-shadow: none;
+    }
+}
+
 .small {
     font-size: 75%;
 }
@@ -180,3 +199,6 @@ nav {
     }
 }
 
+.content .icon-text-list ul {
+    display:inline-grid;
+}
