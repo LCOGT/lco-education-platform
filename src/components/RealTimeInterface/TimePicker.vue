@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
-import WindyMap from './GlobeMap/WindyMap.vue'
 
 const date = ref(null)
 const time = ref(null)
@@ -64,14 +63,14 @@ const handleSiteSelected = (data) => {
       </div>
       <div v-if="formattedDate && time" class="column">
         <p class="selected-datetime">
-          <span v-if="selectedSite">{{ selectedSite }} selected for {{ formattedDate }} at {{ time }}</span>
-          <span v-else>booking for {{ formattedDate }} at {{ time }}</span>
+          <span v-if="selectedSite">{{ selectedSite }} Selected for {{ formattedDate }} at {{ time }}</span>
+          <span v-else>Booking for {{ formattedDate }} at {{ time }}</span>
         </p>
         <v-btn variant="tonal" v-if="date && selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
     </div>
   </div>
-  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected" />
+  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected"/>
 </template>
 
 <style scoped>

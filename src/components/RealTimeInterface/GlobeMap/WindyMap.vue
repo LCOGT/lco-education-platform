@@ -27,7 +27,7 @@ const iframeSrc = computed(() => `https://embed.windy.com/embed2.html?lat=${prop
 
 <style scoped>
 .windy-container {
-height: 500px;
+height: 80vh;
 width: 100%;
 }
 </style>
