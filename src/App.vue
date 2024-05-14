@@ -3,20 +3,14 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AboutView from './components/Views/AboutView.vue'
-import HomeView from './components/Views/HomeView.vue'
 
 const showNavTabs = ref(false)
-const homeIsVisible = ref(true)
 const route = useRoute()
 const router = useRouter()
 
 function handleObserveClick () {
   showNavTabs.value = true
   router.push('/dashboard')
-}
-
-function closeHomeView () {
-  homeIsVisible.value = false
 }
 
 watch(
@@ -84,7 +78,6 @@ watch(
         </div>
       </div>
     </section>
-    <HomeView v-if="homeIsVisible" @close="closeHomeView"/>
     <router-view/>
   </div>
 </template>
