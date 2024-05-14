@@ -1,12 +1,15 @@
 require('@/assets/ptr_main.scss')
 <script setup>
 import { defineEmits } from 'vue'
+import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emit = defineEmits(['observeClicked'])
+const router = useRouter()
 
 function emitObserve () {
   emit('observeClicked')
+  router.push('/dashboard')
 }
 </script>
 

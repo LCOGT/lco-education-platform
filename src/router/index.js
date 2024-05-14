@@ -3,8 +3,13 @@ import RealTimeInterface from '../components/Views/RealTimeInterfaceView.vue'
 import Dashboard from '../components/Views/DashboardView.vue'
 import Images from '../components/Views/ImagesView.vue'
 import Scheduling from '../components/Views/SchedulingView.vue'
+import About from '../components/Views/AboutView.vue'
 
 const routes = [
+  {
+    path: '/',
+    redirect: '/dashboard'
+  },
   {
     path: '/realtime',
     name: 'RealTimeInterface',
@@ -24,6 +29,11 @@ const routes = [
     path: '/schedule',
     name: 'Scheduling',
     component: Scheduling
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: About
   }
 ]
 
