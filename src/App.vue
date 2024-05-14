@@ -1,30 +1,31 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AboutView from './components/Views/AboutView.vue'
 import HomeView from './components/Views/HomeView.vue'
 
 const showNavTabs = ref(false)
 const homeIsVisible = ref(true)
+const route = useRoute()
+const router = useRouter()
 
 function handleObserveClick () {
   showNavTabs.value = true
+  router.push('/dashboard')
 }
 
 function closeHomeView () {
   homeIsVisible.value = false
 }
 
-const route = useRoute()
-
 watch(
   () => route.path,
   (newPath) => {
-    if (newPath === '/dashboard') {
-      showNavTabs.value = true
-    } else {
+    if (newPath === '/') {
       showNavTabs.value = false
+    } else {
+      showNavTabs.value = true
     }
   },
   { immediate: true }
@@ -34,9 +35,9 @@ watch(
 <template>
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      <a class="navbar-item" href="/">
+      <router-link class="navbar-item" to="/">
         <img src="@/assets/ptr_logo.png" alt="Kiosk logo"/>
-      </a>
+      </router-link>
       <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -49,7 +50,6 @@ watch(
         <!-- navbar items -->
       </div>
       <div class="navbar-end">
-        <!-- change these links to actual links-->
         <router-link class="navbar-item" to="/about">About</router-link>
         <router-link class="navbar-item" to="/learn">Learn</router-link>
         <router-link class="navbar-item" to="/observe">Observe</router-link>
