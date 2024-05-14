@@ -69,6 +69,7 @@ onMounted(() => {
 <style>
 .map-container {
   height: 80vh;
+  width: 100%;
   scale: 0.8;
 }
 </style>
