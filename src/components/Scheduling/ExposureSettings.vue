@@ -72,5 +72,5 @@ const saveSettings = () => {
       </p>
   </div>
 </div>
-<v-btn color="indigo" :disabled="settingsFieldsComplete" @click="saveSettings" >Save</v-btn>
+<button class="red-bg button" :disabled="settingsFieldsComplete" @click="saveSettings" >Save</button>
   </template>

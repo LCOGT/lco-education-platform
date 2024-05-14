@@ -127,7 +127,7 @@ const scheduleObservation = () => {
             </div>
             </div>
             </div>
-        <v-btn @click="handleObjectSelection(null)">Different targets</v-btn>
+        <button class="button" @click="handleObjectSelection(null)">Different targets</button>
     </div>
     <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
         <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection blue">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
@@ -137,7 +137,7 @@ const scheduleObservation = () => {
             <button class="button" @click="beginner = false">Let Me Choose</button>
           </p>
           <p class="control">
-            <button class="button blue" @click="beginner = true">I'm OK with Defaults</button>
+            <button class="button" @click="beginner = true">I'm OK with Defaults</button>
           </p>
         </div>
     </div>
@@ -171,7 +171,7 @@ const scheduleObservation = () => {
           </div>
         </div>
         <!-- <v-btn @click="handleObjectSelection(null)">Different targets</v-btn> -->
-        <v-btn @click="scheduleObservation">Schedule my observation!</v-btn>
+        <button class="button red-bg" @click="scheduleObservation">Schedule my observation!</button>
       </div>
     <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
     <div v-for="(setting, index) in exposureSettings" :key="index" class="input-wrapper">
