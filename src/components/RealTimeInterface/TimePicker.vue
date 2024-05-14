@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
-import WindyMap from './GlobeMap/WindyMap.vue'
 
 const date = ref(null)
 const time = ref(null)
