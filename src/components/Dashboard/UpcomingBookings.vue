@@ -9,6 +9,10 @@ const redirectToRTI = () => {
   router.push('/realtime')
 }
 
+const redirectToScheduling = () => {
+  router.push('/schedule')
+}
+
 const items = ref([
   { id: 1, date: 'May 19, 2024', telescope: 'Maui, LCO' },
   { id: 2, date: 'April 3, 2024', telescope: 'Australia, Eltham College' },
@@ -35,7 +39,7 @@ const observations = ref([
         </div>
         </div>
     </div>
-    <button class="button red-bg">Schedule Observations</button>
+    <button class="button red-bg" @click="redirectToScheduling">Schedule Observations</button>
 
     <div class="observations">
         <h3>Scheduled Observations</h3>
