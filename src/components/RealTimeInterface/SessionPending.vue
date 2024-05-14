@@ -1,9 +1,21 @@
 <script setup>
-import { onMounted, ref, defineEmits } from 'vue'
+import { onMounted, ref, defineProps, defineEmits } from 'vue'
+import WindyMap from './GlobeMap/WindyMap.vue'
+
+const props = defineProps({
+  lat: {
+    type: Number,
+    required: true
+  },
+  lon: {
+    type: Number,
+    required: true
+  }
+})
 
 const emits = defineEmits(['changeView'])
 
-const countdown = ref(1)
+const countdown = ref(10)
 
 let countdownInterval
 // TO DO: Change countdown to actual session time
@@ -23,5 +35,6 @@ onMounted(() => {
     <h2>Session Not Started</h2>
     <p>You are controlling Eltham College telescope 1 in Australia</p>
     <p class="green-bg">Session starts in {{ countdown }}</p>
+    <WindyMap :lat="props.lat" :lon="props.lon" />
   </div>
 </template>
