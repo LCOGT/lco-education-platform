@@ -81,6 +81,7 @@ const handleSiteSelected = (data) => {
   text-align: left;
   margin: 1em 0 1em 7em;
 }
+
 .datepicker {
   display: flex;
   flex-direction: column;
