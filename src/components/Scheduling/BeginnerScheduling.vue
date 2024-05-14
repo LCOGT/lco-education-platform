@@ -132,8 +132,14 @@ const scheduleObservation = () => {
     <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
         <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection blue">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
         <p>How do you want to set up your observation?</p>
-        <v-btn @click="beginner = false">let me choose</v-btn>
-        <v-btn @click="beginner = true" color="indigo">i'm ok with defaults</v-btn>
+        <div class="field is-grouped">
+          <p class="control">
+            <button class="button" @click="beginner = false">Let Me Choose</button>
+          </p>
+          <p class="control">
+            <button class="button blue" @click="beginner = true">I'm OK with Defaults</button>
+          </p>
+        </div>
     </div>
     <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <h4>Photon Ranch will schedule this for you</h4>
@@ -167,7 +173,7 @@ const scheduleObservation = () => {
         <!-- <v-btn @click="handleObjectSelection(null)">Different targets</v-btn> -->
         <v-btn @click="scheduleObservation">Schedule my observation!</v-btn>
       </div>
-    <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))" >
+    <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
     <div v-for="(setting, index) in exposureSettings" :key="index" class="input-wrapper">
       <div v-if="!setting.editing">
         <p class="p-text">Filter: {{ setting.filter }}</p>
