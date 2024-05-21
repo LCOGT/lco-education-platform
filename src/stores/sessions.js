@@ -5,7 +5,7 @@ export const useSessionsStore = defineStore('sessions', {
     return {
       sessions: [],
       currentSessionId: null,
-      nextSessionId: 1
+      nextSessionId: 0
     }
   },
   getters: {
