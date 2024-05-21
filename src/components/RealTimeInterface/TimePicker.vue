@@ -1,15 +1,14 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
+import { useSessionsStore } from '../../stores/sessions'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
+
+const sessionsStore = useSessionsStore()
 
 const date = ref(null)
 const time = ref(null)
-const selectedSite = ref(null)
-const selectedSiteLat = ref(null)
-const selectedSiteLon = ref(null)
-const emits = defineEmits(['changeView', 'siteSelected'])
+const emits = defineEmits(['changeView'])
 
-// Automatically format the date whenever it changes
 const formattedDate = computed(() => {
   if (date.value) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' }
@@ -18,31 +17,51 @@ const formattedDate = computed(() => {
   return null
 })
 
-// Watch for changes in the date and reset the time if it changes
-watch(date, (newDate, oldDate) => {
-  if (newDate !== oldDate) {
-    time.value = null
-  }
-})
-
-// Dummy data for available times
+// TO DO: Get times from API
 const times = ['12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30']
 
 const selectTime = (selectedTime) => {
   time.value = selectedTime
 }
 
-// TO DO: change the status dynamically
-const bookDate = () => {
-  emits('changeView', 'sessionpending')
-  emits('siteSelected', { site: selectedSite.value, lat: selectedSiteLat.value, lon: selectedSiteLon.value })
+const resetSession = () => {
+  sessionsStore.selectedSite = null
+  sessionsStore.currentSessionId = null
 }
 
-const handleSiteSelected = (data) => {
-  selectedSite.value = data.site
-  selectedSiteLat.value = data.lat
-  selectedSiteLon.value = data.lon
+const bookDate = () => {
+  const selectedSite = sessionsStore.selectedSite
+  console.log('selected site,', selectedSite)
+  if (date.value && time.value && selectedSite) {
+    const newSession = {
+      date: date.value,
+      time: time.value,
+      location: {
+        latitude: selectedSite.lat,
+        longitude: selectedSite.lon
+      },
+      type: 'realtime'
+    }
+    sessionsStore.addSession(newSession)
+    emits('changeView', 'sessionpending')
+  } else {
+    alert('Please fill in all fields to book a session')
+  }
 }
+
+watch(date, (newDate, oldDate) => {
+  if (newDate !== oldDate) {
+    time.value = null
+    resetSession()
+  }
+})
+
+watch(time, (newTime, oldTime) => {
+  if (newTime !== oldTime) {
+    resetSession()
+  }
+})
+
 </script>
 
 <template>
@@ -63,14 +82,14 @@ const handleSiteSelected = (data) => {
       </div>
       <div v-if="formattedDate && time" class="column">
         <p class="selected-datetime">
-          <span v-if="selectedSite">{{ selectedSite }} Selected for {{ formattedDate }} at {{ time }}</span>
+          <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ formattedDate }} at {{ time }}</span>
           <span v-else>Booking for {{ formattedDate }} at {{ time }}</span>
         </p>
-        <v-btn variant="tonal" v-if="date && selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
+        <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
     </div>
   </div>
-  <LeafletMap v-if="formattedDate && time" @siteSelected="handleSiteSelected"/>
+  <LeafletMap v-if="formattedDate && time" />
 </template>
 
 <style scoped>
