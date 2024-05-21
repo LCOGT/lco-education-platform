@@ -15,7 +15,7 @@ const pinia = createPinia()
 pinia.use(piniaPluginPersistedState)
 
 createApp(App)
-  .use(pinia)
   .use(router)
   .use(vuetify)
+  .use(pinia)
   .mount('#app')

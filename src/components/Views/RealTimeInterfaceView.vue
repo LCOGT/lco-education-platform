@@ -1,21 +1,21 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useSessionsStore } from '../../stores/sessions'
 import TimePicker from '../RealTimeInterface/TimePicker.vue'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
+const sessionsStore = useSessionsStore()
+
 const currentView = ref('scheduling')
 const timeRemaining = ref(20)
-const selectedSiteLat = ref(null)
-const selectedSiteLon = ref(null)
+
+const latestSession = computed(() => {
+  return sessionsStore.sessions[sessionsStore.sessions.length - 1] || {}
+})
 
 const handleViewChange = (view) => {
   currentView.value = view
-}
-
-const handleSiteSelected = (data) => {
-  selectedSiteLat.value = data.lat
-  selectedSiteLon.value = data.lon
 }
 
 // TO DO: Instead of having a set time, get the actual length of the time
@@ -35,13 +35,12 @@ const countdown = setInterval(() => {
       <TimePicker
         v-if="currentView === 'scheduling'"
         @changeView="handleViewChange"
-        @siteSelected="handleSiteSelected"
       />
       <SessionPending
         v-else-if="currentView === 'sessionpending'"
         @changeView="handleViewChange"
-        :lat="selectedSiteLat"
-        :lon="selectedSiteLon"
+        :lat="latestSession.location.latitude"
+        :lon="latestSession.location.longitude"
       />
       <div v-else-if="currentView === 'sessionstarted'">
         <h2>Real Time Session</h2>
