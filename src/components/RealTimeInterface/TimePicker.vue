@@ -31,7 +31,6 @@ const resetSession = () => {
 
 const bookDate = () => {
   const selectedSite = sessionsStore.selectedSite
-  console.log('selected site,', selectedSite)
   if (date.value && time.value && selectedSite) {
     const newSession = {
       date: date.value,
