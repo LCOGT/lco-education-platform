@@ -45,6 +45,24 @@ function goToLocation () {
         <AladinSkyMap ref="aladinRef" />
 
         <div class="field is-horizontal">
+          <div class="field-label"></div>
+          <div class="field-body">
+            <div class="field is-expanded">
+              <div class="field has-addons">
+                <div class="control">
+                  <input class="input" type="text" placeholder="e.g. NGC891">
+                </div>
+                <div class="control">
+                  <button class="button blue-bg">
+                    Target Look Up
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field is-horizontal">
           <div class="field-label is-normal">
             <label class="label">Right Ascension</label>
           </div>

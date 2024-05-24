@@ -79,6 +79,13 @@ watch(time, (newTime, oldTime) => {
           <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
         </v-btn-group>
       </div>
+    </div>
+  </div>
+  <div class="columns">
+    <div class="column is-two-thirds">
+      <LeafletMap v-if="formattedDate && time" />
+    </div>
+    <div class="column">
       <div v-if="formattedDate && time" class="column">
         <p class="selected-datetime">
           <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ formattedDate }} at {{ time }}</span>
@@ -88,7 +95,6 @@ watch(time, (newTime, oldTime) => {
       </div>
     </div>
   </div>
-  <LeafletMap v-if="formattedDate && time" />
 </template>
 
 <style scoped>
