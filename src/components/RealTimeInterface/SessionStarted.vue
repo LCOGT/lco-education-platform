@@ -86,10 +86,10 @@ function goToLocation () {
             </div>
           </div>
         </div>
-        <button @click="goToLocation" class="button blue-bg">Search</button>
+        <button @click="goToLocation" class="button blue-bg">Check Visibility</button>
       </div>
     </div>
-    <v-btn :disabled="ra === '' || dec === ''" class="red-bg" @click="moveTelescope = true">MOVE TELESCOPE</v-btn>
+    <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">MOVE TELESCOPE</button>
 
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">

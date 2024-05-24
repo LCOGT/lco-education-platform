@@ -18,7 +18,7 @@ function updateLocation () {
 
 onMounted(() => {
   const config = {
-    width: 500,
+    width: 600,
     projection: 'stereographic',
     transform: 'equatorial',
     controls: false,
@@ -27,7 +27,8 @@ onMounted(() => {
     disableAnimations: true,
     stars: {
       show: true,
-      size: 6,
+      size: 3,
+      limit: 6,
       designation: false,
       propername: false,
       data: 'stars.6.json'
@@ -98,6 +99,39 @@ onMounted(() => {
       lineStyle: { stroke: '#cccccc', width: 1, opacity: 0.6 },
       bounds: false,
       boundStyle: { stroke: '#cccc00', width: 0.5, opacity: 0.8, dash: [2, 4] }
+    },
+    mw: {
+      show: true, // Show Milky Way as filled polygons
+      style: { fill: '#fef9e7', opacity: 0.10 }
+    },
+    lines: {
+      graticule: {
+        show: true,
+        stroke: '#cccccc',
+        width: 0.3,
+        opacity: 0.4, // Show graticule lines
+        // grid values: "outline", "center", or [lat,...] specific position
+        lon: { pos: 'center', opacity: 0.6, fill: 'lightblue', font: '12px Helvetica, Arial, sans-serif' },
+        // grid values: "outline", "center", or [lon,...] specific position
+        lat: { pos: 'center', opacity: 0.5, fill: 'lightblue', font: '12px Helvetica, Arial, sans-serif' }
+      },
+      equatorial: { show: true, stroke: '#aaaaaa', width: 1.3, opacity: 0.4 }, // Show equatorial plane
+      ecliptic: { show: true, stroke: '#66cc66', width: 1.3, opacity: 0.3 }, // Show ecliptic plane
+      galactic: { show: false, stroke: '#cc6666', width: 1.3, opacity: 0.7 }, // Show galactic plane
+      supergalactic: { show: false, stroke: '#cc66cc', width: 1.3, opacity: 0.7 } // Show supergalactic plane
+      // mars: { show: false, stroke:"#cc0000", width:1.3, opacity:.7 }
+    },
+    horizon: { // Show horizon marker, if geo-position and date-time is set
+      show: false,
+      stroke: '#000099', // Line
+      width: 1.0,
+      fill: '#000000', // Area below horizon
+      opacity: 0.5
+    },
+    daylight: { // Show daylight marker
+      show: false,
+      fill: '#f00',
+      opacity: 0.1
     }
   }
 
