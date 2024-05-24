@@ -34,7 +34,7 @@ onMounted(() => {
   <div>
     <h2>Session Not Started</h2>
     <p>You are controlling Eltham College telescope 1 in Australia</p>
-    <p class="green-bg">Session starts in {{ countdown }}</p>
+    <p><span class="green-bg">Session starts in {{ countdown }}</span></p>
     <WindyMap :lat="props.lat" :lon="props.lon"/>
   </div>
 </template>

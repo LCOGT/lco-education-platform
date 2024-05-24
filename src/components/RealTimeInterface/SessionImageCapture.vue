@@ -35,8 +35,8 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
         <div class="column is-half">
             <AladinSkyMap ref="aladinRef" />
             <div class="mosaic-wrapper">
-                <p class="mosaic"> Mosaic </p>
-                <div class="text-wrapper">
+                <p>Mosaic</p>
+                <div class="text-wrapper mosaic">
                     <span class="icon-text">
                         <span class="icon">
                             <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
@@ -44,7 +44,7 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
                         <span>Single</span>
                     </span>
                 </div>
-                <div class="text-wrapper">
+                <div class="text-wrapper mosaic">
                     <span class="icon-text">
                     <span class="icon">
                         <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
@@ -112,6 +112,7 @@ p.mosaic {
     cursor: default;
     font-size: 1.5em;
 }
+
 .icon {
     cursor: pointer;
 }

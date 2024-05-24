@@ -67,8 +67,8 @@ watch(time, (newTime, oldTime) => {
   <h2>Book your real-time session</h2>
   <div class="columns">
     <div class="column is-one-third">
-      <p class="date-text">Select a date and time:</p>
-      <div class="datepicker">
+      <p>Select a date and time:</p>
+      <div>
         <v-date-picker v-model="date" class="blue-bg" />
       </div>
     </div>
@@ -79,36 +79,14 @@ watch(time, (newTime, oldTime) => {
           <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
         </v-btn-group>
       </div>
-    </div>
-  </div>
-  <div class="columns">
-    <div class="column is-two-thirds">
-      <LeafletMap v-if="formattedDate && time" />
-    </div>
-    <div class="column">
       <div v-if="formattedDate && time" class="column">
         <p class="selected-datetime">
           <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ formattedDate }} at {{ time }}</span>
-          <span v-else>Booking for {{ formattedDate }} at {{ time }}</span>
+          <span v-else>Click on a pin to book for {{ formattedDate }} at {{ time }}</span>
         </p>
         <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
+      <LeafletMap v-if="formattedDate && time" />
     </div>
   </div>
 </template>
-
-<style scoped>
-.date-text,
-.selected-date {
-  font-size: 1em;
-  text-align: left;
-  margin: 1em 0 1em 7em;
-}
-
-.datepicker {
-  display: flex;
-  flex-direction: column;
-  max-width: 20%;
-  margin-left: 7em;
-}
-</style>
