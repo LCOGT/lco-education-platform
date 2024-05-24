@@ -99,11 +99,7 @@ defineExpose({
 
 <template>
   <v-container class="pa-0 aladin-container" fluid>
-    <v-row justify="center" align="center" class="fill-height">
-      <v-col cols="12" sm="10" md="8" lg="6" xl="4">
         <div ref="aladinContainer" class="aladin-map"></div>
-      </v-col>
-    </v-row>
   </v-container>
 </template>
 

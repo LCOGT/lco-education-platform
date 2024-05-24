@@ -38,10 +38,10 @@ function goToLocation () {
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="columns">
-        <div class="column is-half">
+        <div class="column is-two-thirds">
           <SkyChart />
       </div>
-      <div class="column is-half">
+      <div class="column">
         <AladinSkyMap ref="aladinRef" />
 
         <div class="field is-horizontal">
@@ -50,10 +50,10 @@ function goToLocation () {
             <div class="field is-expanded">
               <div class="field has-addons">
                 <div class="control">
-                  <input class="input" type="text" placeholder="e.g. NGC891">
+                  <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetname">
                 </div>
                 <div class="control">
-                  <button class="button blue-bg">
+                  <button :disabled="targetname === '' " class="button blue-bg">
                     Target Look Up
                   </button>
                 </div>
@@ -86,7 +86,7 @@ function goToLocation () {
             </div>
           </div>
         </div>
-        <button @click="goToLocation" class="button blue-bg">Check Visibility</button>
+        <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button>
       </div>
     </div>
     <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">MOVE TELESCOPE</button>

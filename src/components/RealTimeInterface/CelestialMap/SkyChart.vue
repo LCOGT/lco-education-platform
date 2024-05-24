@@ -25,6 +25,8 @@ onMounted(() => {
     orientationfixed: true,
     follow: 'zenith',
     disableAnimations: true,
+    adaptable: false, // Sizes are increased with higher zoom-levels
+    interactive: false, // Enable zooming and rotation with mousewheel and dragging
     stars: {
       show: true,
       size: 3,
