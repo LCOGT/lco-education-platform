@@ -42,10 +42,10 @@ const countdown = setInterval(() => {
         :lat="latestSession.location.latitude"
         :lon="latestSession.location.longitude"
       />
-      <div v-else-if="currentView === 'sessionstarted'">
+      <div v-else-if="currentView === 'sessionstarted'" class="content">
         <h2>Real Time Session</h2>
         <p>You are controlling Eltham College telescope 1 in Australia</p>
-        <p>Time Remaining in session: {{ timeRemaining }}</p>
+        <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ timeRemaining }}</span></p>
         <SessionStarted @changeView="handleViewChange" />
       </div>
     </div>
