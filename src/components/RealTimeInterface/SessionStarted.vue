@@ -11,8 +11,47 @@ const aladinRef = ref(null)
 // TO DO: Save these values in the store
 const ra = ref('')
 const dec = ref('')
-
+const exposureTime = ref('')
+const selectedFilter = ref('')
 const progressBar = ref(0)
+
+function handleExposureTimeUpdate (newExposureTime) {
+  exposureTime.value = newExposureTime
+}
+
+function handleSelectedFilterUpdate (newSelectedFilter) {
+  selectedFilter.value = newSelectedFilter
+}
+
+const apiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
+
+function makeApiRequest () {
+  const requestBody = {
+    dec: dec.value,
+    expFilter: [selectedFilter.value, selectedFilter.value, selectedFilter.value],
+    expTime: [exposureTime.value, exposureTime.value, exposureTime.value],
+    name: 'm33',
+    ra: ra.value
+  }
+  console.log('this is request body', requestBody)
+
+  fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  })
+    .then(response => {
+      console.log('this is response', response)
+      if (response.ok) {
+        console.log('response is ok')
+      }
+    })
+    .catch(error => {
+      console.log('error', error)
+    })
+}
 
 function handleProgressUpdate (progress) {
   progressBar.value = progress
@@ -36,6 +75,7 @@ function goToLocation () {
 }
 </script>
 <template>
+  <button v-if="ra && dec && exposureTime && selectedFilter" @click="makeApiRequest">Make API Request</button>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="columns">
         <div class="column is-two-thirds">
@@ -87,13 +127,13 @@ function goToLocation () {
           </div>
         </div>
         <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button>
-        <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">MOVE TELESCOPE</button>
+        <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
       </div>
     </div>
 
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture @update:renderGallery="renderGallery = $event"/>
+    <SessionImageCapture @update:renderGallery="renderGallery = $event" @update:exposureTime="handleExposureTimeUpdate" @update:selectedFilter="handleSelectedFilterUpdate"/>
     <v-btn class="go-button" color="indigo" @click="captureImages = true" :disabled="!renderGallery" >GO</v-btn>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">

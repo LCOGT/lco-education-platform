@@ -3,7 +3,7 @@ import { ref, defineEmits, computed, watch } from 'vue'
 import AladinSkyMap from './AladinSkyMap.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-const emits = defineEmits(['update:renderGallery'])
+const emits = defineEmits(['update:renderGallery', 'update:exposureTime', 'update:selectedFilter'])
 
 const exposureTime = ref('')
 const exposureCount = ref('')
@@ -25,6 +25,8 @@ function changeFov (fov) {
 }
 
 watch([exposureTime, exposureCount, selectedFilter], () => {
+  emits('update:selectedFilter', selectedFilter.value)
+  emits('update:exposureTime', exposureTime.value)
   emits('update:renderGallery', allFieldsFilled.value)
 })
 
@@ -90,9 +92,9 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
                         <div class="select is-fullwidth">
                             <select id="filter" v-model="selectedFilter">
                                 <option disabled value="">Choose a filter</option>
-                                <option value="RGB">RGB color</option>
-                                <option value="Blue">Blue</option>
-                                <option value="Green (V)">Green (V)</option>
+                                <option value="ip">RGB color</option>
+                                <option value="rp">Blue</option>
+                                <option value="gb">Green (V)</option>
                                 <option value="Red">Red</option>
                                 <option value="H-Alpha">H-Alpha</option>
                             </select>
