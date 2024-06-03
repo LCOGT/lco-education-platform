@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -18,9 +18,13 @@ const progressBar = ref(0)
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 const renderGallery = ref(false)
+const status = ref(null)
 
 const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
+const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
+
+let pollingInterval = null
 
 function handleExposureTimeUpdate (newExposureTime) {
   exposureTime.value = newExposureTime
@@ -71,6 +75,16 @@ function commandGo () {
     })
 }
 
+async function fetchStatus () {
+  try {
+    const response = await fetch(statusApiUrl)
+    const data = await response.json()
+    status.value = data
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
 function handleProgressUpdate (progress) {
   progressBar.value = progress
   if (progress === 100) {
@@ -86,6 +100,15 @@ function goToLocation () {
     console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
   }
 }
+
+onMounted(() => {
+  fetchStatus()
+  pollingInterval = setInterval(fetchStatus, 1000)
+})
+
+onUnmounted(() => {
+  clearInterval(pollingInterval)
+})
 </script>
 <template>
   <button v-if="ra && dec && exposureTime && selectedFilter" @click="commandGo">Make API Request</button>
@@ -156,7 +179,6 @@ function goToLocation () {
                     </div>
                 </div>
             </div>
-
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Filter</label>
@@ -178,10 +200,17 @@ function goToLocation () {
                     </div>
                 </div>
                 </div>
-
         </div>
         <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
+        <div v-if="status">
+        <div v-for="item in status" :key="item">
+          <p>Observatory: {{ item.availability }}</p>
+          <p>Telescope: {{ item.telescope }}</p>
+          <p>Camera: {{ item.instrument }}</p>
+          <p>Progress: {{ item.progress }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
