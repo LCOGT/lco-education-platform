@@ -20,6 +20,10 @@ onMounted(() => {
   })
     .then(aladin => {
       aladinInstance = aladin
+      const searchBox = document.querySelector('.aladin-location')
+      if (searchBox) {
+        searchBox.style.display = 'none'
+      }
     })
     .catch(error => {
       console.error('Failed to initialize Aladin:', error)
