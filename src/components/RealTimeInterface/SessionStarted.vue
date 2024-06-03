@@ -134,11 +134,59 @@ function goToLocation () {
             </div>
           </div>
         </div>
+        <div class="column">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Exposure Time</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                    <p class="control is-expanded">
+                        <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
+                    </p>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Exposure Count</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                    <p class="control is-expanded">
+                        <input id="exposureCount" type="text" class="input" v-model="exposureCount">
+                    </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Filter</label>
+                </div>
+                <div class="field-body">
+                    <div class="field is-narrow">
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="filter" v-model="selectedFilter">
+                                <option disabled value="">Choose a filter</option>
+                                <option value="ip">RGB color</option>
+                                <option value="rp">Blue</option>
+                                <option value="gb">Green (V)</option>
+                                <option value="Red">Red</option>
+                                <option value="H-Alpha">H-Alpha</option>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+        </div>
         <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
       </div>
     </div>
-
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
     <SessionImageCapture @update:renderGallery="renderGallery = $event" @update:exposureTime="handleExposureTimeUpdate" @update:selectedFilter="handleSelectedFilterUpdate"/>
