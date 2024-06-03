@@ -8,13 +8,16 @@ import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
 
 const router = useRouter()
 const aladinRef = ref(null)
-// TO DO: Save these values in the store
 const ra = ref('')
 const dec = ref('')
 const targetname = ref('')
 const exposureTime = ref('')
+const exposureCount = ref('')
 const selectedFilter = ref('')
 const progressBar = ref(0)
+const moveTelescope = ref(false)
+const captureImages = ref(false)
+const renderGallery = ref(false)
 
 const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
@@ -49,7 +52,6 @@ function commandGo () {
     name: 'm33',
     ra: ra.value
   }
-  console.log('this is request body', requestBody)
 
   fetch(bridgeApiUrl, {
     method: 'POST',
@@ -75,11 +77,6 @@ function handleProgressUpdate (progress) {
     router.push('/images')
   }
 }
-
-const moveTelescope = ref(false)
-const captureImages = ref(false)
-
-const renderGallery = ref(false)
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
@@ -154,7 +151,7 @@ function goToLocation () {
                 <div class="field-body">
                     <div class="field">
                     <p class="control is-expanded">
-                        <input id="exposureCount" type="text" class="input" v-model="exposureCount">
+                        <input id="exposureCount" type="number" class="input" v-model="exposureCount">
                     </p>
                     </div>
                 </div>
@@ -184,7 +181,7 @@ function goToLocation () {
 
         </div>
         <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
-        <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
+        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
       </div>
     </div>
   </div>
