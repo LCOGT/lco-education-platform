@@ -26,60 +26,11 @@ onMounted(() => {
     })
 })
 
-function parseRa (raString) {
-  let coordinates
-
-  // Entry in HMS format
-  coordinates = raString.match(/(\d+)h\s*(\d+)m\s*([\d.]+)s/)
-  if (coordinates) {
-    const hours = parseFloat(coordinates[1])
-    const minutes = parseFloat(coordinates[2])
-    const seconds = parseFloat(coordinates[3])
-    return 15 * (hours + minutes / 60 + seconds / 3600)
-  }
-
-  // Entry in decimal hours format
-  coordinates = raString.match(/([\d.]+)h/)
-  if (coordinates) {
-    return 15 * parseFloat(coordinates[1])
-  }
-
-  // Entry in decimal degrees format
-  coordinates = raString.match(/([\d.]+)°/)
-  if (coordinates) {
-    return parseFloat(coordinates[1])
-  }
-  return null
-}
-
-function parseDec (decString) {
-  let coordinates
-
-  // Entry in DMS format
-  coordinates = decString.match(/([+-]?\d+)°\s*(\d+)'[\s]*(\d+\.?\d*)"/)
-  if (coordinates) {
-    const degrees = parseFloat(coordinates[1])
-    const arcminutes = parseFloat(coordinates[2])
-    const arcseconds = parseFloat(coordinates[3])
-    return degrees + (degrees < 0 ? -1 : 1) * (arcminutes / 60 + arcseconds / 3600)
-  }
-
-  // Entry in decimal degrees format
-  coordinates = decString.match(/([+-]?\d+\.?\d*)°/)
-  if (coordinates) {
-    return parseFloat(coordinates[1])
-  }
-  return null
-}
-
 function goToRaDec (ra, dec) {
-  const raNumber = parseRa(ra)
-  const decNumber = parseDec(dec)
-
-  if (aladinInstance && raNumber !== null && decNumber !== null) {
-    aladinInstance.gotoRaDec(raNumber, decNumber)
+  if (aladinInstance) {
+    aladinInstance.gotoRaDec(ra, dec)
   } else {
-    console.error('Invalid RA/DEC values or Aladin instance not initialized')
+    console.error('Aladin instance not initialized')
   }
 }
 

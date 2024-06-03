@@ -11,9 +11,13 @@ const aladinRef = ref(null)
 // TO DO: Save these values in the store
 const ra = ref('')
 const dec = ref('')
+const targetname = ref('')
 const exposureTime = ref('')
 const selectedFilter = ref('')
 const progressBar = ref(0)
+
+const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
+const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
 function handleExposureTimeUpdate (newExposureTime) {
   exposureTime.value = newExposureTime
@@ -23,9 +27,21 @@ function handleSelectedFilterUpdate (newSelectedFilter) {
   selectedFilter.value = newSelectedFilter
 }
 
-const apiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
+function getRaDecFromTargetName () {
+  fetch(`${targetNameApiUrl}${targetname.value}?target_type=sidereal`)
+    .then(response => response.json())
+    .then(data => {
+      ra.value = parseFloat(data.ra_d).toFixed(3)
+      dec.value = parseFloat(data.dec_d).toFixed(3)
+    }).then(() => {
+      goToLocation()
+    })
+    .catch(error => {
+      console.error('Error:', error)
+    })
+}
 
-function makeApiRequest () {
+function commandGo () {
   const requestBody = {
     dec: dec.value,
     expFilter: [selectedFilter.value, selectedFilter.value, selectedFilter.value],
@@ -35,7 +51,7 @@ function makeApiRequest () {
   }
   console.log('this is request body', requestBody)
 
-  fetch(apiUrl, {
+  fetch(bridgeApiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -67,7 +83,7 @@ const renderGallery = ref(false)
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
-  if (aladinRef.value && aladinRef.value.goToRaDec) {
+  if (aladinRef.value) {
     aladinRef.value.goToRaDec(ra.value, dec.value)
   } else {
     console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
@@ -75,7 +91,7 @@ function goToLocation () {
 }
 </script>
 <template>
-  <button v-if="ra && dec && exposureTime && selectedFilter" @click="makeApiRequest">Make API Request</button>
+  <button v-if="ra && dec && exposureTime && selectedFilter" @click="commandGo">Make API Request</button>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="columns">
         <div class="column is-two-thirds">
@@ -83,7 +99,6 @@ function goToLocation () {
       </div>
       <div class="column">
         <AladinSkyMap ref="aladinRef" />
-
         <div class="field is-horizontal">
           <div class="field-label"></div>
           <div class="field-body">
@@ -93,7 +108,7 @@ function goToLocation () {
                   <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetname">
                 </div>
                 <div class="control">
-                  <button :disabled="targetname === '' " class="button blue-bg">
+                  <button :disabled="!targetname" @click="getRaDecFromTargetName" class="button blue-bg">
                     Target Look Up
                   </button>
                 </div>
@@ -101,32 +116,25 @@ function goToLocation () {
             </div>
           </div>
         </div>
-
         <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Right Ascension</label>
-          </div>
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="ra" placeholder="e.g. 12:01:23">
+                <input class="input" type="text" v-model="ra" placeholder="Right Ascension" disabled>
               </p>
             </div>
           </div>
         </div>
         <div class="field is-horizontal">
-          <div class="field-label is-normal">
-            <label class="label">Declination</label>
-          </div>
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="dec" placeholder="-23:45:01">
+                <input class="input" type="text" v-model="dec" placeholder="Declination" disabled>
               </p>
             </div>
           </div>
         </div>
-        <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button>
+        <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
       </div>
     </div>
