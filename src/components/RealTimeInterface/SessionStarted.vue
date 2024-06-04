@@ -5,6 +5,7 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
+import PolledThumbnails from '../RealTimeInterface/PolledThumbnails.vue'
 
 const router = useRouter()
 const aladinRef = ref(null)
@@ -211,6 +212,7 @@ onUnmounted(() => {
           <p>Progress: {{ item.progress }}</p>
           </div>
         </div>
+        <PolledThumbnails />
       </div>
     </div>
   </div>
