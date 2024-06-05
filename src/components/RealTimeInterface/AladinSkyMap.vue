@@ -1,6 +1,13 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, defineProps } from 'vue'
 import { initializeAladin } from '../../utils/aladinUtility.js'
+
+const props = defineProps({
+  targetname: {
+    type: String,
+    required: false
+  }
+})
 
 const aladinContainer = ref(null)
 let aladinInstance = null
@@ -9,7 +16,7 @@ onMounted(() => {
   initializeAladin(aladinContainer.value, {
     survey: 'P/DSS2/color',
     fov: 1,
-    target: 'M33',
+    target: props.targetname ? props.targetname : 'M33',
     cooFrame: 'ICRSd',
     showProjectionControl: false,
     showZoomControl: true,
