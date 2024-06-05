@@ -204,15 +204,15 @@ onUnmounted(() => {
         </div>
         <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
-        <div v-if="status">
+        <div v-if="status && ra && dec && exposureCount && exposureTime && selectedFilter">
         <div v-for="item in status" :key="item">
           <p>Observatory: {{ item.availability }}</p>
           <p>Telescope: {{ item.telescope }}</p>
           <p>Camera: {{ item.instrument }}</p>
           <p>Progress: {{ item.progress }}</p>
           </div>
+          <PolledThumbnails />
         </div>
-        <PolledThumbnails />
       </div>
     </div>
   </div>
