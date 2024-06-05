@@ -1,17 +1,37 @@
 <script setup>
-import { ref, defineEmits, computed, watch } from 'vue'
-import AladinSkyMap from './AladinSkyMap.vue'
+import { ref, defineEmits, defineProps, computed, watch, onMounted, onUnmounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import AladinSkyMap from './AladinSkyMap.vue'
+import PolledThumbnails from './PolledThumbnails.vue'
 
-const emits = defineEmits(['update:renderGallery', 'update:exposureTime', 'update:selectedFilter'])
+const props = defineProps({
+  ra: {
+    type: Number,
+    required: true
+  },
+  dec: {
+    type: Number,
+    required: true
+  },
+  targetname: {
+    type: String,
+    required: true
+  }
+})
+
+const emits = defineEmits(['update:renderGallery', 'update:exposureTime', 'update:selectedFilter', 'startCaptureImages'])
 
 const exposureTime = ref('')
 const exposureCount = ref('')
 const selectedFilter = ref('')
-
+const status = ref(null)
 const aladinRef = ref(null)
+let pollingInterval = null
+const renderThumbnail = ref(false)
 
-// TO DO: add more conditions where we check for ranges and valid values
+const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
+const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
+
 const allFieldsFilled = computed(() => {
   const filled = exposureTime.value.trim() !== '' && exposureCount.value.trim() !== '' && selectedFilter.value.trim() !== ''
   emits('update:renderGallery', filled)
@@ -24,18 +44,71 @@ function changeFov (fov) {
   }
 }
 
+async function fetchStatus () {
+  try {
+    const response = await fetch(statusApiUrl)
+    const data = await response.json()
+    status.value = data
+  } catch (error) {
+    console.error('Error:', error)
+  }
+}
+
+function commandGo () {
+  const requestBody = {
+    dec: props.dec,
+    expFilter: [selectedFilter.value, selectedFilter.value, selectedFilter.value],
+    expTime: [exposureTime.value, exposureTime.value, exposureTime.value],
+    name: 'test',
+    ra: props.ra
+  }
+
+  fetch(bridgeApiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  })
+    .then(response => {
+      console.log('response', response)
+      if (response.ok) {
+        renderThumbnail.value = true
+      }
+    })
+    // .then(handleCaptureImages())
+    .catch(error => {
+      console.log('error', error)
+    })
+}
+
+onMounted(() => {
+  fetchStatus()
+  pollingInterval = setInterval(fetchStatus, 1000)
+})
+
+onUnmounted(() => {
+  clearInterval(pollingInterval)
+})
+
 watch([exposureTime, exposureCount, selectedFilter], () => {
   emits('update:selectedFilter', selectedFilter.value)
   emits('update:exposureTime', exposureTime.value)
   emits('update:renderGallery', allFieldsFilled.value)
 })
 
+function handleCaptureImages () {
+  if (allFieldsFilled.value) {
+    emits('startCaptureImages', true)
+  }
+}
+
 </script>
 
 <template>
     <div class="columns">
         <div class="column is-half">
-            <AladinSkyMap ref="aladinRef" />
+            <AladinSkyMap ref="aladinRef" :targetname="targetname"/>
             <div class="mosaic-wrapper">
                 <p>Mosaic</p>
                 <div class="text-wrapper mosaic">
@@ -81,7 +154,6 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
                     </div>
                 </div>
             </div>
-
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Filter</label>
@@ -102,14 +174,24 @@ watch([exposureTime, exposureCount, selectedFilter], () => {
                     </div>
                     </div>
                 </div>
+            </div>
+            <div v-if="status">
+                <div v-for="item in status" :key="item">
+                    <p>Observatory: {{ item.availability }}</p>
+                    <p>Telescope: {{ item.telescope }}</p>
+                    <p>Camera: {{ item.instrument }}</p>
+                    <p>Progress: {{ item.progress }}</p>
                 </div>
-
+            </div>
+            <v-btn class="go-button" color="indigo" @click="commandGo" :disabled="!allFieldsFilled">Capture Target</v-btn>
+            <div v-if="renderThumbnail">
+                <PolledThumbnails />
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-
 p.mosaic {
     cursor: default;
     font-size: 1.5em;
@@ -118,5 +200,4 @@ p.mosaic {
 .icon {
     cursor: pointer;
 }
-
 </style>
