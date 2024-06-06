@@ -15,20 +15,27 @@ const progressBar = ref(0)
 const moveTelescope = ref(false)
 const captureImages = ref(false)
 const renderGallery = ref(false)
+const targeterror = ref(false)
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
 function getRaDecFromTargetName () {
+  targeterror.value = false
   fetch(`${targetNameApiUrl}${targetname.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
-      ra.value = parseFloat(data.ra_d).toFixed(3)
-      dec.value = parseFloat(data.dec_d).toFixed(3)
+      if (data.error) {
+        targeterror.value = true
+      } else {
+        ra.value = parseFloat(data.ra_d).toFixed(3)
+        dec.value = parseFloat(data.dec_d).toFixed(3)
+      }
     }).then(() => {
       goToLocation()
     })
     .catch(error => {
       console.error('Error:', error)
+      targeterror.value = true
     })
 }
 
@@ -59,30 +66,24 @@ function handleStartCaptureImages (value) {
         <div class="column is-two-thirds">
           <SkyChart />
       </div>
-      <div class="column">
+      <div class="column grey-bg">
         <AladinSkyMap ref="aladinRef" />
         <div class="content">
-        <div class="field is-horizontal">
-          <div class="field-label"></div>
-          <div class="field-body">
-            <div class="field is-expanded">
-              <div class="field has-addons">
-                <div class="control">
-                  <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetname">
-                </div>
-                <div class="control">
-                  <button :disabled="!targetname" @click="getRaDecFromTargetName" class="button blue-bg">
+          <div class="field has-addons">
+              <p class="control is-expanded">
+                <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetname">
+              </p>
+              <p class="control">
+                <button :disabled="!targetname" @click="getRaDecFromTargetName" class="button blue-bg">
                     Target Look Up
                   </button>
-                </div>
-              </div>
+              </p>
             </div>
-          </div>
-        </div>
-        <div class="field is-horizontal">
+            <p class="help is-danger" v-if="targeterror">Target not found. Enter coordinates or try a different target.</p>
+            <div class="field is-horizontal">
           <div class="field-label is-normal">
                     <label class="label">Right Ascension</label>
-                </div>
+          </div>
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
@@ -92,6 +93,9 @@ function handleStartCaptureImages (value) {
           </div>
         </div>
         <div class="field is-horizontal">
+          <div class="field-label is-normal">
+              <label class="label">Declination</label>
+          </div>
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
@@ -100,7 +104,7 @@ function handleStartCaptureImages (value) {
             </div>
           </div>
         </div>
-        <div class="column">
+        <div v-if="targetname">
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Exposure Time</label>
@@ -146,7 +150,7 @@ function handleStartCaptureImages (value) {
                     </div>
                 </div>
                 </div>
-        </div>
+              </div>
         </div>
         <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
