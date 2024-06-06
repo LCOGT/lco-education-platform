@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
@@ -10,7 +11,8 @@ const router = useRouter()
 const aladinRef = ref(null)
 const ra = ref('')
 const dec = ref('')
-const targetname = ref('')
+const targetName = ref('')
+const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
 const captureImages = ref(false)
@@ -21,7 +23,7 @@ const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
 function getRaDecFromTargetName () {
   targeterror.value = false
-  fetch(`${targetNameApiUrl}${targetname.value}?target_type=sidereal`)
+  fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
       if (data.error) {
@@ -55,8 +57,11 @@ function goToLocation () {
   }
 }
 
-function handleStartCaptureImages (value) {
-  captureImages.value = value
+function changeFov (fov) {
+  if (aladinRef.value && aladinRef.value.setFov) {
+    aladinRef.value.setFov(fov)
+    fieldOfView.value = fov
+  }
 }
 
 </script>
@@ -68,13 +73,32 @@ function handleStartCaptureImages (value) {
       </div>
       <div class="column grey-bg">
         <AladinSkyMap ref="aladinRef" />
+        <div class="mosaic-wrapper">
+                <p>Mosaic</p>
+                <div class="text-wrapper mosaic">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
+                        </span>
+                        <span>Single</span>
+                    </span>
+                </div>
+                <div class="text-wrapper mosaic">
+                    <span class="icon-text">
+                    <span class="icon">
+                        <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
+                    </span>
+                    <span>2 x 2 mosaic</span>
+                    </span>
+                </div>
+            </div>
         <div class="content">
           <div class="field has-addons">
               <p class="control is-expanded">
-                <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetname">
+                <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
               </p>
               <p class="control">
-                <button :disabled="!targetname" @click="getRaDecFromTargetName" class="button blue-bg">
+                <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
                     Target Look Up
                   </button>
               </p>
@@ -167,7 +191,7 @@ function handleStartCaptureImages (value) {
     </div>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture @update:renderGallery="renderGallery = $event" @startCaptureImages="handleStartCaptureImages" :ra="ra" :dec="dec" :targetname="targetname"/>
+    <SessionImageCapture @update:renderGallery="renderGallery = $event" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
@@ -175,6 +199,13 @@ function handleStartCaptureImages (value) {
 </template>
 
 <style scoped>
+p.mosaic {
+  cursor: default;
+  font-size: 1.5em;
+}
+.icon {
+  cursor: pointer;
+}
 .sky-wrapper {
   display: flex;
   flex-direction: column;
