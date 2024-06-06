@@ -104,7 +104,7 @@ function handleStartCaptureImages (value) {
             </div>
           </div>
         </div>
-        <div v-if="targetname">
+        <div v-if="ra && dec">
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Exposure Time</label>
