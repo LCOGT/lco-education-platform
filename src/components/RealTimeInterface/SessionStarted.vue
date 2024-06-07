@@ -6,6 +6,10 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
+import { calcAltAz } from '../../utils/visibility.js'
+import { useSessionsStore } from '../../stores/sessions'
+
+const sessionsStore = useSessionsStore()
 
 const router = useRouter()
 const aladinRef = ref(null)
@@ -18,6 +22,7 @@ const moveTelescope = ref(false)
 const captureImages = ref(false)
 const renderGallery = ref(false)
 const targeterror = ref(false)
+const targeterrorMsg = ref('')
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
@@ -28,9 +33,17 @@ function getRaDecFromTargetName () {
     .then(data => {
       if (data.error) {
         targeterror.value = true
+        targeterrorMsg.value = 'Target not found. Enter coordinates or try a different target.'
       } else {
+        var lat = sessionsStore.selectedSite.lat
+        var lon = sessionsStore.selectedSite.lon
         ra.value = parseFloat(data.ra_d).toFixed(3)
         dec.value = parseFloat(data.dec_d).toFixed(3)
+        var vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
+        if (vals[1] < 30.0) {
+          targeterror.value = true
+          targeterrorMsg.value = 'Target not visible. Try a different target.'
+        }
       }
     }).then(() => {
       goToLocation()
@@ -103,7 +116,7 @@ function changeFov (fov) {
                   </button>
               </p>
             </div>
-            <p class="help is-danger" v-if="targeterror">Target not found. Enter coordinates or try a different target.</p>
+            <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
             <div class="field is-horizontal">
           <div class="field-label is-normal">
                     <label class="label">Right Ascension</label>
