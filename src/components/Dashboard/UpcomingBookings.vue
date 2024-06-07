@@ -1,9 +1,10 @@
 <script setup>
-// TO DO: store bookings in pinia store and fetch them here
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useSessionsStore } from '../../stores/sessions'
 
 const router = useRouter()
+const sessionsStore = useSessionsStore()
 
 const redirectToRTI = () => {
   router.push('/realtime')
@@ -13,12 +14,7 @@ const redirectToScheduling = () => {
   router.push('/schedule')
 }
 
-const items = ref([
-  { id: 1, date: 'May 19, 2024', telescope: 'Maui, LCO' },
-  { id: 2, date: 'April 3, 2024', telescope: 'Australia, Eltham College' },
-  { id: 3, date: 'March 13, 2024', telescope: 'Maui, LCO' },
-  { id: 4, date: 'March 12, 2024', telescope: 'Tenerife, LCO' }
-])
+const allSessions = sessionsStore.getAllSessions
 
 const observations = ref([
   { id: 1, title: 'M83', progress: 10, state: 'scheduled' },
@@ -34,8 +30,8 @@ const observations = ref([
     <div class="bookings">
         <h3>Upcoming Bookings</h3>
         <div class="table-summary">
-        <div v-for="({id, date, telescope}) in items" :key="id">
-            <div><a>{{ date }}</a></div><div>{{ telescope }}</div>
+        <div v-for="session in allSessions" :key="session.id">
+            <div><a>{{ session.date }}</a></div><div>{{ session.time }}</div>
         </div>
         </div>
     </div>
