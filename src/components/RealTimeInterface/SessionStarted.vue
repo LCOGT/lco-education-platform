@@ -81,7 +81,7 @@ function changeFov (fov) {
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="columns">
-        <div class="column is-two-thirds">
+      <div class="column is-two-thirds">
           <SkyChart />
       </div>
       <div class="column grey-bg">

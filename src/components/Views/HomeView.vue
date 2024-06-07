@@ -14,7 +14,7 @@ function hideView () {
         <div class="hero-body">
             <div class="columns">
                 <div class="column">
-                    <router-link to="/realtime" class="route">
+                    <router-link to="/book/realtime" class="route">
                         <div class="card highlight-box">
                             <div class="card-content is-clickable">
                                 <FontAwesomeIcon icon="fa-solid fa-gamepad" class="blue icon-highlight" />

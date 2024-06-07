@@ -12,7 +12,7 @@ const routes = [
     redirect: '/dashboard'
   },
   {
-    path: '/realtime',
+    path: '/realtime/:id',
     name: 'RealTimeInterface',
     component: RealTimeInterface
   },

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
+console.log('Celestial', Celestial)
 
 const lat = ref(35)
 const lng = ref(-105)

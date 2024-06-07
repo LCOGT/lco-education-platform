@@ -23,6 +23,11 @@ const observations = ref([
   { id: 4, title: 'M16', progress: 30 }
 ])
 
+const selectSession = (sessionId) => {
+  sessionsStore.currentSessionId = sessionId
+  router.push(`/realtime/${sessionId}`)
+}
+
 </script>
 
 <template>
@@ -31,7 +36,7 @@ const observations = ref([
         <h3>Upcoming Bookings</h3>
         <div class="table-summary">
         <div v-for="session in allSessions" :key="session.id">
-            <div><a>{{ session.date }}</a></div><div>{{ session.time }}</div>
+            <div><a @click.prevent="selectSession(session.id)">{{ session.date }}</a></div><div>{{ session.time }}</div>
         </div>
         </div>
     </div>
