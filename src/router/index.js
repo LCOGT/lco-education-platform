@@ -4,6 +4,7 @@ import Dashboard from '../components/Views/DashboardView.vue'
 import Images from '../components/Views/ImagesView.vue'
 import Scheduling from '../components/Views/SchedulingView.vue'
 import About from '../components/Views/AboutView.vue'
+import BookRTI from '../components/Views/BookRTIView.vue'
 
 const routes = [
   {
@@ -14,6 +15,11 @@ const routes = [
     path: '/realtime',
     name: 'RealTimeInterface',
     component: RealTimeInterface
+  },
+  {
+    path: '/book/realtime',
+    name: 'BookRTI',
+    component: BookRTI
   },
   {
     path: '/dashboard',
