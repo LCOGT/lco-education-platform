@@ -6,8 +6,8 @@ import { useSessionsStore } from '../../stores/sessions'
 const router = useRouter()
 const sessionsStore = useSessionsStore()
 
-const redirectToRTI = () => {
-  router.push('/realtime')
+const redirectToBooking = () => {
+  router.push('/book/realtime')
 }
 
 const redirectToScheduling = () => {
@@ -26,7 +26,7 @@ const observations = ref([
 </script>
 
 <template>
-    <button class="button red-bg" @click="redirectToRTI"> Book Slot </button>
+    <button class="button red-bg" @click="redirectToBooking"> Book Slot </button>
     <div class="bookings">
         <h3>Upcoming Bookings</h3>
         <div class="table-summary">
