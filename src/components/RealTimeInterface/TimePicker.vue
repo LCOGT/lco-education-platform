@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed, watch, defineEmits } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
+const router = useRouter()
 const sessionsStore = useSessionsStore()
 
 const date = ref(null)
@@ -42,7 +44,8 @@ const bookDate = () => {
       type: 'realtime'
     }
     sessionsStore.addSession(newSession)
-    emits('changeView', 'sessionpending')
+    router.push('/dashboard')
+    // emits('changeView', 'sessionpending')
   } else {
     alert('Please fill in all fields to book a session')
   }

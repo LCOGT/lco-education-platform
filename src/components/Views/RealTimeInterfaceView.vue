@@ -7,11 +7,15 @@ import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
 const sessionsStore = useSessionsStore()
 
-const currentView = ref('scheduling')
+const currentView = ref('sessionpending')
 const timeRemaining = ref(20)
 
 const latestSession = computed(() => {
   return sessionsStore.sessions[sessionsStore.sessions.length - 1] || {}
+})
+
+const selectedSession = computed(() => {
+  return sessionsStore.sessions.find(session => session.id === sessionsStore.currentSessionId)
 })
 
 const handleViewChange = (view) => {
@@ -32,15 +36,15 @@ const countdown = setInterval(() => {
 <template>
   <section>
     <div class="container">
-      <TimePicker
+      <!-- <TimePicker
         v-if="currentView === 'scheduling'"
         @changeView="handleViewChange"
-      />
+      /> -->
       <SessionPending
-        v-else-if="currentView === 'sessionpending'"
+        v-if="currentView === 'sessionpending'"
         @changeView="handleViewChange"
-        :lat="latestSession.location.latitude"
-        :lon="latestSession.location.longitude"
+        :lat="selectedSession.location?.latitude"
+        :lon="selectedSession.location?.longitude"
       />
       <div v-else-if="currentView === 'sessionstarted'" class="content">
         <h2>Real Time Session</h2>

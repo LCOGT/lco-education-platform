@@ -11,6 +11,9 @@ export const useSessionsStore = defineStore('sessions', {
   getters: {
     currentSession (state) {
       return state.sessions.find(session => session.id === state.currentSessionId) || {}
+    },
+    getAllSessions (state) {
+      return state.sessions
     }
   },
   actions: {

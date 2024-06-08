@@ -26,6 +26,7 @@ onMounted(() => {
     follow: 'zenith',
     disableAnimations: true,
     adaptable: false, // Sizes are increased with higher zoom-levels
+    datapath: '/data',
     interactive: false, // Enable zooming and rotation with mousewheel and dragging
     stars: {
       show: true,
@@ -138,6 +139,7 @@ onMounted(() => {
   }
 
   Celestial.display(config)
+  console.log('Celestial', Celestial.display(config))
   updateLocation()
 })
 </script>

@@ -35,11 +35,11 @@ function getRaDecFromTargetName () {
         targeterror.value = true
         targeterrorMsg.value = 'Target not found. Enter coordinates or try a different target.'
       } else {
-        var lat = sessionsStore.selectedSite.lat
-        var lon = sessionsStore.selectedSite.lon
+        const lat = sessionsStore.selectedSite.lat
+        const lon = sessionsStore.selectedSite.lon
         ra.value = parseFloat(data.ra_d).toFixed(3)
         dec.value = parseFloat(data.dec_d).toFixed(3)
-        var vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
+        const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
           targeterror.value = true
           targeterrorMsg.value = 'Target not visible. Try a different target.'
@@ -81,7 +81,7 @@ function changeFov (fov) {
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
     <div class="columns">
-        <div class="column is-two-thirds">
+      <div class="column is-two-thirds">
           <SkyChart />
       </div>
       <div class="column grey-bg">
