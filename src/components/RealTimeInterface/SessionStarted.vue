@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
@@ -16,6 +16,7 @@ const aladinRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
+const validTarget = ref(false)
 const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
@@ -30,6 +31,7 @@ const targetNameApiUrl = 'https://simbad2k.lco.global/'
 const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 
 function getRaDecFromTargetName () {
+  validTarget.value = false
   fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
@@ -45,8 +47,10 @@ function getRaDecFromTargetName () {
         if (vals[1] < 30.0) {
           targeterror.value = true
           targeterrorMsg.value = 'Target not visible. Try a different target.'
+          validTarget.value = false
         } else {
           targeterrorMsg.value = ''
+          validTarget.value = true
         }
         // Reset form fields when user looks up another target
         exposureTime.value = ''
@@ -86,7 +90,7 @@ function changeFov (fov) {
 }
 
 const allFieldsFilled = () => {
-  return ra.value && dec.value && exposureTime.value && exposureCount.value && selectedFilter.value
+  return ra.value && dec.value && exposureTime.value && exposureCount.value && selectedFilter.value && targetName.value && validTarget.value === true
 }
 
 function commandGo () {
@@ -113,6 +117,10 @@ function commandGo () {
       console.log('error', error)
     })
 }
+
+watch(targetName, () => {
+  validTarget.value = false
+})
 
 </script>
 <template>
@@ -159,7 +167,7 @@ function commandGo () {
             </div>
           </div>
         </div>
-        <div v-if="ra && dec && !targeterrorMsg">
+        <div v-if="ra && dec && !targeterrorMsg && targetName">
           <div class="columns">
                 <div class="column">
                   <p>Mosaic</p>
