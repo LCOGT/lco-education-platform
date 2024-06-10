@@ -120,6 +120,8 @@ function commandGo () {
 
 watch(targetName, () => {
   validTarget.value = false
+  ra.value = ''
+  dec.value = ''
 })
 
 </script>
