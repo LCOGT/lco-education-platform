@@ -37,6 +37,7 @@ const bookDate = () => {
     const newSession = {
       date: date.value,
       time: time.value,
+      site: selectedSite.site,
       location: {
         latitude: selectedSite.lat,
         longitude: selectedSite.lon
