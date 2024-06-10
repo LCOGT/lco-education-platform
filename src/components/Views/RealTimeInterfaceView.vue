@@ -13,6 +13,8 @@ const selectedSession = computed(() => {
   return sessionsStore.sessions.find(session => session.id === sessionsStore.currentSessionId)
 })
 
+const site = selectedSession.value?.site
+
 const handleViewChange = (view) => {
   currentView.value = view
 }
@@ -39,7 +41,7 @@ const countdown = setInterval(() => {
       />
       <div v-else-if="currentView === 'sessionstarted'" class="content">
         <h2>Real Time Session</h2>
-        <p>You are controlling Eltham College telescope 1 in Australia</p>
+        <p>You are controlling the telescope in {{  site }}</p>
         <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ timeRemaining }}</span></p>
         <SessionStarted @changeView="handleViewChange" />
       </div>

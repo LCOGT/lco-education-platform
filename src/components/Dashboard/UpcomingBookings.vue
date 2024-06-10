@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 
 const router = useRouter()
@@ -15,6 +15,9 @@ const redirectToScheduling = () => {
 }
 
 const allSessions = sessionsStore.getAllSessions
+const sortedSessions = computed(() => {
+  return allSessions.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+})
 
 const observations = ref([
   { id: 1, title: 'M83', progress: 10, state: 'scheduled' },
@@ -35,8 +38,8 @@ const selectSession = (sessionId) => {
       <h3 v-if="allSessions.length">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
-        <div v-for="session in allSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ session.date }}</a></div><div>{{ session.time }}</div>
+        <div v-for="session in sortedSessions" :key="session.id">
+            <div><a @click.prevent="selectSession(session.id)">{{ session.date.toDateString() }}</a></div><div>{{ session.time }}</div>
         </div>
         </div>
         <button class="button red-bg" @click="redirectToBooking"> Book Slot </button>
