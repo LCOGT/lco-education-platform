@@ -86,26 +86,7 @@ function changeFov (fov) {
       </div>
       <div class="column grey-bg">
         <AladinSkyMap ref="aladinRef" />
-        <div class="mosaic-wrapper">
-                <p>Mosaic</p>
-                <div class="text-wrapper mosaic">
-                    <span class="icon-text">
-                        <span class="icon">
-                            <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
-                        </span>
-                        <span>Single</span>
-                    </span>
-                </div>
-                <div class="text-wrapper mosaic">
-                    <span class="icon-text">
-                    <span class="icon">
-                        <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
-                    </span>
-                    <span>2 x 2 mosaic</span>
-                    </span>
-                </div>
-            </div>
-        <div class="content">
+        <div class="content observe-form">
           <div class="field has-addons">
               <p class="control is-expanded">
                 <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
@@ -119,7 +100,7 @@ function changeFov (fov) {
             <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
             <div class="field is-horizontal">
           <div class="field-label is-normal">
-                    <label class="label">Right Ascension</label>
+              <label class="label">Right Ascension</label>
           </div>
           <div class="field-body">
             <div class="field">
@@ -142,6 +123,27 @@ function changeFov (fov) {
           </div>
         </div>
         <div v-if="ra && dec">
+          <div class="columns">
+                <div class="column">
+                  <p>Mosaic</p>
+                </div>
+                <div class="column is-one-third">
+                    <span class="icon-text mosaic">
+                        <span class="icon">
+                            <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
+                        </span>
+                        <span>Single</span>
+                    </span>
+                </div>
+                <div class="column is-one-third">
+                    <span class="icon-text mosaic">
+                    <span class="icon">
+                        <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
+                    </span>
+                    <span>2 x 2 mosaic</span>
+                    </span>
+                </div>
+            </div>
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Exposure Time</label>

@@ -64,7 +64,6 @@ function lst (gstime, lon) {
   }
   if (lstime > 24) { lstime = lstime - 24 }
   if (lstime < 0) { lstime = lstime + 24 }
-  console.log(lstime)
   return lstime
 }
 
