@@ -107,9 +107,7 @@ function commandGo () {
   })
     .then(response => {
       console.log('response', response)
-      if (response.ok) {
-        moveTelescope.value = true
-      }
+      moveTelescope.value = true
     })
     .catch(error => {
       console.log('error', error)
@@ -237,7 +235,7 @@ function commandGo () {
     </div>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture :ra="ra" :dec="dec" :targetName="targetName" :exposureTime="exposureTime" :exposureCount="exposureCount" :selectedFilter="selectedFilter" />
+    <SessionImageCapture :exposure-time="exposureTime" />
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
