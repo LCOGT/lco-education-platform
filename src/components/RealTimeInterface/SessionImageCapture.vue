@@ -34,10 +34,8 @@ const props = defineProps({
 })
 
 const status = ref(null)
-const renderThumbnail = ref(false)
 let pollingInterval = null
 
-const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
 async function fetchStatus () {
@@ -50,32 +48,32 @@ async function fetchStatus () {
   }
 }
 
-function commandGo () {
-  const requestBody = {
-    dec: props.dec,
-    expFilter: [props.selectedFilter, props.selectedFilter, props.selectedFilter],
-    expTime: [props.exposureTime, props.exposureTime, props.exposureTime],
-    name: 'test',
-    ra: props.ra
-  }
+// function commandGo () {
+//   const requestBody = {
+//     dec: props.dec,
+//     expFilter: [props.selectedFilter, props.selectedFilter, props.selectedFilter],
+//     expTime: [props.exposureTime, props.exposureTime, props.exposureTime],
+//     name: 'test',
+//     ra: props.ra
+//   }
 
-  fetch(bridgeApiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  })
-    .then(response => {
-      console.log('response', response)
-      if (response.ok) {
-        renderThumbnail.value = true
-      }
-    })
-    .catch(error => {
-      console.log('error', error)
-    })
-}
+//   fetch(bridgeApiUrl, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(requestBody)
+//   })
+//     .then(response => {
+//       console.log('response', response)
+//       if (response.ok) {
+//         renderThumbnail.value = true
+//       }
+//     })
+//     .catch(error => {
+//       console.log('error', error)
+//     })
+// }
 
 onMounted(() => {
   fetchStatus()
@@ -99,10 +97,7 @@ onUnmounted(() => {
                     <p>Progress: {{ item.progress }}</p>
                 </div>
             </div>
-            <v-btn class="go-button" color="indigo" @click="commandGo">Capture {{ props.targetName }}</v-btn>
-            <div v-if="renderThumbnail">
-                <PolledThumbnails />
-            </div>
+            <PolledThumbnails />
         </div>
     </div>
 </template>

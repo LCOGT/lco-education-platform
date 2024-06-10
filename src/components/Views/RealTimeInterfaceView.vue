@@ -9,10 +9,6 @@ const sessionsStore = useSessionsStore()
 const currentView = ref('sessionpending')
 const timeRemaining = ref(20)
 
-const latestSession = computed(() => {
-  return sessionsStore.sessions[sessionsStore.sessions.length - 1] || {}
-})
-
 const selectedSession = computed(() => {
   return sessionsStore.sessions.find(session => session.id === sessionsStore.currentSessionId)
 })

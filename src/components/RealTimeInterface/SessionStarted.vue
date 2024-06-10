@@ -20,7 +20,6 @@ const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
 const captureImages = ref(false)
-const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
 const exposureTime = ref('')
@@ -28,6 +27,7 @@ const exposureCount = ref('')
 const selectedFilter = ref('')
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
+const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 
 function getRaDecFromTargetName () {
   fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
@@ -87,6 +87,33 @@ function changeFov (fov) {
 
 const allFieldsFilled = () => {
   return ra.value && dec.value && exposureTime.value && exposureCount.value && selectedFilter.value
+}
+
+function commandGo () {
+  const requestBody = {
+    dec: dec.value,
+    expFilter: [selectedFilter.value, selectedFilter.value, selectedFilter.value],
+    expTime: [exposureTime.value, exposureTime.value, exposureTime.value],
+    name: 'test',
+    ra: ra.value
+  }
+
+  fetch(bridgeApiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  })
+    .then(response => {
+      console.log('response', response)
+      if (response.ok) {
+        moveTelescope.value = true
+      }
+    })
+    .catch(error => {
+      console.log('error', error)
+    })
 }
 
 </script>
@@ -200,23 +227,17 @@ const allFieldsFilled = () => {
                     </div>
                     </div>
                 </div>
-                </div>
+              </div>
         </div>
         </div>
-        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">
+        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="commandGo">
           {{ allFieldsFilled() ? `Capture ${targetName}` : 'Capture' }}
         </button>
-        <div v-if="status">
-        <div v-for="item in status" :key="item">
-          <p>Observatory: {{ item.availability }}</p>
-          <p>Telescope: {{ item.telescope }}</p>
-          <p>Camera: {{ item.instrument }}</p>
-          <p>Progress: {{ item.progress }}</p>
-          </div>
-        </div>
-        <PolledThumbnails />
       </div>
     </div>
+  </div>
+  <div v-else-if="moveTelescope === true && captureImages === false">
+    <SessionImageCapture :ra="ra" :dec="dec" :targetName="targetName" :exposureTime="exposureTime" :exposureCount="exposureCount" :selectedFilter="selectedFilter" />
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />

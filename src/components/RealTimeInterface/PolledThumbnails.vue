@@ -9,6 +9,7 @@ const randomNumber = ref(0)
 const thumbnailsApiUrl = 'http://archive-api-dev.lco.gtn/thumbnails/?frame_basename=&proposal_id=&observation_id=617904267&request_id=&size=large'
 
 function getThumbnails () {
+  console.log('Getting thumbnails')
   fetch(thumbnailsApiUrl)
     .then(response => response.json())
     .then(data => {
@@ -22,7 +23,7 @@ function getThumbnails () {
 
 onMounted(() => {
   getThumbnails()
-  pollingInterval = setInterval(getThumbnails, 5000)
+  pollingInterval = setInterval(getThumbnails, 3000)
 })
 
 </script>
