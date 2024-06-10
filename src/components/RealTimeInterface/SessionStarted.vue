@@ -203,7 +203,9 @@ const allFieldsFilled = () => {
                 </div>
         </div>
         </div>
-        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">Capture <span v-if="allFieldsFilled()">{{ targetName }} </span></button>
+        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">
+          {{ allFieldsFilled() ? `Capture ${targetName}` : 'Capture' }}
+        </button>
         <div v-if="status">
         <div v-for="item in status" :key="item">
           <p>Observatory: {{ item.availability }}</p>
@@ -215,11 +217,6 @@ const allFieldsFilled = () => {
         <PolledThumbnails />
       </div>
     </div>
-  </div>
-  <div v-else-if="moveTelescope === true && captureImages === false">
-    <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">
-      {{ allFieldsFilled() ? `Capture ${targetName}` : 'Capture' }}
-    </button>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
