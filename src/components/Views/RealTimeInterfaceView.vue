@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
-import TimePicker from '../RealTimeInterface/TimePicker.vue'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
@@ -9,10 +8,6 @@ const sessionsStore = useSessionsStore()
 
 const currentView = ref('sessionpending')
 const timeRemaining = ref(20)
-
-const latestSession = computed(() => {
-  return sessionsStore.sessions[sessionsStore.sessions.length - 1] || {}
-})
 
 const selectedSession = computed(() => {
   return sessionsStore.sessions.find(session => session.id === sessionsStore.currentSessionId)
@@ -36,10 +31,6 @@ const countdown = setInterval(() => {
 <template>
   <section>
     <div class="container">
-      <!-- <TimePicker
-        v-if="currentView === 'scheduling'"
-        @changeView="handleViewChange"
-      /> -->
       <SessionPending
         v-if="currentView === 'sessionpending'"
         @changeView="handleViewChange"

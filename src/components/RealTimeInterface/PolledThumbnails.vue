@@ -22,7 +22,7 @@ function getThumbnails () {
 
 onMounted(() => {
   getThumbnails()
-  pollingInterval = setInterval(getThumbnails, 5000)
+  pollingInterval = setInterval(getThumbnails, 3000)
 })
 
 </script>
