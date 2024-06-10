@@ -23,11 +23,13 @@ const captureImages = ref(false)
 const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
+const exposureTime = ref('')
+const exposureCount = ref('')
+const selectedFilter = ref('')
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
 function getRaDecFromTargetName () {
-  targeterror.value = false
   fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
@@ -43,7 +45,13 @@ function getRaDecFromTargetName () {
         if (vals[1] < 30.0) {
           targeterror.value = true
           targeterrorMsg.value = 'Target not visible. Try a different target.'
+        } else {
+          targeterrorMsg.value = ''
         }
+        // Reset form fields when user looks up another target
+        exposureTime.value = ''
+        exposureCount.value = ''
+        selectedFilter.value = ''
       }
     }).then(() => {
       goToLocation()
@@ -77,6 +85,10 @@ function changeFov (fov) {
   }
 }
 
+const allFieldsFilled = () => {
+  return ra.value && dec.value && exposureTime.value && exposureCount.value && selectedFilter.value
+}
+
 </script>
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
@@ -93,8 +105,8 @@ function changeFov (fov) {
               </p>
               <p class="control">
                 <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                    Target Look Up
-                  </button>
+                  Target Look Up
+                </button>
               </p>
             </div>
             <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
@@ -122,7 +134,7 @@ function changeFov (fov) {
             </div>
           </div>
         </div>
-        <div v-if="ra && dec">
+        <div v-if="ra && dec && !targeterrorMsg">
           <div class="columns">
                 <div class="column">
                   <p>Mosaic</p>
@@ -189,10 +201,9 @@ function changeFov (fov) {
                     </div>
                 </div>
                 </div>
-              </div>
         </div>
-        <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
-        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
+        </div>
+        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">Capture <span v-if="allFieldsFilled()">{{ targetName }} </span></button>
         <div v-if="status">
         <div v-for="item in status" :key="item">
           <p>Observatory: {{ item.availability }}</p>
@@ -206,7 +217,9 @@ function changeFov (fov) {
     </div>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture @update:renderGallery="renderGallery = $event" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
+    <button :disabled="!allFieldsFilled()" class="button red-bg" @click="moveTelescope = true">
+      {{ allFieldsFilled() ? `Capture ${targetName}` : 'Capture' }}
+    </button>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />

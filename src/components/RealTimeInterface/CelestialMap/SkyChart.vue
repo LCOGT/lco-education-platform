@@ -139,7 +139,6 @@ onMounted(() => {
   }
 
   Celestial.display(config)
-  console.log('Celestial', Celestial.display(config))
   updateLocation()
 })
 </script>
