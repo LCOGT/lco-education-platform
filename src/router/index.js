@@ -12,6 +12,10 @@ const routes = [
     redirect: '/dashboard'
   },
   {
+    path: '/:pathMatch(.*)*',
+    redirect: '/dashboard'
+  },
+  {
     path: '/realtime/:id',
     name: 'RealTimeInterface',
     component: RealTimeInterface
