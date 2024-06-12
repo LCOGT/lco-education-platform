@@ -13,7 +13,7 @@ function updateLocation () {
   time.setHours(time.getHours() + hours_offset.value)
 
   Celestial.date(time)
-  Celestial.location([lat.value, lng.value])
+  Celestial.location([lat, lng])
 }
 
 onMounted(() => {

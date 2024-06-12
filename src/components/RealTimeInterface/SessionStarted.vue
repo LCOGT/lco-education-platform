@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
@@ -8,30 +8,38 @@ import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
 import { calcAltAz } from '../../utils/visibility.js'
 import { useSessionsStore } from '../../stores/sessions'
+import celestial from 'd3-celestial'
 
 const sessionsStore = useSessionsStore()
 
 const router = useRouter()
 const aladinRef = ref(null)
+const skymapRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
-const validTarget = ref(false)
 const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
 const captureImages = ref(false)
+const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
-const exposureTime = ref('')
-const exposureCount = ref('')
-const selectedFilter = ref('')
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
-const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
+
+const Celestial = celestial.Celestial()
+
+onMounted(() => {
+  const currentSession = sessionsStore.getAllSessions[sessionsStore.currentSessionId]
+
+  Celestial.date(currentSession.date)
+  Celestial.resize({ width: 0 })
+  Celestial.location([currentSession.location.latitude, currentSession.location.longitude])
+})
 
 function getRaDecFromTargetName () {
-  validTarget.value = false
+  targeterror.value = false
   fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
@@ -41,21 +49,14 @@ function getRaDecFromTargetName () {
       } else {
         const lat = sessionsStore.selectedSite.lat
         const lon = sessionsStore.selectedSite.lon
+        console.log(lat, lon)
         ra.value = parseFloat(data.ra_d).toFixed(3)
         dec.value = parseFloat(data.dec_d).toFixed(3)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
           targeterror.value = true
           targeterrorMsg.value = 'Target not visible. Try a different target.'
-          validTarget.value = false
-        } else {
-          targeterrorMsg.value = ''
-          validTarget.value = true
         }
-        // Reset form fields when user looks up another target
-        exposureTime.value = ''
-        exposureCount.value = ''
-        selectedFilter.value = ''
       }
     }).then(() => {
       goToLocation()
@@ -89,41 +90,6 @@ function changeFov (fov) {
   }
 }
 
-const allFieldsFilled = () => {
-  return ra.value && dec.value && exposureTime.value && exposureCount.value && selectedFilter.value && targetName.value && validTarget.value === true
-}
-
-function commandGo () {
-  const requestBody = {
-    dec: dec.value,
-    expFilter: [selectedFilter.value, selectedFilter.value, selectedFilter.value],
-    expTime: [exposureTime.value, exposureTime.value, exposureTime.value],
-    name: 'test',
-    ra: ra.value
-  }
-
-  fetch(bridgeApiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  })
-    .then(response => {
-      console.log('response', response)
-      moveTelescope.value = true
-    })
-    .catch(error => {
-      console.log('error', error)
-    })
-}
-
-watch(targetName, () => {
-  validTarget.value = false
-  ra.value = ''
-  dec.value = ''
-})
-
 </script>
 <template>
   <div v-if="moveTelescope === false && captureImages === false">
@@ -140,8 +106,8 @@ watch(targetName, () => {
               </p>
               <p class="control">
                 <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                  Target Look Up
-                </button>
+                    Target Look Up
+                  </button>
               </p>
             </div>
             <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
@@ -169,7 +135,7 @@ watch(targetName, () => {
             </div>
           </div>
         </div>
-        <div v-if="ra && dec && !targeterrorMsg && targetName">
+        <div v-if="ra && dec">
           <div class="columns">
                 <div class="column">
                   <p>Mosaic</p>
@@ -235,17 +201,25 @@ watch(targetName, () => {
                     </div>
                     </div>
                 </div>
+                </div>
               </div>
         </div>
+        <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
+        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
+        <div v-if="status">
+        <div v-for="item in status" :key="item">
+          <p>Observatory: {{ item.availability }}</p>
+          <p>Telescope: {{ item.telescope }}</p>
+          <p>Camera: {{ item.instrument }}</p>
+          <p>Progress: {{ item.progress }}</p>
+          </div>
         </div>
-        <button :disabled="!allFieldsFilled()" class="button red-bg" @click="commandGo">
-          {{ allFieldsFilled() ? `Capture ${targetName}` : 'Capture' }}
-        </button>
+        <PolledThumbnails />
       </div>
     </div>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture :exposure-time="exposureTime" />
+    <SessionImageCapture @update:renderGallery="renderGallery = $event" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />
