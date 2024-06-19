@@ -11,7 +11,6 @@ async function fetchApiCall ({ url, method, body = null, header, successCallback
   if (store.authToken) {
     defaultHeader.Authorization = `Token ${store.authToken}`
   }
-
   const config = {
     method,
     headers: header || defaultHeader,
