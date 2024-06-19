@@ -11,9 +11,10 @@ const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
-const apiUrl = 'https://observe.lco.global/api/'
+const apiUrl = 'http://observation-portal-dev.lco.gtn/api/'
 
 const storeToken = async (data) => {
+  console.log('storeToken', data)
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
