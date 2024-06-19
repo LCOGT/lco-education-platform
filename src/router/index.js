@@ -5,6 +5,7 @@ import Images from '../components/Views/ImagesView.vue'
 import Scheduling from '../components/Views/SchedulingView.vue'
 import About from '../components/Views/AboutView.vue'
 import BookRTI from '../components/Views/BookRTIView.vue'
+import LogIn from '../components/LogIn/LogIn.vue'
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
     path: '/about',
     name: 'About',
     component: About
+  },
+  {
+    path: '/login',
+    name: 'LogIn',
+    component: LogIn
   }
 ]
 

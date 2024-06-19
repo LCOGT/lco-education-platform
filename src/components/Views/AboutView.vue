@@ -2,6 +2,7 @@
 import { defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import LogIn from '../LogIn/LogIn.vue'
 
 const emit = defineEmits(['observeClicked'])
 const router = useRouter()
@@ -13,6 +14,7 @@ function emitObserve () {
 </script>
 
 <template>
+  <LogIn/>
 <section class="hero highlight">
   <div class="container">
     <div class="hero-body">
