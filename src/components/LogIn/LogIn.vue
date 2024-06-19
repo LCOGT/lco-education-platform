@@ -1,80 +1,48 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { fetchApiCall } from '../../utils/api'
+import { useUserDataStore } from '../../stores/userData'
+
+const userDataStore = useUserDataStore()
+const router = useRouter()
 
 const username = ref('')
 const password = ref('')
-const csrfToken = ref('')
-const router = useRouter()
+const errorMessage = ref('')
 
-const fetchCsrfToken = async () => {
-  try {
-    const response = await fetch('http://observation-portal-dev.lco.gtn/accounts/login/?passthrough=true', {
-      method: 'GET',
-      credentials: 'include'
-    })
+const apiUrl = 'https://observe.lco.global/api/'
 
-    const text = await response.text()
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(text, 'text/html')
-    const tokenElement = doc.querySelector('input[name=csrfmiddlewaretoken]')
-    if (tokenElement) {
-      csrfToken.value = tokenElement.value
-      console.log('CSRF token fetched:', csrfToken.value)
-    } else {
-      console.error('CSRF token not found')
-    }
-  } catch (error) {
-    console.error('Error fetching CSRF token:', error)
+const storeToken = async (data) => {
+  console.log('storeToken', data)
+  const authToken = data.token
+  console.log('authToken', authToken)
+  if (authToken) {
+    userDataStore.authToken = authToken
+    await fetchApiCall({ url: apiUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: handleError })
   }
 }
 
+const handleError = (error) => {
+  console.error('API call failed with error:', error)
+  errorMessage.value = 'Failed to authenticate user'
+}
+
+const storeUser = (user) => {
+  console.log('user', user)
+  userDataStore.username = username.value
+  userDataStore.profile = user
+  router.push('/dashboard')
+}
+
 const login = async () => {
-  await fetchCsrfToken()
-
-  if (!csrfToken.value) {
-    alert('Failed to fetch CSRF token. Please try again.')
-    return
-  }
-
-  const loginUrl = 'http://observation-portal-dev.lco.gtn/accounts/login/?passthrough=true'
-
-  const formData = new URLSearchParams()
-  formData.append('username', username.value)
-  formData.append('password', password.value)
-  formData.append('csrfmiddlewaretoken', csrfToken.value)
-
-  console.log('Submitting login request with data:', {
+  console.log('here')
+  const requestBody = {
     username: username.value,
-    password: password.value,
-    csrfmiddlewaretoken: csrfToken.value
-  })
-
-  try {
-    const response = await fetch(loginUrl, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': csrfToken.value,
-        'Referer': 'http://observation-portal-dev.lco.gtn/accounts/login/?passthrough=true'
-      },
-      credentials: 'include'
-    })
-
-    if (response.ok) {
-      console.log('Login successful')
-      router.push('/')
-    } else {
-      const errorText = await response.text()
-      console.error('Login failed:', errorText)
-      alert('Login failed. Please check your username and password.')
-    }
-  } catch (error) {
-    console.error('Error during login:', error)
-    alert('An error occurred during login. Please try again.')
+    password: password.value
   }
+  // store an auth token from login credentials
+  await fetchApiCall({ url: apiUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: handleError })
 }
 </script>
 
@@ -89,4 +57,4 @@ const login = async () => {
         <button type="submit">Log In</button>
       </form>
     </div>
-</template>
+  </template>
