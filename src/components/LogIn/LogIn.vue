@@ -14,9 +14,7 @@ const errorMessage = ref('')
 const apiUrl = 'https://observe.lco.global/api/'
 
 const storeToken = async (data) => {
-  console.log('storeToken', data)
   const authToken = data.token
-  console.log('authToken', authToken)
   if (authToken) {
     userDataStore.authToken = authToken
     await fetchApiCall({ url: apiUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: handleError })
@@ -29,14 +27,12 @@ const handleError = (error) => {
 }
 
 const storeUser = (user) => {
-  console.log('user', user)
   userDataStore.username = username.value
   userDataStore.profile = user
   router.push('/dashboard')
 }
 
 const login = async () => {
-  console.log('here')
   const requestBody = {
     username: username.value,
     password: password.value
