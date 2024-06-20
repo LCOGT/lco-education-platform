@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useSessionsStore } from '../../../stores/sessions'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
@@ -17,6 +18,9 @@ function updateLocation () {
 }
 
 onMounted(() => {
+  const sessionsStore = useSessionsStore()
+  sessionsStore.prepareStore()
+
   const config = {
     width: 600,
     projection: 'stereographic',
