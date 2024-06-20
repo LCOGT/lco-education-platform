@@ -3,6 +3,7 @@ import { ref, computed, watch, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
+import AladinSkyMap from './AladinSkyMap.vue'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
@@ -68,6 +69,7 @@ watch(time, (newTime, oldTime) => {
 </script>
 
 <template>
+  <AladinSkyMap />
   <h2>Book your real-time session</h2>
   <div class="columns">
     <div class="column is-one-third">
