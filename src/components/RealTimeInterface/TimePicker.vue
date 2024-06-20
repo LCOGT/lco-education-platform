@@ -46,8 +46,8 @@ const blockRti = async () => {
     site: 'tst',
     enclosure: 'doma',
     telescope: '1m0a',
-    start: '2024-06-29T00:00:00Z',
-    end: '2024-06-29T00:30:00Z'
+    start: '2024-06-30T00:00:00Z',
+    end: '2024-06-30T00:30:00Z'
   }
   await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: () => router.push('/dashboard'), failCallback: handleError })
 }

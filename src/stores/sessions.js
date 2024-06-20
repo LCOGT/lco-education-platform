@@ -8,6 +8,7 @@ export const useSessionsStore = defineStore('sessions', {
       nextSessionId: 0
     }
   },
+  persist: true,
   getters: {
     currentSession (state) {
       return state.sessions.find(session => session.id === state.currentSessionId) || {}

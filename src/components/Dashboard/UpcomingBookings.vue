@@ -39,7 +39,7 @@ const selectSession = (sessionId) => {
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ session.date.toDateString() }}</a></div><div>{{ session.time }}</div>
+            <div><a @click.prevent="selectSession(session.id)">{{ session.date }}</a></div><div>{{ session.time }}</div>
         </div>
         </div>
         <button class="button red-bg" @click="redirectToBooking"> Book Slot </button>
