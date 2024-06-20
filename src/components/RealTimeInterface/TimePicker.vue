@@ -2,18 +2,15 @@
 import { ref, computed, watch, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
-import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
-const userDataStore = useUserDataStore()
-
-const apitoken = userDataStore.authToken
 
 const date = ref(null)
-const time = ref(null)
+const startTime = ref(null)
+const endTime = ref(null)
 const emits = defineEmits(['changeView'])
 
 const toIsoDate = computed(() => {
@@ -25,10 +22,42 @@ const toIsoDate = computed(() => {
 })
 
 // TO DO: Get times from API
-const times = ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30']
+const times = ['00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00', '02:15', '02:30', '02:45', '03:00']
 
 const selectTime = (selectedTime) => {
-  time.value = selectedTime
+  startTime.value = selectedTime
+}
+
+const addMinutes = (time, minutesToAdd) => {
+  const [hours, minutes] = time.split(':')
+  const currentMinutes = parseInt(hours) * 60 + parseInt(minutes)
+  const newMinutes = currentMinutes + minutesToAdd
+  const newHours = Math.floor(newMinutes / 60)
+  const remainingMinutes = newMinutes % 60
+  return `${newHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}`
+}
+
+const setEndTime = (startDate, startTime, minutesToAdd) => {
+  const combinedDateTime = new Date(startDate)
+  const [hours, minutes] = startTime.split(':')
+  combinedDateTime.setUTCHours(hours)
+  combinedDateTime.setUTCMinutes(minutes)
+  combinedDateTime.setUTCMinutes(combinedDateTime.getUTCMinutes() + minutesToAdd)
+  return combinedDateTime.toISOString().split('.')[0] + 'Z'
+}
+
+const formatToUTC = (date, time) => {
+  const combinedDateTime = new Date(date)
+  const [hours, minutes] = time.split(':')
+  combinedDateTime.setUTCHours(hours)
+  combinedDateTime.setUTCMinutes(minutes)
+  return combinedDateTime.toISOString().split('.')[0] + 'Z'
+}
+
+const add15Minutes = () => {
+  if (startTime.value) {
+    endTime.value = setEndTime(date.value, startTime.value, 15)
+  }
 }
 
 const resetSession = () => {
@@ -37,17 +66,14 @@ const resetSession = () => {
 }
 
 const blockRti = async () => {
-  // const selectedDate = new Date(date.value).toISOString().split('T')[0]
-  // const startDate = `${selectedDate}T${time.value}:00Z`
-  // const endDate = `${selectedDate}T${time.value}:50Z`
   const requestBody = {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
     site: 'tst',
     enclosure: 'doma',
     telescope: '1m0a',
-    start: '2024-06-30T00:00:00Z',
-    end: '2024-06-30T00:30:00Z'
+    start: formatToUTC(date.value, startTime.value),
+    end: endTime.value
   }
   await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: () => router.push('/dashboard'), failCallback: handleError })
 }
@@ -58,10 +84,10 @@ const handleError = (error) => {
 
 const bookDate = () => {
   const selectedSite = sessionsStore.selectedSite
-  if (date.value && time.value && selectedSite) {
+  if (date.value && startTime.value && selectedSite) {
     const newSession = {
-      date: date.value,
-      time: time.value,
+      date: formatToUTC(date.value, startTime.value),
+      time: startTime.value,
       site: selectedSite.site,
       location: {
         latitude: selectedSite.lat,
@@ -70,8 +96,8 @@ const bookDate = () => {
       type: 'realtime'
     }
     sessionsStore.addSession(newSession)
+    add15Minutes()
     blockRti()
-    // emits('changeView', 'sessionpending')
   } else {
     alert('Please fill in all fields to book a session')
   }
@@ -79,12 +105,12 @@ const bookDate = () => {
 
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
-    time.value = null
+    startTime.value = null
     resetSession()
   }
 })
 
-watch(time, (newTime, oldTime) => {
+watch(startTime, (newTime, oldTime) => {
   if (newTime !== oldTime) {
     resetSession()
   }
@@ -102,20 +128,20 @@ watch(time, (newTime, oldTime) => {
       </div>
     </div>
     <div class="column">
-      <div v-if="date && time == null" class="selected-date">
+      <div v-if="date && startTime == null" class="selected-date">
         <p>Select a time:</p>
         <v-btn-group>
           <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
         </v-btn-group>
       </div>
-      <div v-if="toIsoDate && time" class="column">
+      <div v-if="toIsoDate && startTime" class="column">
         <p class="selected-datetime">
-          <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ toIsoDate }} at {{ time }}</span>
-          <span v-else>Click on a pin to book for {{ toIsoDate }} at {{ time }}</span>
+          <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-else>Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
         </p>
         <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
-      <LeafletMap v-if="toIsoDate && time" />
+      <LeafletMap v-if="toIsoDate && startTime" />
     </div>
   </div>
 </template>
