@@ -59,6 +59,7 @@ const resetSession = () => {
 }
 
 const blockRti = async () => {
+  add15Minutes()
   const requestBody = {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
@@ -68,7 +69,7 @@ const blockRti = async () => {
     start: formatToUTC(date.value, startTime.value),
     end: endTime.value
   }
-  await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: () => router.push('/dashboard'), failCallback: handleError })
+  await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: handleError })
 }
 
 const handleError = (error) => {
@@ -90,8 +91,7 @@ const bookDate = () => {
       type: 'realtime'
     }
     sessionsStore.addSession(newSession)
-    add15Minutes()
-    blockRti()
+    router.push('/dashboard')
   } else {
     alert('Please fill in all fields to book a session')
   }
@@ -134,7 +134,7 @@ watch(startTime, (newTime, oldTime) => {
           <span v-else-if="!sessionsStore.selectedSite">Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
           <span v-else-if="sessionsStore.selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
         </p>
-        <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
+        <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
       </div>
       <LeafletMap v-if="toIsoDate && startTime" />
     </div>
