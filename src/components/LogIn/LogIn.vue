@@ -14,7 +14,6 @@ const errorMessage = ref('')
 const apiUrl = 'http://observation-portal-dev.lco.gtn/api/'
 
 const storeToken = async (data) => {
-  console.log('storeToken', data)
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
