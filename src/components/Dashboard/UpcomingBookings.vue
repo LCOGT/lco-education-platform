@@ -31,6 +31,12 @@ const selectSession = (sessionId) => {
   router.push(`/realtime/${sessionId}`)
 }
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  return date.toLocaleDateString('en-US', options)
+}
+
 </script>
 
 <template>
@@ -39,7 +45,7 @@ const selectSession = (sessionId) => {
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ session.date }}</a></div><div>{{ session.time }}</div>
+            <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.date) }}</a></div><div>{{ session.time }}</div>
         </div>
         </div>
         <button class="button red-bg" @click="redirectToBooking"> Book Slot </button>
