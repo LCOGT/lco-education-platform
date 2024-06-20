@@ -49,7 +49,6 @@ function getRaDecFromTargetName () {
       } else {
         const lat = sessionsStore.selectedSite.lat
         const lon = sessionsStore.selectedSite.lon
-        console.log(lat, lon)
         ra.value = parseFloat(data.ra_d).toFixed(3)
         dec.value = parseFloat(data.dec_d).toFixed(3)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
