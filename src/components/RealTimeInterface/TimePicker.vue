@@ -11,6 +11,7 @@ const sessionsStore = useSessionsStore()
 const date = ref(null)
 const startTime = ref(null)
 const endTime = ref(null)
+const errorMessage = ref(null)
 const emits = defineEmits(['changeView'])
 
 const toIsoDate = computed(() => {
@@ -26,15 +27,6 @@ const times = ['00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '0
 
 const selectTime = (selectedTime) => {
   startTime.value = selectedTime
-}
-
-const addMinutes = (time, minutesToAdd) => {
-  const [hours, minutes] = time.split(':')
-  const currentMinutes = parseInt(hours) * 60 + parseInt(minutes)
-  const newMinutes = currentMinutes + minutesToAdd
-  const newHours = Math.floor(newMinutes / 60)
-  const remainingMinutes = newMinutes % 60
-  return `${newHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}`
 }
 
 const setEndTime = (startDate, startTime, minutesToAdd) => {
@@ -61,6 +53,7 @@ const add15Minutes = () => {
 }
 
 const resetSession = () => {
+  errorMessage.value = null
   sessionsStore.selectedSite = null
   sessionsStore.currentSessionId = null
 }
@@ -79,6 +72,7 @@ const blockRti = async () => {
 }
 
 const handleError = (error) => {
+  errorMessage.value = 'Failed to book session. Please select another time'
   console.error('API call failed with error:', error)
 }
 
@@ -136,8 +130,9 @@ watch(startTime, (newTime, oldTime) => {
       </div>
       <div v-if="toIsoDate && startTime" class="column">
         <p class="selected-datetime">
-          <span v-if="sessionsStore.selectedSite">{{ sessionsStore.selectedSite.site }} Selected for {{ toIsoDate }} at {{ startTime }}</span>
-          <span v-else>Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-if="sessionsStore.selectedSite && !errorMessage">{{ sessionsStore.selectedSite.site }} Selected for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-else-if="!sessionsStore.selectedSite">Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-else-if="sessionsStore.selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
         </p>
         <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="bookDate" class="blue-bg">Book</v-btn>
       </div>
@@ -145,3 +140,9 @@ watch(startTime, (newTime, oldTime) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.error {
+  color: red;
+}
+</style>
