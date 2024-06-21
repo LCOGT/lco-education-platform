@@ -14,7 +14,6 @@ function emitObserve () {
 </script>
 
 <template>
-  <LogIn/>
 <section class="hero highlight">
   <div class="container">
     <div class="hero-body">

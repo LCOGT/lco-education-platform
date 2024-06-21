@@ -43,14 +43,48 @@ const login = async () => {
 </script>
 
 <template>
-    <div>
+    <section class="section">
+      <div class="container">
       <h1>Login</h1>
+    <div class="card">
+  <div class="card-content">
+    <div class="content">
       <form @submit.prevent="login">
-        <label for="username">Username:</label>
-        <input type="text" id="username" v-model="username" required>
-        <label for="password">Password:</label>
-        <input type="password" id="password" v-model="password" required>
-        <button type="submit">Log In</button>
+
+        <div class="field">
+          <label class="label">Username</label>
+          <div class="control has-icons-left has-icons-right">
+            <input type="text" id="username" v-model="username" class="input" required>
+            <span class="icon is-small is-left">
+              <i class="fas fa-user"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Password</label>
+          <div class="control has-icons-left has-icons-right">
+            <input type="password" id="password" v-model="password" class="input" required>
+            <span class="icon is-small is-left">
+                <i class="fa-sharp fa-solid fa-key"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <input type="submit" id="login-btn" class="button is-link" value="Log me in">
+          </div>
+          <div class="control">
+            <button class="button is-link is-light">Cancel</button>
+          </div>
+        </div>
+        <p class="small">By logging in, you agree to <a href="https://lco.global/observatory/termsofservice/" target="_blank">the Las Cumbres Observatory terms of use</a>.</p>
       </form>
+
     </div>
-  </template>
+  </div>
+</div>
+</div>
+</section>
+</template>

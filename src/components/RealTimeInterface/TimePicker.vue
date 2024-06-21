@@ -124,9 +124,9 @@ watch(startTime, (newTime, oldTime) => {
     <div class="column">
       <div v-if="date && startTime == null" class="selected-date">
         <p>Select a time:</p>
-        <v-btn-group>
-          <v-btn v-for="time in times" :key="time" @click="selectTime(time)">{{ time }}</v-btn>
-        </v-btn-group>
+        <div class="grid">
+          <div class="cell" v-for="time in times" :key="time"><button class="button" @click="selectTime(time)">{{ time }}</button></div>
+        </div>
       </div>
       <div v-if="toIsoDate && startTime" class="column">
         <p class="selected-datetime">
