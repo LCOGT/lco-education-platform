@@ -1,9 +1,9 @@
 export function calcAltAz (ra, dec, lat, lon) {
 // Convert hour angle, declination of an astronomical source and the latitude of the observer to azimuth and
 // altitude (in degs)
-  var lst = calculate_lst(lon)
+  const lst = calculate_lst(lon)
 
-  var ra_decimal_hours = 24 * ra / 360.0
+  const ra_decimal_hours = 24 * ra / 360.0
   const dec_rad = dec * Math.PI / 180.0
   const lat_rad = lat * Math.PI / 180.0
   const h_rad = Math.PI * (lst - ra_decimal_hours) / 12
@@ -21,24 +21,24 @@ function decimalhours (now) {
 }
 
 function juliandate (now) {
-  var y = now.getUTCFullYear()
-  var m = now.getUTCMonth() + 1
-  var d = now.getUTCDate()
+  let y = now.getUTCFullYear()
+  let m = now.getUTCMonth() + 1
+  const d = now.getUTCDate()
   if ((m == 1) || (m == 2)) {
     y = y - 1
     m = m + 12
   }
-  var A = Math.floor(y / 100)
-  var B = 2 - A + Math.floor(A / 4)
-  var C = Math.floor(365.25 * y)
-  var D = Math.floor(30.6001 * (m + 1))
+  const A = Math.floor(y / 100)
+  const B = 2 - A + Math.floor(A / 4)
+  const C = Math.floor(365.25 * y)
+  const D = Math.floor(30.6001 * (m + 1))
   return (B + C + D + d + 1720994.5)
 }
 
 function gst (jd, dechours) {
-  var S = jd - 2451545
-  var T = S / 36525
-  var T0 = 6.697374558 + (2400.051336 * T) + (0.000025862 * Math.pow(T, 2))
+  const S = jd - 2451545
+  const T = S / 36525
+  let T0 = 6.697374558 + (2400.051336 * T) + (0.000025862 * Math.pow(T, 2))
   if (sign(T0) == -1) {
     T0 = (T0 + (24 * Math.abs(Math.floor(T0 / 24))))
   } else {
@@ -47,16 +47,16 @@ function gst (jd, dechours) {
   T0 = T0 + (dechours * 1.002737909)
   if (T0 < 0) { T0 = T0 + 24 }
   if (T0 > 24) { T0 = T0 - 24 }
-  var h = Math.floor(T0)
-  var m1 = T0 - h
-  var m = Math.floor((T0 - h) * 60)
-  var s = Math.floor((((T0 - h) * 60) - m) * 60)
+  const h = Math.floor(T0)
+  const m1 = T0 - h
+  const m = Math.floor((T0 - h) * 60)
+  const s = Math.floor((((T0 - h) * 60) - m) * 60)
   return T0
 }
 
 function lst (gstime, lon) {
-  var lstime
-  var utcdiff = Math.abs(lon) / 15
+  let lstime
+  const utcdiff = Math.abs(lon) / 15
   if (sign(lon) == -1) {
     lstime = gstime - utcdiff
   } else {
