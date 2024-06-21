@@ -8,6 +8,7 @@ export const useSessionsStore = defineStore('sessions', {
       nextSessionId: 0
     }
   },
+  persist: true,
   getters: {
     currentSession (state) {
       return state.sessions.find(session => session.id === state.currentSessionId) || {}
@@ -22,6 +23,13 @@ export const useSessionsStore = defineStore('sessions', {
       this.sessions.push(newSession)
       this.nextSessionId++
       this.currentSessionId = newSession.id
+    },
+    prepareStore () {
+      this.sessions.forEach(session => {
+        if (session.date) {
+          session.date = new Date(session.date)
+        }
+      })
     }
   }
 })
