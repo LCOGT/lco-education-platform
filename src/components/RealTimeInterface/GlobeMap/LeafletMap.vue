@@ -1,10 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, defineEmits } from 'vue'
 import { useSessionsStore } from '../../../stores/sessions'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import sites from '../../../utils/sites.JSON'
 import availableIcon from '../../../assets/Icons/available_mapmarker.png'
 import unavailableIcon from '../../../assets/Icons/unavailable_mapmarker.png'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+
+const emits = defineEmits(['siteSelected'])
 
 const sessionsStore = useSessionsStore()
 
@@ -35,23 +38,16 @@ onMounted(() => {
     popupAnchor: [0, -42]
   })
 
-  const locations = [
-    { lat: 34.4208, lng: -119.6982, site: 'Santa Barbara, California' },
-    { lat: 35.0844, lng: -106.6504, site: 'Albuquerque, New Mexico' },
-    { lat: 21.4389, lng: -158.0001, site: 'Oahu, Hawaii' },
-    { lat: -37.8136, lng: 144.9631, site: 'Melbourne, Australia' }
-  ]
-
-  locations.forEach(location => {
+  Object.entries(sites).forEach(([site, { lat, lon }]) => {
     const available = isAvailable()
     const icon = available ? customIconAvailable : customIconUnavailable
-    const popupText = available ? `${location.site}<br>available` : `${location.site}<br>unavailable`
+    const popupText = available ? `${site}<br>available` : `${site}<br>unavailable`
 
-    const marker = L.marker([location.lat, location.lng], { icon })
+    const marker = L.marker([lat, lon], { icon })
     marker.bindPopup(popupText)
     marker.on('click', () => {
       if (available) {
-        sessionsStore.selectedSite = { site: location.site, lat: location.lat, lon: location.lng }
+        emits('siteSelected', { site, lat, lon })
       }
     })
     marker.addTo(map)

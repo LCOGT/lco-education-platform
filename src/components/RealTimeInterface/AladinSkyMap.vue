@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, defineProps } from 'vue'
+import { onMounted, ref } from 'vue'
 import { initializeAladin } from '../../utils/aladinUtility.js'
 
 const aladinContainer = ref(null)

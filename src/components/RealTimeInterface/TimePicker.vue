@@ -3,6 +3,7 @@ import { ref, computed, watch, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
+import sites from '../../utils/sites.JSON'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const router = useRouter()
@@ -12,6 +13,7 @@ const date = ref(null)
 const startTime = ref(null)
 const endTime = ref(null)
 const errorMessage = ref(null)
+const selectedSite = ref(null)
 const emits = defineEmits(['changeView'])
 
 const toIsoDate = computed(() => {
@@ -23,7 +25,7 @@ const toIsoDate = computed(() => {
 })
 
 // TO DO: Get times from API
-const times = ['00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00', '02:15', '02:30', '02:45', '03:00']
+const times = ['17:45', '18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00', '21:15', '21:30', '21:45', '22:00', '22:15', '22:30', '22:45', '23:00', '23:15', '23:30', '23:45', '00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00', '02:15', '02:30']
 
 const selectTime = (selectedTime) => {
   startTime.value = selectedTime
@@ -54,7 +56,7 @@ const add15Minutes = () => {
 
 const resetSession = () => {
   errorMessage.value = null
-  sessionsStore.selectedSite = null
+  selectedSite.value = null
   sessionsStore.currentSessionId = null
 }
 
@@ -77,24 +79,18 @@ const handleError = (error) => {
   console.error('API call failed with error:', error)
 }
 
-const bookDate = () => {
-  const selectedSite = sessionsStore.selectedSite
-  if (date.value && startTime.value && selectedSite) {
-    const newSession = {
-      date: formatToUTC(date.value, startTime.value),
-      time: startTime.value,
-      site: selectedSite.site,
-      location: {
-        latitude: selectedSite.lat,
-        longitude: selectedSite.lon
-      },
-      type: 'realtime'
-    }
+const bookDate = (response) => {
+  if (date.value && startTime.value && selectedSite.value) {
+    const newSession = { ...response }
     sessionsStore.addSession(newSession)
     router.push('/dashboard')
   } else {
     alert('Please fill in all fields to book a session')
   }
+}
+
+const handleSiteSelection = (site) => {
+  selectedSite.value = site
 }
 
 watch(date, (newDate, oldDate) => {
@@ -130,13 +126,13 @@ watch(startTime, (newTime, oldTime) => {
       </div>
       <div v-if="toIsoDate && startTime" class="column">
         <p class="selected-datetime">
-          <span v-if="sessionsStore.selectedSite && !errorMessage">{{ sessionsStore.selectedSite.site }} Selected for {{ toIsoDate }} at {{ startTime }}</span>
-          <span v-else-if="!sessionsStore.selectedSite">Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
-          <span v-else-if="sessionsStore.selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
+          <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-else-if="!selectedSite">Click on a pin to book for {{ toIsoDate }} at {{ startTime }}</span>
+          <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
         </p>
-        <v-btn variant="tonal" v-if="date && sessionsStore.selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+        <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
       </div>
-      <LeafletMap v-if="toIsoDate && startTime" />
+      <LeafletMap v-if="toIsoDate && startTime" @siteSelected="handleSiteSelection"/>
     </div>
   </div>
 </template>

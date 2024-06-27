@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSessionsStore } from '../../../stores/sessions'
+import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
@@ -139,6 +140,14 @@ onMounted(() => {
       show: false,
       fill: '#f00',
       opacity: 0.1
+    }
+  }
+  const currentSession = sessionsStore.currentSession
+  if (currentSession && currentSession.site) {
+    const siteInfo = sites[currentSession.site]
+    if (siteInfo) {
+      lat.value = siteInfo.lat
+      lng.value = siteInfo.lon
     }
   }
 
