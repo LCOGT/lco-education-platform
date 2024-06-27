@@ -1,31 +1,40 @@
 import { defineStore } from 'pinia'
+import { fetchApiCall } from '../utils/api'
 
 export const useSessionsStore = defineStore('sessions', {
   state () {
     return {
       sessions: [],
       currentSessionId: null,
-      nextSessionId: 0
+      nextSessionId: 0,
+      selectedSite: null
     }
   },
   persist: true,
   getters: {
     currentSession (state) {
-      return state.sessions.find(session => session.id === state.currentSessionId) || {}
+      return state.sessions.results.find(session => session.id === state.currentSessionId) || {}
     },
     getAllSessions (state) {
       return state.sessions
     }
   },
   actions: {
+    fetchSessions () {
+      fetchApiCall({
+        url: 'http://observation-portal-dev.lco.gtn/api/observations/',
+        method: 'GET',
+        successCallback: (response) => {
+          this.sessions = response
+        }
+      })
+    },
     addSession (session) {
-      const newSession = { ...session, id: this.nextSessionId }
-      this.sessions.push(newSession)
-      this.nextSessionId++
-      this.currentSessionId = newSession.id
+      this.sessions.results.push(session)
+      this.currentSessionId = session.id
     },
     prepareStore () {
-      this.sessions.forEach(session => {
+      this.sessions.results.forEach(session => {
         if (session.date) {
           session.date = new Date(session.date)
         }
