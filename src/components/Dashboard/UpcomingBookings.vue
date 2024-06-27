@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 
 const router = useRouter()
@@ -14,9 +14,8 @@ const redirectToScheduling = () => {
   router.push('/schedule')
 }
 
-const allSessions = sessionsStore.getAllSessions
 const sortedSessions = computed(() => {
-  return allSessions.slice().sort((a, b) => new Date(a.date) - new Date(b.date))
+  return sessionsStore.sessions.results?.slice().sort((a, b) => new Date(a.start) - new Date(b.start))
 })
 
 const observations = ref([
@@ -37,15 +36,25 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', options)
 }
 
+const formatTime = (timeString) => {
+  const date = new Date(timeString)
+  const options = { hour: 'numeric', minute: 'numeric' }
+  return date.toLocaleTimeString('en-US', options)
+}
+
+onMounted(() => {
+  sessionsStore.fetchSessions()
+})
+
 </script>
 
 <template>
     <div class="bookings">
-      <h3 v-if="allSessions.length">Upcoming Bookings</h3>
+      <h3 v-if="sortedSessions">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.date) }}</a></div><div>{{ session.time }}</div>
+            <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
         </div>
         </div>
         <button class="button red-bg" @click="redirectToBooking"> Book Slot </button>

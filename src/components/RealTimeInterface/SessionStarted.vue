@@ -8,13 +8,13 @@ import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
 import { calcAltAz } from '../../utils/visibility.js'
 import { useSessionsStore } from '../../stores/sessions'
+import sites from '../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 
 const sessionsStore = useSessionsStore()
 
 const router = useRouter()
 const aladinRef = ref(null)
-const skymapRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
@@ -29,13 +29,17 @@ const targeterrorMsg = ref('')
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
 
 const Celestial = celestial.Celestial()
+const currentSession = sessionsStore.currentSession
+const siteInfo = sites[currentSession.site]
 
 onMounted(() => {
-  const currentSession = sessionsStore.getAllSessions[sessionsStore.currentSessionId]
+  if (siteInfo) {
+    Celestial.location([siteInfo.lat, siteInfo.lon])
+  }
 
-  Celestial.date(currentSession.date)
+  const startDate = new Date(currentSession.start)
+  Celestial.date(startDate)
   Celestial.resize({ width: 0 })
-  Celestial.location([currentSession.location.latitude, currentSession.location.longitude])
 })
 
 function getRaDecFromTargetName () {
@@ -47,8 +51,8 @@ function getRaDecFromTargetName () {
         targeterror.value = true
         targeterrorMsg.value = 'Target not found. Enter coordinates or try a different target.'
       } else {
-        const lat = sessionsStore.selectedSite.lat
-        const lon = sessionsStore.selectedSite.lon
+        const lat = siteInfo.lat
+        const lon = siteInfo.lon
         ra.value = parseFloat(data.ra_d).toFixed(3)
         dec.value = parseFloat(data.dec_d).toFixed(3)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)

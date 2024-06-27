@@ -10,10 +10,10 @@ const currentView = ref('sessionpending')
 const timeRemaining = ref(20)
 
 const selectedSession = computed(() => {
-  return sessionsStore.sessions.find(session => session.id === sessionsStore.currentSessionId)
+  return sessionsStore.sessions.results.find(session => session.id === sessionsStore.currentSessionId)
 })
 
-const site = selectedSession.value?.site
+const site = computed(() => selectedSession.value?.site)
 
 const handleViewChange = (view) => {
   currentView.value = view
@@ -36,8 +36,6 @@ const countdown = setInterval(() => {
       <SessionPending
         v-if="currentView === 'sessionpending'"
         @changeView="handleViewChange"
-        :lat="selectedSession.location?.latitude"
-        :lon="selectedSession.location?.longitude"
       />
       <div v-else-if="currentView === 'sessionstarted'" class="content">
         <h2>Real Time Session</h2>
