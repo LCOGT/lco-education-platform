@@ -7,7 +7,7 @@ import WindyMap from './GlobeMap/WindyMap.vue'
 const emits = defineEmits(['changeView'])
 const sessionsStore = useSessionsStore()
 
-const countdown = ref(10)
+const countdown = ref(100)
 
 let countdownInterval
 
