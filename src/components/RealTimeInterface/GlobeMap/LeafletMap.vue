@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue'
-import { useSessionsStore } from '../../../stores/sessions'
 import sites from '../../../utils/sites.JSON'
 import availableIcon from '../../../assets/Icons/available_mapmarker.png'
 import unavailableIcon from '../../../assets/Icons/unavailable_mapmarker.png'
@@ -8,8 +7,6 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 const emits = defineEmits(['siteSelected'])
-
-const sessionsStore = useSessionsStore()
 
 const mapMarkerAvailable = availableIcon
 const mapMarkerUnavailable = unavailableIcon
