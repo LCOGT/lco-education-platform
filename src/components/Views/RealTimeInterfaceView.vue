@@ -1,19 +1,26 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 
 const sessionsStore = useSessionsStore()
 
-const currentView = ref('sessionpending')
-const timeRemaining = ref(900)
+const currentView = ref('')
+const timeRemaining = ref(0)
 
 const selectedSession = computed(() => {
   return sessionsStore.sessions.results.find(session => session.id === sessionsStore.currentSessionId)
 })
 
 const site = computed(() => selectedSession.value?.site)
+const startTime = computed(() => new Date(selectedSession.value?.start).getTime())
+const endTime = computed(() => new Date(selectedSession.value?.end).getTime())
+
+const isSessionActive = computed(() => {
+  const currentTime = new Date().getTime()
+  return currentTime >= startTime.value && currentTime <= endTime.value
+})
 
 const handleViewChange = (view) => {
   currentView.value = view
@@ -25,27 +32,40 @@ const formattedTime = computed(() => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 })
 
-// TO DO: Instead of having a set time, get the actual length of the time
-const countdown = setInterval(() => {
+const calculateTimeRemaining = () => {
+  const currentTime = new Date().getTime()
+  const remainingSeconds = Math.floor((endTime.value - currentTime) / 1000)
+  timeRemaining.value = remainingSeconds > 0 ? remainingSeconds : 0
+}
+
+onMounted(() => {
+  currentView.value = isSessionActive.value ? 'sessionstarted' : 'sessionpending'
+
   if (currentView.value === 'sessionstarted') {
-    timeRemaining.value--
-    if (timeRemaining.value === 0) {
-      clearInterval(countdown)
-    }
+    calculateTimeRemaining()
   }
-}, 1000)
+
+  const countdown = setInterval(() => {
+    if (currentView.value === 'sessionstarted') {
+      calculateTimeRemaining()
+      if (timeRemaining.value === 0) {
+        clearInterval(countdown)
+      }
+    }
+  }, 1000)
+})
 </script>
 
 <template>
   <section>
     <div class="container">
       <SessionPending
-        v-if="currentView === 'sessionpending'"
+        v-if="currentView === 'sessionpending' && !isSessionActive"
         @changeView="handleViewChange"
       />
-      <div v-else-if="currentView === 'sessionstarted'" class="content">
+      <div v-else-if="currentView === 'sessionstarted' || isSessionActive" class="content">
         <h2>Real Time Session</h2>
-        <p>You are controlling the telescope in {{  site }}</p>
+        <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formattedTime }}</span></p>
         <SessionStarted @changeView="handleViewChange" />
       </div>
