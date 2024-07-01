@@ -7,7 +7,7 @@ import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 const sessionsStore = useSessionsStore()
 
 const currentView = ref('sessionpending')
-const timeRemaining = ref(20)
+const timeRemaining = ref(900)
 
 const selectedSession = computed(() => {
   return sessionsStore.sessions.results.find(session => session.id === sessionsStore.currentSessionId)
@@ -18,6 +18,12 @@ const site = computed(() => selectedSession.value?.site)
 const handleViewChange = (view) => {
   currentView.value = view
 }
+
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeRemaining.value / 60)
+  const seconds = timeRemaining.value % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+})
 
 // TO DO: Instead of having a set time, get the actual length of the time
 const countdown = setInterval(() => {
@@ -40,7 +46,7 @@ const countdown = setInterval(() => {
       <div v-else-if="currentView === 'sessionstarted'" class="content">
         <h2>Real Time Session</h2>
         <p>You are controlling the telescope in {{  site }}</p>
-        <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ timeRemaining }}</span></p>
+        <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formattedTime }}</span></p>
         <SessionStarted @changeView="handleViewChange" />
       </div>
     </div>
