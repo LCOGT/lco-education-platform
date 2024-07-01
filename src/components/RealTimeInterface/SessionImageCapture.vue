@@ -11,8 +11,6 @@ const props = defineProps({
 
 const status = ref(null)
 let pollingInterval = null
-// const countdown = ref(props.exposureTime)
-// let countdownInterval = null
 const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
 async function fetchStatus () {
@@ -28,13 +26,6 @@ async function fetchStatus () {
 onMounted(() => {
   fetchStatus()
   pollingInterval = setInterval(fetchStatus, 1000)
-  // countdownInterval = setInterval(() => {
-  //   if (countdown.value > 0) {
-  //     countdown.value--
-  //   } else {
-  //     clearInterval(countdownInterval)
-  //   }
-  // }, 1000)
 })
 
 onUnmounted(() => {
@@ -47,7 +38,6 @@ onUnmounted(() => {
     <div class="columns">
         <div class="column">
             <div v-if="status">
-              <!-- {{ countdown }} -->
                 <div v-for="item in status" :key="item">
                     <p>Observatory: {{ item.availability }}</p>
                     <p>Telescope: {{ item.telescope }}</p>

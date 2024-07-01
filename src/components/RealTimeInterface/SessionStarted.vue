@@ -6,6 +6,7 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
+import PolledThumbnails from '../RealTimeInterface/PolledThumbnails.vue'
 import { calcAltAz } from '../../utils/visibility.js'
 import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
@@ -207,17 +208,7 @@ function changeFov (fov) {
                 </div>
               </div>
         </div>
-        <!-- <button :disabled="ra === '' || dec === ''" @click="goToLocation" class="button blue-bg">Check Visibility</button> -->
         <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
-        <div v-if="status">
-        <div v-for="item in status" :key="item">
-          <p>Observatory: {{ item.availability }}</p>
-          <p>Telescope: {{ item.telescope }}</p>
-          <p>Camera: {{ item.instrument }}</p>
-          <p>Progress: {{ item.progress }}</p>
-          </div>
-        </div>
-        <PolledThumbnails />
       </div>
     </div>
   </div>
