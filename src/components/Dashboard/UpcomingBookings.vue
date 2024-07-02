@@ -54,7 +54,7 @@ onMounted(() => {
 
 <template>
     <div class="bookings">
-      <h3 v-if="sortedSessions">Upcoming Bookings</h3>
+      <h3 v-if="sortedSessions.length">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">

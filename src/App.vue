@@ -3,10 +3,14 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AboutView from './components/Views/AboutView.vue'
+import { useUserDataStore } from './stores/userData'
 
 const showNavTabs = ref(false)
 const route = useRoute()
 const router = useRouter()
+
+const userDataStore = useUserDataStore()
+const username = userDataStore.username
 
 function handleObserveClick () {
   showNavTabs.value = true
@@ -49,7 +53,8 @@ watch(
         <router-link class="navbar-item" to="/observe">Observe</router-link>
         <router-link class="navbar-item" to="/datalab">DataLab</router-link>
         <div class="buttons">
-          <router-link class="navbar-item button red-bg" to="/login">Login</router-link>
+          <router-link class="navbar-item button red-bg" to="/login" v-if="!username">Login</router-link>
+          <span class="navbar-item" v-if="username">{{ username }}</span>
         </div>
       </div>
     </div>
