@@ -6,7 +6,6 @@ import { useSessionsStore } from '../../stores/sessions'
 const sessionsStore = useSessionsStore()
 
 const observations = computed(() => {
-  console.log(sessionsStore.sessions.results)
   const now = new Date()
   // Current time minus 16 minutes
   const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
