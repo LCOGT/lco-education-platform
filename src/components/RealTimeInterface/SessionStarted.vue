@@ -6,11 +6,11 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
-import PolledThumbnails from '../RealTimeInterface/PolledThumbnails.vue'
 import { calcAltAz } from '../../utils/visibility.js'
 import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import celestial from 'd3-celestial'
+import { fetchApiCall } from '../../utils/api'
 
 const sessionsStore = useSessionsStore()
 
@@ -28,6 +28,7 @@ const targeterror = ref(false)
 const targeterrorMsg = ref('')
 
 const targetNameApiUrl = 'https://simbad2k.lco.global/'
+const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 
 const Celestial = celestial.Celestial()
 const currentSession = sessionsStore.currentSession
@@ -92,6 +93,21 @@ function changeFov (fov) {
     aladinRef.value.setFov(fov)
     fieldOfView.value = fov
   }
+}
+
+function handleError (error) {
+  console.error('API call failed with error:', error)
+}
+
+const commandGo = async () => {
+  const requestBody = {
+    dec: Number(dec.value),
+    expFilter: ['ip', 'rp', 'gp'],
+    expTime: [50, 50, 50],
+    name: 'test',
+    ra: Number(ra.value)
+  }
+  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: JSON.stringify(requestBody), successCallback: moveTelescope.value = true, failCallback: handleError })
 }
 
 </script>
@@ -208,7 +224,7 @@ function changeFov (fov) {
                 </div>
               </div>
         </div>
-        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="moveTelescope = true">Go</button>
+        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="commandGo()">Go</button>
       </div>
     </div>
   </div>
