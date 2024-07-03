@@ -66,8 +66,8 @@ const blockRti = async () => {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
     site: 'tst',
-    enclosure: 'doma',
-    telescope: '1m0a',
+    enclosure: 'clma',
+    telescope: '2m0a',
     start: formatToUTC(date.value, startTime.value),
     end: endTime.value
   }
