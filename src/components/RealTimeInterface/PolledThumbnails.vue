@@ -9,7 +9,6 @@ const sessionId = currentSession.id
 const thumbnails = ref([])
 
 let pollingInterval = null
-const randomNumber = ref(0)
 
 const thumbnailsApiUrl = `http://archive-api-dev.lco.gtn/thumbnails/?observation_id=${sessionId}&size=large`
 
@@ -19,7 +18,6 @@ function getThumbnails () {
     .then(data => {
       console.log(data)
       thumbnails.value = data.results.map(result => result.url)
-      randomNumber.value = Math.floor(Math.random() * thumbnails.value.length)
     })
     .catch(error => {
       console.error('Error:', error)
@@ -27,7 +25,6 @@ function getThumbnails () {
 }
 
 onMounted(() => {
-  console.log('here', sessionId)
   getThumbnails()
   pollingInterval = setInterval(getThumbnails, 3000)
 })
@@ -36,6 +33,6 @@ onMounted(() => {
 
 <template>
     <div>
-<img :src="thumbnails[randomNumber]" />
+<img :src="thumbnails[thumbnails.length-1]" />
 </div>
 </template>
