@@ -3,7 +3,6 @@ import { ref, computed, watch, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
-import sites from '../../utils/sites.JSON'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const router = useRouter()
@@ -25,7 +24,7 @@ const toIsoDate = computed(() => {
 })
 
 // TO DO: Get times from API
-const times = ['17:45', '18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30', '19:45', '20:00', '20:15', '20:30', '20:45', '21:00', '21:15', '21:30', '21:45', '22:00', '22:15', '22:30', '22:45', '23:00', '23:15', '23:30', '23:45', '00:00', '00:15', '00:30', '00:45', '01:00', '01:15', '01:30', '01:45', '02:00', '02:15', '02:30']
+const times = ['10:45', '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00', '13:15', '13:30', '13:45', '14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30', '15:45', '16:00', '16:15', '16:30', '16:45', '17:00', '17:15', '17:30', '17:45', '18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30']
 
 const selectTime = (selectedTime) => {
   startTime.value = selectedTime
@@ -34,17 +33,17 @@ const selectTime = (selectedTime) => {
 const setEndTime = (startDate, startTime, minutesToAdd) => {
   const combinedDateTime = new Date(startDate)
   const [hours, minutes] = startTime.split(':')
-  combinedDateTime.setUTCHours(hours)
-  combinedDateTime.setUTCMinutes(minutes)
-  combinedDateTime.setUTCMinutes(combinedDateTime.getUTCMinutes() + minutesToAdd)
+  combinedDateTime.setHours(hours)
+  combinedDateTime.setMinutes(minutes)
+  combinedDateTime.setMinutes(combinedDateTime.getMinutes() + minutesToAdd)
   return combinedDateTime.toISOString().split('.')[0] + 'Z'
 }
 
 const formatToUTC = (date, time) => {
   const combinedDateTime = new Date(date)
   const [hours, minutes] = time.split(':')
-  combinedDateTime.setUTCHours(hours)
-  combinedDateTime.setUTCMinutes(minutes)
+  combinedDateTime.setHours(hours)
+  combinedDateTime.setMinutes(minutes)
   return combinedDateTime.toISOString().split('.')[0] + 'Z'
 }
 
