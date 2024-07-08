@@ -107,7 +107,7 @@ const commandGo = async () => {
     name: 'test',
     ra: Number(ra.value)
   }
-  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: JSON.stringify(requestBody), successCallback: moveTelescope.value = true, failCallback: handleError })
+  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: requestBody, successCallback: moveTelescope.value = true, failCallback: handleError })
 }
 
 </script>
