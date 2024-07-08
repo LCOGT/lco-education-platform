@@ -16,11 +16,12 @@ const redirectToScheduling = () => {
 
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
-  const fifteenMinutesAgo = now - 15 * 60 * 1000
+  // TODO: Show past sessions for a certain amount of time in a separate section
+  const twoHoursAgo = now - 120 * 60 * 1000
   if (sessionsStore.sessions.results === undefined) {
     return []
   } else {
-    return sessionsStore.sessions.results.filter(session => new Date(session.start).getTime() >= fifteenMinutesAgo)
+    return sessionsStore.sessions.results.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
       .slice()
       .sort((a, b) => new Date(a.start) - new Date(b.start))
   }

@@ -22,7 +22,8 @@ export const useSessionsStore = defineStore('sessions', {
   actions: {
     fetchSessions () {
       fetchApiCall({
-        url: 'http://observation-portal-dev.lco.gtn/api/observations/',
+        // TODO: Filter this by user ID too
+        url: 'http://observation-portal-dev.lco.gtn/api/observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
         method: 'GET',
         successCallback: (response) => {
           this.sessions = response
