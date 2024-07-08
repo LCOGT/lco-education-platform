@@ -17,9 +17,13 @@ const redirectToScheduling = () => {
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
   const fifteenMinutesAgo = now - 15 * 60 * 1000
-  return sessionsStore.sessions.results?.filter(session => new Date(session.start).getTime() >= fifteenMinutesAgo)
-    .slice()
-    .sort((a, b) => new Date(a.start) - new Date(b.start))
+  if (sessionsStore.sessions.results === undefined) {
+    return []
+  } else {
+    return sessionsStore.sessions.results.filter(session => new Date(session.start).getTime() >= fifteenMinutesAgo)
+      .slice()
+      .sort((a, b) => new Date(a.start) - new Date(b.start))
+  }
 })
 
 const observations = ref([
@@ -47,7 +51,9 @@ const formatTime = (timeString) => {
 }
 
 onMounted(() => {
+  console.log('mounting')
   sessionsStore.fetchSessions()
+  console.log('Fetching sessions', sessionsStore.sessions)
 })
 
 </script>

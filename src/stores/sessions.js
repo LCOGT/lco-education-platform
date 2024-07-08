@@ -30,7 +30,7 @@ export const useSessionsStore = defineStore('sessions', {
       })
     },
     addSession (session) {
-      this.sessions.results.push(session)
+      this.sessions.results ? this.sessions.results.push(session) : this.sessions.results = [session]
       this.currentSessionId = session.id
     },
     prepareStore () {
