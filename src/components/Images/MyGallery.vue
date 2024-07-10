@@ -9,11 +9,15 @@ const observations = computed(() => {
   const now = new Date()
   // Current time minus 16 minutes
   const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
-  return sessionsStore.sessions.results
-    .filter(obs => new Date(obs.start) < cutoffTime)
-    .slice().sort((a, b) => {
-      return new Date(b.start) - new Date(a.start)
-    })
+  if (sessionsStore.sessions.results) {
+    return sessionsStore.sessions.results
+      .filter(obs => new Date(obs.start) < cutoffTime)
+      .slice().sort((a, b) => {
+        return new Date(b.start) - new Date(a.start)
+      })
+  } else {
+    return []
+  }
 })
 
 const formatDate = (dateString) => {
