@@ -52,9 +52,7 @@ const formatTime = (timeString) => {
 }
 
 onMounted(() => {
-  console.log('mounting')
   sessionsStore.fetchSessions()
-  console.log('Fetching sessions', sessionsStore.sessions)
 })
 
 </script>
