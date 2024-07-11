@@ -30,10 +30,7 @@ export const useSessionsStore = defineStore('sessions', {
         }
       })
     },
-    addSession (session) {
-      this.sessions.results ? this.sessions.results.push(session) : this.sessions.results = [session]
-      this.currentSessionId = session.id
-    },
+    // move this to fetchsessions and test skychart
     prepareStore () {
       this.sessions.results.forEach(session => {
         if (session.date) {
