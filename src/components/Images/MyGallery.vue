@@ -2,6 +2,7 @@
 import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 import { computed } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
+import { formatDate } from '../../utils/formatTime'
 
 const sessionsStore = useSessionsStore()
 
@@ -19,11 +20,6 @@ const observations = computed(() => {
     return []
   }
 })
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date)
-}
 
 </script>
 
