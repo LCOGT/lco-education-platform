@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
+import { formatDate, formatTime } from '../../utils/formatTime'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
@@ -30,19 +31,6 @@ const observations = ref([
 const selectSession = (sessionId) => {
   sessionsStore.currentSessionId = sessionId
   router.push(`/realtime/${sessionId}`)
-}
-
-// move these two to a utils file
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  const options = { year: 'numeric', month: 'long', day: 'numeric' }
-  return date.toLocaleDateString('en-US', options)
-}
-
-const formatTime = (timeString) => {
-  const date = new Date(timeString)
-  const options = { hour: 'numeric', minute: 'numeric' }
-  return date.toLocaleTimeString('en-US', options)
 }
 
 onMounted(() => {
