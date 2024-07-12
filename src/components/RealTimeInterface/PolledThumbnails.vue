@@ -8,18 +8,15 @@ const currentSession = sessionsStore.currentSession
 
 const sessionId = currentSession.id
 
+// make this into a carousel (future)
 const thumbnails = ref([])
 let pollingInterval = null
 
 const thumbnailsApiUrl = `http://archive-api-dev.lco.gtn/thumbnails/?observation_id=${sessionId}&size=large`
 
-const saveThumbnails = (data) => {
-  thumbnails.value = data.results.map(result => result.url)
-}
-
 const getThumbnails = async () => {
   // ADD AUTH TOKEN
-  await fetchApiCall({ url: thumbnailsApiUrl, method: 'GET', successCallback: saveThumbnails, failCallback: console.error })
+  await fetchApiCall({ url: thumbnailsApiUrl, method: 'GET', successCallback: (data) => { thumbnails.value = data.results.map(result => result.url) }, failCallback: console.error })
 }
 
 onMounted(() => {
