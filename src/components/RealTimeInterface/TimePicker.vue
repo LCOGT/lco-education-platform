@@ -45,12 +45,7 @@ const blockRti = async () => {
     start: formatToUTC(date.value, startTime.value),
     end: endDate.value
   }
-  await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: handleError })
-}
-
-const handleError = (error) => {
-  errorMessage.value = 'Failed to book session. Please select another time'
-  console.error('API call failed with error:', error)
+  await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
 
 // add function to block past times!! and gray them out
@@ -58,8 +53,6 @@ const handleError = (error) => {
 const bookDate = () => {
   if (date.value && startTime.value && selectedSite.value) {
     router.push('/dashboard')
-  } else {
-    alert('Please fill in all fields to book a session')
   }
 }
 
@@ -72,7 +65,6 @@ watch(date, (newDate, oldDate) => {
 
 // add function to be able to reclick on the same date and load the times again and display it as a back arrow
 
-// maybe this is not necessary
 watch(startTime, (newTime, oldTime) => {
   if (newTime !== oldTime) {
     resetSession()
@@ -105,7 +97,7 @@ watch(startTime, (newTime, oldTime) => {
         </p>
         <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
       </div>
-      <LeafletMap v-if="startTime" @siteSelected="selectedSite"/>
+      <LeafletMap v-if="startTime" @siteSelected="selectedSite = $event"/>
     </div>
   </div>
 </template>
