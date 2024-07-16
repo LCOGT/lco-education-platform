@@ -20,7 +20,6 @@ function updateLocation () {
 
 onMounted(() => {
   const sessionsStore = useSessionsStore()
-  sessionsStore.prepareStore()
 
   const config = {
     width: 600,

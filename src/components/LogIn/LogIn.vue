@@ -17,13 +17,8 @@ const storeToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
-    await fetchApiCall({ url: apiUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: handleError })
+    await fetchApiCall({ url: apiUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
   }
-}
-
-const handleError = (error) => {
-  console.error('API call failed with error:', error)
-  errorMessage.value = 'Failed to authenticate user'
 }
 
 const storeUser = (user) => {
@@ -38,7 +33,7 @@ const login = async () => {
     password: password.value
   }
   // store an auth token from login credentials
-  await fetchApiCall({ url: apiUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: handleError })
+  await fetchApiCall({ url: apiUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
 }
 </script>
 

@@ -19,6 +19,7 @@ const aladinRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
+// highlight what's selected
 const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
@@ -95,19 +96,16 @@ function changeFov (fov) {
   }
 }
 
-function handleError (error) {
-  console.error('API call failed with error:', error)
-}
-
-const commandGo = async () => {
+const sendGoCommand = async () => {
   const requestBody = {
     dec: Number(dec.value),
+    // talk to Matt about this and populate based on choices
     expFilter: ['ip', 'rp', 'gp'],
     expTime: [50, 50, 50],
     name: 'test',
     ra: Number(ra.value)
   }
-  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: requestBody, successCallback: moveTelescope.value = true, failCallback: handleError })
+  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: requestBody, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
 
 </script>
@@ -224,7 +222,8 @@ const commandGo = async () => {
                 </div>
               </div>
         </div>
-        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="commandGo()">Go</button>
+        <!--return to computed prop-->
+        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="sendGoCommand()">Go</button>
       </div>
     </div>
   </div>

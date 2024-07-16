@@ -29,17 +29,13 @@ export const useSessionsStore = defineStore('sessions', {
           this.sessions = response
         }
       })
-    },
-    addSession (session) {
-      this.sessions.results ? this.sessions.results.push(session) : this.sessions.results = [session]
-      this.currentSessionId = session.id
-    },
-    prepareStore () {
-      this.sessions.results.forEach(session => {
-        if (session.date) {
-          session.date = new Date(session.date)
+      if (this.sessions.results.length > 0) {
+        for (const session of this.sessions.results) {
+          if (session.date) {
+            session.date = new Date(session.date)
+          }
         }
-      })
+      }
     }
   }
 })

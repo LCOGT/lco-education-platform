@@ -1,26 +1,14 @@
 <script setup>
-import { ref, defineProps, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import PolledThumbnails from './PolledThumbnails.vue'
-
-const props = defineProps({
-  exposureTime: {
-    type: Number,
-    required: true
-  }
-})
+import { fetchApiCall } from '../../utils/api.js'
 
 const status = ref(null)
 let pollingInterval = null
 const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
-async function fetchStatus () {
-  try {
-    const response = await fetch(statusApiUrl)
-    const data = await response.json()
-    status.value = data
-  } catch (error) {
-    console.error('Error:', error)
-  }
+const fetchStatus = async () => {
+  await fetchApiCall({ url: statusApiUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
 }
 
 onMounted(() => {
@@ -31,6 +19,7 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(pollingInterval)
 })
+// add button that's disabled when images are not done and enabled when images are done to go back to session started
 
 </script>
 

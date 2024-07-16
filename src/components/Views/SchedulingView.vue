@@ -10,10 +10,6 @@ const level = ref('')
 
 const showScheduled = ref(false)
 
-const handleScheduled = () => {
-  showScheduled.value = true
-}
-
 </script>
 
 <template>
@@ -25,10 +21,10 @@ const handleScheduled = () => {
             <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
         </div>
         <div v-else-if="level === 'beginner' && !showScheduled">
-            <BeginnerScheduling @scheduled="handleScheduled"/>
+            <BeginnerScheduling @scheduled="showScheduled = true"/>
         </div>
         <div v-else-if="level === 'advanced' && !showScheduled">
-            <AdvancedScheduling @scheduled="handleScheduled"/>
+            <AdvancedScheduling @scheduled="showScheduled = true"/>
         </div>
         <div v-if="showScheduled">
             <ScheduledObservations />
