@@ -18,4 +18,22 @@ function formatToUTC (date, time) {
   return combinedDateTime.toISOString().split('.')[0] + 'Z'
 }
 
-export { formatDate, formatTime, formatToUTC }
+function formatCountdown (seconds) {
+  if (seconds > 23 * 3600) {
+    const days = Math.floor(seconds / 86400)
+    return `${days} day${days !== 1 ? 's' : ''}`
+  } else if (seconds > 1.5 * 3600) {
+    const hours = Math.floor(seconds / 3600)
+    return `${hours} hour${hours !== 1 ? 's' : ''}`
+  } else if (seconds > 15 * 60) {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    return `${hours}h ${minutes}m`
+  } else {
+    const minutes = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${minutes}m ${secs}s`
+  }
+}
+
+export { formatDate, formatTime, formatToUTC, formatCountdown }
