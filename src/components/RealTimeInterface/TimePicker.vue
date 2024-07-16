@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
-import { formatToUTC, formatDate } from '../../utils/formatTime'
+import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()

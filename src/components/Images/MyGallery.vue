@@ -2,7 +2,7 @@
 import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
 import { computed } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
-import { formatDate } from '../../utils/formatTime'
+import { formatDate } from '../../utils/formatTime.js'
 
 const sessionsStore = useSessionsStore()
 

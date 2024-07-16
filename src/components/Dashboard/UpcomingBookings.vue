@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
-import { formatDate, formatTime } from '../../utils/formatTime'
+import { formatDate, formatTime } from '../../utils/formatTime.js'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
