@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
+import { formatCountdown } from '../../utils/formatTime.js'
 
 const sessionsStore = useSessionsStore()
 
@@ -22,16 +23,6 @@ const isSessionActive = computed(() => {
   return currentTime >= startTime.value && currentTime <= endTime.value
 })
 
-const handleViewChange = (view) => {
-  currentView.value = view
-}
-
-const formattedTime = computed(() => {
-  const minutes = Math.floor(timeRemaining.value / 60)
-  const seconds = timeRemaining.value % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-})
-
 const calculateTimeRemaining = () => {
   const currentTime = new Date().getTime()
   const remainingSeconds = Math.floor((endTime.value - currentTime) / 1000)
@@ -39,6 +30,7 @@ const calculateTimeRemaining = () => {
 }
 
 onMounted(() => {
+  // have a const be sessionstarted and sessionpending and assign it to currentView
   currentView.value = isSessionActive.value ? 'sessionstarted' : 'sessionpending'
 
   if (currentView.value === 'sessionstarted') {
@@ -61,13 +53,13 @@ onMounted(() => {
     <div class="container">
       <SessionPending
         v-if="currentView === 'sessionpending' && !isSessionActive"
-        @changeView="handleViewChange"
+        @changeView="currentView = $event"
       />
       <div v-else-if="currentView === 'sessionstarted' || isSessionActive" class="content">
         <h2>Real Time Session</h2>
         <p>You are controlling the telescope in {{ site }}</p>
-        <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formattedTime }}</span></p>
-        <SessionStarted @changeView="handleViewChange" />
+        <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
+        <SessionStarted @changeView="currentView = $event" />
       </div>
     </div>
   </section>
