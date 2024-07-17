@@ -30,7 +30,11 @@ const observations = ref([
 
 const selectSession = (sessionId) => {
   sessionsStore.currentSessionId = sessionId
-  sessionsStore.fetchToken(sessionsStore.currentSessionId)
+  sessionsStore.currentSession.token ? console.log('we have a token') : console.log('we dont have a token')
+  // if token
+  // return maybe???
+  // if no token
+  // sessionsStore.fetchToken(sessionsStore.currentSessionId)
   router.push(`/realtime/${sessionId}`)
 }
 

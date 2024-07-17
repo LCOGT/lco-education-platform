@@ -42,7 +42,7 @@ export const useSessionsStore = defineStore('sessions', {
         body: this.sessions.results.find(session => session.id === sessionId)
       }
       await fetchApiCall({
-        url: 'http://rti-bridge-dev.lco.gtn/login/', method: 'POST', body: requestBody, successCallback: (response) => { console.log('response', response) }, failCallback: () => { console.error('Failed to authenticate user') }
+        url: 'http://rti-bridge-dev.lco.gtn/login/', method: 'POST', body: requestBody, successCallback: (response) => { this.currentSession.token = response.token }, failCallback: () => { console.error('Failed to authenticate user') }
       })
     }
   }
