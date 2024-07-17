@@ -20,8 +20,8 @@ export const useSessionsStore = defineStore('sessions', {
     }
   },
   actions: {
-    fetchSessions () {
-      fetchApiCall({
+    async fetchSessions () {
+      await fetchApiCall({
         // TODO: Filter this by user ID too
         url: 'http://observation-portal-dev.lco.gtn/api/observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
         method: 'GET',
@@ -36,6 +36,14 @@ export const useSessionsStore = defineStore('sessions', {
           }
         }
       }
+    },
+    async fetchToken (sessionId) {
+      const requestBody = {
+        body: this.sessions.results.find(session => session.id === sessionId)
+      }
+      await fetchApiCall({
+        url: 'http://rti-bridge-dev.lco.gtn/login/', method: 'POST', body: requestBody, successCallback: (response) => { console.log('response', response) }, failCallback: () => { console.error('Failed to authenticate user') }
+      })
     }
   }
 })

@@ -30,6 +30,7 @@ const observations = ref([
 
 const selectSession = (sessionId) => {
   sessionsStore.currentSessionId = sessionId
+  sessionsStore.fetchToken(sessionsStore.currentSessionId)
   router.push(`/realtime/${sessionId}`)
 }
 
