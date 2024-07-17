@@ -30,7 +30,7 @@ const observations = ref([
 
 const selectSession = (sessionId) => {
   sessionsStore.currentSessionId = sessionId
-  sessionsStore.currentSession.token ? console.log('we have a token') : console.log('we dont have a token')
+  sessionsStore.currentSession.token ? console.log('we have a token') : sessionsStore.fetchToken(sessionsStore.currentSessionId)
   // if token
   // return maybe???
   // if no token
