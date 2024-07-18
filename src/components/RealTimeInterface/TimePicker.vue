@@ -74,7 +74,7 @@ watch(startTime, (newTime, oldTime) => {
 </script>
 
 <template>
-  <h2>Book your real-time session</h2>
+  <h2>Book your live observing session</h2>
   <div class="columns">
     <div class="column is-one-third">
       <p>Select a date and time:</p>

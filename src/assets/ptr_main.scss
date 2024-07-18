@@ -1,8 +1,5 @@
 @charset "utf-8";
 
-// Import a Google Font
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Unica+One&display=swap');
-
 // Set your brand colors
 $blue: #00ADEF;
 $red: #EF4123;
@@ -13,23 +10,8 @@ $grey-level2: #262e35;
 $grey-level3: #192026;
 $grey-level4: #13181D;
 
-// Update Bulma's global variables
-$family-sans-serif: "Noto Sans", sans-serif;
-$grey-dark: $grey-level3;
-$grey-light: $grey-level1;
-$primary: $blue;
-$link: $red;
-$widescreen-enabled: false;
-$fullhd-enabled: false;
-$bulma-navbar-height: 8rem;
-$tabs-border-bottom-color: $blue;
-$bulma-progress-value-background-color: $green;
-
-// Update some of Bulma's component variables
-$body-background-color: $grey-level2;
-$control-border-width: 2px;
-$input-border-color: transparent;
-$input-shadow: none;
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Unica+One&display=swap');
 
 $font-stack: "Noto Sans", sans-serif;
 $font-headers: 'Unica One', sans-serif;
@@ -123,7 +105,7 @@ nav {
 
 .green-bg{
     background-color: $green;
-    color: $off-white
+    color: $grey-level4
 }
 
 .grey-bg{

@@ -32,7 +32,7 @@ function emitObserve () {
             <div class="card-content highlight-box is-clickable">
               <FontAwesomeIcon icon="fa-solid fa-star" class="blue icon-highlight" />
               <div class="highlight-title">Observe</div>
-              <p>Use Photon Ranch in Real Time or schedule observations</p>
+              <p>Use Photon Ranch for live or scheduled observations</p>
             </div>
           </div>
         </div>

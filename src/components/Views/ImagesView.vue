@@ -1,5 +1,6 @@
 <script setup>
 import thumbnail from '../../assets/TemporaryImages/thumbnail.png'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { ref } from 'vue'
 
 // TO DO: get images from api and sort them by
@@ -23,9 +24,24 @@ const observations = ref([
             </div>
             <div class="column is-one-fifth-desktop is-half-tablet">
               <div class="button-wrapper">
-                <button v-if="obs.num > 4" class="button blue-bg">Load more</button>
-                <button class="button blue-bg">Download</button>
-                <button class="button blue-bg">Open in DataLab</button>
+                <button class="button is-ghost"  v-if="obs.num > 4">
+                  <span class="icon is-small">
+                    <FontAwesomeIcon icon="fa-solid fa-circle-plus" class="blue icon-highlight" />
+                  </span>
+                  <span>Load More</span>
+                </button>
+                <button class="button is-ghost">
+                  <span class="icon is-small">
+                    <FontAwesomeIcon icon="fa-solid fa-download" class="blue icon-highlight" />
+                  </span>
+                  <span>Download</span>
+                </button>
+                <button class="button is-ghost blue">
+                  <span class="icon is-small">
+                    <FontAwesomeIcon icon="fa-solid fa-pen-ruler" class="blue icon-highlight" />
+                  </span>
+                  <span>Open in DataLab</span>
+                </button>
               </div>
             </div>
         </div>
