@@ -56,7 +56,7 @@ onMounted(() => {
         @changeView="currentView = $event"
       />
       <div v-else-if="currentView === 'sessionstarted' || isSessionActive" class="content">
-        <h2>Real Time Session</h2>
+        <h2>Live Observing Session</h2>
         <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
         <SessionStarted @changeView="currentView = $event" />

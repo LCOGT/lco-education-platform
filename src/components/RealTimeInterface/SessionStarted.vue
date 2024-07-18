@@ -12,6 +12,8 @@ import sites from '../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 import { fetchApiCall } from '../../utils/api'
 
+const exposureCount = 1
+
 const sessionsStore = useSessionsStore()
 
 const router = useRouter()
@@ -176,28 +178,24 @@ const sendGoCommand = async () => {
                 </div>
             </div>
             <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                    <label class="label">Exposure Time</label>
+              <div class="field-label is-normal">
+                <label class="label">Exposure</label>
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control is-expanded">
+                    <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
+                  </p>
                 </div>
-                <div class="field-body">
-                    <div class="field">
-                    <p class="control is-expanded">
-                        <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
-                    </p>
-                    </div>
+                <div>
+                  <FontAwesomeIcon icon="fa-solid fa-xmark"  />
                 </div>
-            </div>
-            <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                    <label class="label">Exposure Count</label>
+                <div class="field">
+                  <p class="control is-expanded">
+                    <input id="exposureCount" type="number" class="input" v-model="exposureCount">
+                  </p>
                 </div>
-                <div class="field-body">
-                    <div class="field">
-                    <p class="control is-expanded">
-                        <input id="exposureCount" type="number" class="input" v-model="exposureCount">
-                    </p>
-                    </div>
-                </div>
+              </div>
             </div>
             <div class="field is-horizontal">
                 <div class="field-label is-normal">

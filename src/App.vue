@@ -74,7 +74,7 @@ watch(
             <div class="tabs is-left">
               <ul>
                 <li><router-link to="/dashboard" class="is-active">Dashboard</router-link></li>
-                <li><router-link to="/book/realtime">Book Real Time Observation</router-link></li>
+                <li><router-link to="/book/realtime">Live Observing</router-link></li>
                 <li><router-link to="/schedule">Schedule</router-link></li>
                 <li><router-link to="/images">Images</router-link></li>
               </ul>
