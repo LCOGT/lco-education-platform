@@ -40,4 +40,13 @@ function formatCountdown (seconds) {
   }
 }
 
-export { formatDate, formatTime, formatToUTC, formatCountdown }
+function calculateTime (session) {
+  const currentTime = new Date().getTime()
+  const sessionStartTime = new Date(session.start).getTime()
+  const sessionEndTime = new Date(session.end).getTime()
+  let countdown
+  sessionStartTime > currentTime ? countdown = sessionStartTime : countdown = sessionEndTime
+  return Math.floor((countdown - currentTime) / 1000)
+}
+
+export { formatDate, formatTime, formatToUTC, formatCountdown, calculateTime }
