@@ -63,9 +63,7 @@ export const useSessionsStore = defineStore('sessions', {
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
-      console.log('response:', response)
       this.currentStatus = response.session_status
-      console.log('Current session status:', this.currentStatus)
     },
     startPolling () {
       this.stopPolling()
