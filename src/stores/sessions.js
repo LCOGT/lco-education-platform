@@ -6,8 +6,9 @@ export const useSessionsStore = defineStore('sessions', {
     return {
       sessions: [],
       currentSessionId: null,
-      nextSessionId: 0,
-      selectedSite: null
+      currentStatus: '',
+      fetchInterval: null,
+      token: ''
     }
   },
   persist: true,
@@ -22,7 +23,6 @@ export const useSessionsStore = defineStore('sessions', {
   actions: {
     async fetchSessions () {
       await fetchApiCall({
-        // TODO: Filter this by user ID too
         url: 'http://observation-portal-dev.lco.gtn/api/observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
         method: 'GET',
         successCallback: (response) => {
@@ -37,13 +37,58 @@ export const useSessionsStore = defineStore('sessions', {
         }
       }
     },
-    async fetchToken (sessionId) {
-      const requestBody = {
-        body: this.sessions.results.find(session => session.id === sessionId)
-      }
-      await fetchApiCall({
-        url: 'http://rti-bridge-dev.lco.gtn/login/', method: 'POST', body: requestBody, successCallback: (response) => { this.currentSession.token = response.token }, failCallback: () => { console.error('Failed to authenticate user') }
+    async fetchToken () {
+      const requestBody = JSON.stringify(this.currentSession)
+      const response = await fetchApiCall({
+        url: 'http://rti-bridge-dev.lco.gtn/login', method: 'POST', body: JSON.parse(requestBody)
       })
+      const selectedSession = this.currentSession
+      if (!selectedSession.token) {
+        selectedSession.token = response.token
+      }
+    },
+    async fetchStatus () {
+      const selectedSession = this.currentSession
+      const response = await fetchApiCall({
+        url: 'http://rti-bridge-dev.lco.gtn/session_status',
+        method: 'GET',
+        header: { Authorization: `Token ${selectedSession.token}` }
+      })
+      this.currentStatus = response.session_status
+    },
+    startPolling () {
+      this.stopPolling()
+      const selectedSession = this.currentSession
+      if (!selectedSession.token) {
+        this.fetchToken()
+      }
+
+      const poll = async () => {
+        await this.fetchStatus()
+        const sessionStartTime = new Date(this.currentSession.start).getTime()
+        const sessionEndTime = new Date(this.currentSession.end).getTime()
+        const currentTime = new Date().getTime()
+
+        let nextInterval = 60000
+
+        if (currentTime >= sessionStartTime - 600000 && currentTime <= sessionStartTime) {
+          // If within 10 minutes before the session, poll every second. This time is arbitrary.
+          nextInterval = 1000
+        } else if (currentTime >= sessionStartTime && currentTime <= sessionEndTime) {
+          // If during the session, poll every 10 seconds. This time is also arbitrary.
+          nextInterval = 10000
+        }
+
+        this.fetchInterval = setTimeout(poll, nextInterval)
+      }
+
+      poll()
+    },
+    stopPolling () {
+      if (this.fetchInterval) {
+        clearTimeout(this.fetchInterval)
+        this.fetchInterval = null
+      }
     }
   }
 })
