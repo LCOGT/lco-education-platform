@@ -8,7 +8,7 @@ export const useSessionsStore = defineStore('sessions', {
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
-      token: ''
+      sessionTokens: {}
     }
   },
   persist: true,
@@ -18,6 +18,9 @@ export const useSessionsStore = defineStore('sessions', {
     },
     getAllSessions (state) {
       return state.sessions
+    },
+    getTokenForCurrentSession (state) {
+      return state.sessionTokens[state.currentSessionId] || ''
     }
   },
   actions: {
@@ -40,28 +43,29 @@ export const useSessionsStore = defineStore('sessions', {
     async fetchToken () {
       const requestBody = JSON.stringify(this.currentSession)
       const response = await fetchApiCall({
-        url: 'http://rti-bridge-dev.lco.gtn/login', method: 'POST', body: JSON.parse(requestBody)
+        url: 'http://rti-bridge-dev.lco.gtn/login',
+        method: 'POST',
+        body: JSON.parse(requestBody)
       })
-      const selectedSession = this.currentSession
-      if (!selectedSession.token) {
-        selectedSession.token = response.token
+      if (!this.getTokenForCurrentSession) {
+        this.sessionTokens[this.currentSessionId] = response.token
       }
     },
     async fetchStatus () {
-      const selectedSession = this.currentSession
+      const token = this.getTokenForCurrentSession
+      if (!token) {
+        await this.fetchToken()
+      }
+
       const response = await fetchApiCall({
         url: 'http://rti-bridge-dev.lco.gtn/session_status',
         method: 'GET',
-        header: { Authorization: `Token ${selectedSession.token}` }
+        header: { Authorization: `Token ${token}` }
       })
       this.currentStatus = response.session_status
     },
     startPolling () {
       this.stopPolling()
-      const selectedSession = this.currentSession
-      if (!selectedSession.token) {
-        this.fetchToken()
-      }
 
       const poll = async () => {
         await this.fetchStatus()
@@ -72,10 +76,8 @@ export const useSessionsStore = defineStore('sessions', {
         let nextInterval = 60000
 
         if (currentTime >= sessionStartTime - 600000 && currentTime <= sessionStartTime) {
-          // If within 10 minutes before the session, poll every second. This time is arbitrary.
           nextInterval = 1000
         } else if (currentTime >= sessionStartTime && currentTime <= sessionEndTime) {
-          // If during the session, poll every 10 seconds. This time is also arbitrary.
           nextInterval = 10000
         }
 

@@ -5,13 +5,11 @@ import sites from '../../../utils/sites.JSON'
 
 const sessionsStore = useSessionsStore()
 
-const selectedSession = computed(() => {
-  return sessionsStore.sessions.results?.find(session => session.id === sessionsStore.currentSessionId)
-})
+const selectedSession = sessionsStore.currentSession
 
 const siteInfo = computed(() => {
-  if (selectedSession.value && selectedSession.value.site) {
-    return sites[selectedSession.value.site]
+  if (selectedSession && selectedSession.site) {
+    return sites[selectedSession.site]
   }
   return null
 })
