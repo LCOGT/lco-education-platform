@@ -60,9 +60,10 @@ export const useSessionsStore = defineStore('sessions', {
 
       const response = await fetchApiCall({
         url: 'http://rti-bridge-dev.lco.gtn/session_status',
-        method: 'GET',
-        header: { Authorization: `Token ${token}` }
+        method: 'GET'
+        // header: { Authorization: `Token ${token}` }
       })
+      console.log('response:', response)
       this.currentStatus = response.session_status
       console.log('Current session status:', this.currentStatus)
     },
