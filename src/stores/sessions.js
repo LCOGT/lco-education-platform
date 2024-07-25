@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { fetchApiCall } from '../utils/api'
+import { calculateTime } from '../utils/formatTime'
 
 export const useSessionsStore = defineStore('sessions', {
   state () {
@@ -63,21 +64,20 @@ export const useSessionsStore = defineStore('sessions', {
         header: { Authorization: `Token ${token}` }
       })
       this.currentStatus = response.session_status
+      console.log('Current session status:', this.currentStatus)
     },
     startPolling () {
       this.stopPolling()
 
       const poll = async () => {
         await this.fetchStatus()
-        const sessionStartTime = new Date(this.currentSession.start).getTime()
-        const sessionEndTime = new Date(this.currentSession.end).getTime()
-        const currentTime = new Date().getTime()
-
+        const time = calculateTime(this.currentSession)
         let nextInterval = 60000
-
-        if (currentTime >= sessionStartTime - 600000 && currentTime <= sessionStartTime) {
+        // 10 minutes (600 seconds) before session start poll every second -- time is arbitrary
+        if (time <= 600 && time > 0 && this.currentStatus === 'INACTIVE') {
           nextInterval = 1000
-        } else if (currentTime >= sessionStartTime && currentTime <= sessionEndTime) {
+          // During the session, poll every 10 seconds -- time is arbitrary
+        } else if (this.currentStatus === 'ACTIVE') {
           nextInterval = 10000
         }
 
