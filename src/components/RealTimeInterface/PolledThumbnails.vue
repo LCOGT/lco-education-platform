@@ -12,7 +12,7 @@ const sessionId = currentSession.id
 const thumbnails = ref([])
 let pollingInterval = null
 
-const thumbnailsApiUrl = `/archive-api-dev.lco.gtn/thumbnails/?observation_id=${sessionId}&size=large`
+const thumbnailsApiUrl = `http://archive-api-dev.lco.gtn/thumbnails/?observation_id=${sessionId}&size=large`
 
 const getThumbnails = async () => {
   // ADD AUTH TOKEN
