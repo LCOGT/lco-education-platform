@@ -13,13 +13,8 @@ const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 
 onMounted(() => {
-  if (!sessionsStore.getTokenForCurrentSession) {
-    sessionsStore.fetchToken().then(() => {
-      sessionsStore.startPolling()
-    })
-  } else {
-    sessionsStore.startPolling()
-  }
+  sessionsStore.startPolling()
+
   const countdown = setInterval(() => {
     if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') {
       timeRemaining.value = calculateTime(selectedSession)
