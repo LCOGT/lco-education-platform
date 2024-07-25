@@ -7,13 +7,13 @@ const status = ref(null)
 let pollingInterval = null
 const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
-const fetchStatus = async () => {
+const fetchTelescopeStatus = async () => {
   await fetchApiCall({ url: statusApiUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
 }
 
 onMounted(() => {
-  fetchStatus()
-  pollingInterval = setInterval(fetchStatus, 1000)
+  fetchTelescopeStatus()
+  pollingInterval = setInterval(fetchTelescopeStatus, 1000)
 })
 
 onUnmounted(() => {
