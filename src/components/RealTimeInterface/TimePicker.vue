@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, defineEmits } from 'vue'
+import { ref, watch, defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'

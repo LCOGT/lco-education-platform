@@ -1,0 +1,6 @@
+{
+    "observationPortalUrl": "http://observation-portal-dev.lco.gtn/api/",
+    "thumbnailArchiveUrl": "http://archive-api-dev.lco.gtn/thumbnails/",
+    "rtiBridgeUrl": "http://rti-bridge-dev.lco.gtn/",
+    "telescopeStatusApiUrl": "http://rti-bridge-dev.lco.gtn/status"
+}

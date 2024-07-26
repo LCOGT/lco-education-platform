@@ -40,4 +40,14 @@ function formatCountdown (seconds) {
   }
 }
 
-export { formatDate, formatTime, formatToUTC, formatCountdown }
+// calculates either the time left in the session or the time until the session starts
+function calculateSessionCountdown (session) {
+  const currentTime = new Date().getTime()
+  const sessionStartTime = new Date(session.start).getTime()
+  const sessionTime = new Date(session.end).getTime()
+  // checking if the session has started or not
+  const countdown = sessionStartTime > currentTime ? sessionStartTime : sessionTime
+  return Math.floor((countdown - currentTime) / 1000)
+}
+
+export { formatDate, formatTime, formatToUTC, formatCountdown, calculateSessionCountdown }
