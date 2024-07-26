@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
-import { formatCountdown, calculateTime } from '../../utils/formatTime.js'
+import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'
 
 const sessionsStore = useSessionsStore()
 
@@ -20,7 +20,7 @@ onMounted(async () => {
 
   const countdown = setInterval(() => {
     if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') {
-      timeRemaining.value = calculateTime(selectedSession)
+      timeRemaining.value = calculateSessionCountdown(selectedSession)
       if (timeRemaining.value <= 0) {
         clearInterval(countdown)
       }

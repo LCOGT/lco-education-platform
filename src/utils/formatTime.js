@@ -41,7 +41,7 @@ function formatCountdown (seconds) {
 }
 
 // calculates either the time left in the session or the time until the session starts
-function calculateTime (session) {
+function calculateSessionCountdown (session) {
   const currentTime = new Date().getTime()
   const sessionStartTime = new Date(session.start).getTime()
   const sessionTime = new Date(session.end).getTime()
@@ -50,4 +50,4 @@ function calculateTime (session) {
   return Math.floor((countdown - currentTime) / 1000)
 }
 
-export { formatDate, formatTime, formatToUTC, formatCountdown, calculateTime }
+export { formatDate, formatTime, formatToUTC, formatCountdown, calculateSessionCountdown }

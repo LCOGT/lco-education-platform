@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { fetchApiCall } from '../utils/api'
-import { calculateTime } from '../utils/formatTime'
+import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
 
 export const useSessionsStore = defineStore('sessions', {
@@ -73,7 +73,7 @@ export const useSessionsStore = defineStore('sessions', {
 
       const poll = async () => {
         await this.fetchSessionStatus()
-        const time = calculateTime(this.currentSession)
+        const time = calculateSessionCountdown(this.currentSession)
         let nextInterval = 60000
         // 10 minutes (600 seconds) before session start poll every second -- time is arbitrary
         if (time <= 600 && time > 0 && this.currentStatus === 'INACTIVE') {
