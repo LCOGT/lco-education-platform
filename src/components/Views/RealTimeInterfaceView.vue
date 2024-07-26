@@ -12,7 +12,10 @@ const timeRemaining = ref(0)
 const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 
-onMounted(() => {
+onMounted(async () => {
+  // initiate the handshake and retrieve a token prior to polling
+  await sessionsStore.fetchToken()
+
   sessionsStore.startPolling()
 
   const countdown = setInterval(() => {
