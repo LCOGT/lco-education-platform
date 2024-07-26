@@ -16,9 +16,9 @@ export const useSessionsStore = defineStore('sessions', {
   persist: true,
   getters: {
     currentSession (state) {
-      const tempCurrentSession = state.sessions.results.find(session => session.id === state.currentSessionId)
+      const currentSession = state.sessions.results.find(session => session.id === state.currentSessionId)
       // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
-      return toRaw(tempCurrentSession)
+      return toRaw(currentSession)
     },
     getAllSessions (state) {
       return state.sessions
