@@ -1,5 +1,6 @@
 {
     "observationPortalUrl": "http://observation-portal-dev.lco.gtn/api/",
     "thumbnailArchiveUrl": "http://archive-api-dev.lco.gtn/",
-    "rtiBridgeUrl": "http://rti-bridge-dev.lco.gtn/"
+    "rtiBridgeUrl": "http://rti-bridge-dev.lco.gtn/",
+    "targetNameUrl": "https://simbad2k.lco.global/"
 }

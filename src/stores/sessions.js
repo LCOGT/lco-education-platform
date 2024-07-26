@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { fetchApiCall } from '../utils/api'
 import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
+import { useConfigurationStore } from './configuration'
 
 export const useSessionsStore = defineStore('sessions', {
   state () {
@@ -29,8 +30,9 @@ export const useSessionsStore = defineStore('sessions', {
   },
   actions: {
     async fetchSessions () {
+      const configurationStore = useConfigurationStore()
       await fetchApiCall({
-        url: 'http://observation-portal-dev.lco.gtn/api/observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
+        url: configurationStore.observationPortalUrl + 'observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
         method: 'GET',
         successCallback: (response) => {
           this.sessions = response
@@ -45,9 +47,10 @@ export const useSessionsStore = defineStore('sessions', {
       }
     },
     async fetchSessionToken () {
+      const configurationStore = useConfigurationStore()
       const requestBody = { ...this.currentSession }
       const response = await fetchApiCall({
-        url: 'http://rti-bridge-dev.lco.gtn/login',
+        url: configurationStore.rtiBridgeUrl + 'login',
         method: 'POST',
         body: requestBody
       })
@@ -56,13 +59,14 @@ export const useSessionsStore = defineStore('sessions', {
       }
     },
     async fetchSessionStatus () {
+      const configurationStore = useConfigurationStore()
       const token = this.getTokenForCurrentSession
       if (!token) {
         await this.fetchSessionToken()
       }
 
       const response = await fetchApiCall({
-        url: 'http://rti-bridge-dev.lco.gtn/session_status',
+        url: configurationStore.rtiBridgeUrl + 'session_status',
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
@@ -75,10 +79,10 @@ export const useSessionsStore = defineStore('sessions', {
         await this.fetchSessionStatus()
         const time = calculateSessionCountdown(this.currentSession)
         let nextInterval = 60000
-        // 10 minutes (600 seconds) before session start poll every second -- time is arbitrary
+        // 10 minutes (600 seconds) before session start poll every 10 seconds -- time is arbitrary
         if (time <= 600 && time > 0 && this.currentStatus === 'INACTIVE') {
           nextInterval = 10000
-          // During the session, poll every 10 seconds -- time is arbitrary
+          // During the session, poll every 1 second -- time is arbitrary
         } else if (this.currentStatus === 'ACTIVE') {
           nextInterval = 1000
         }

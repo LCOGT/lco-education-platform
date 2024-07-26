@@ -24,7 +24,6 @@ function handleObserveClick () {
 onMounted(async () => {
   try {
     const response = await fetch('config/config.json')
-    console.log('response:', response)
     if (!response.ok) {
       throw Error('Failed to load configuration')
     }
@@ -33,6 +32,7 @@ onMounted(async () => {
       configurationStore.observationPortalUrl = config.observationPortalUrl
       configurationStore.rtiBridgeUrl = config.rtiBridgeUrl
       configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
+      configurationStore.targetNameUrl = config.targetNameUrl
       configurationStore.isConfigLoaded = true
     }
   } catch (error) {

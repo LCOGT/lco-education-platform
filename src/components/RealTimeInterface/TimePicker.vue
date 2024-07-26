@@ -5,9 +5,11 @@ import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import { formatToUTC, formatDate } from '../../utils/formatTime.js'
+import { useConfigurationStore } from '../../stores/configuration'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
+const configurationStore = useConfigurationStore()
 
 const date = ref(null)
 const startTime = ref(null)
@@ -45,7 +47,7 @@ const blockRti = async () => {
     start: formatToUTC(date.value, startTime.value),
     end: endDate.value
   }
-  await fetchApiCall({ url: 'http://observation-portal-dev.lco.gtn/api/realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
+  await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
 
 // add function to block past times!! and gray them out

@@ -11,10 +11,12 @@ import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 import { fetchApiCall } from '../../utils/api'
+import { useConfigurationStore } from '../../stores/configuration'
 
 const exposureCount = 1
 
 const sessionsStore = useSessionsStore()
+const configurationStore = useConfigurationStore()
 
 const router = useRouter()
 const aladinRef = ref(null)
@@ -29,9 +31,6 @@ const captureImages = ref(false)
 const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
-
-const targetNameApiUrl = 'https://simbad2k.lco.global/'
-const bridgeApiUrl = 'http://rti-bridge-dev.lco.gtn/command/go'
 
 const Celestial = celestial.Celestial()
 const currentSession = sessionsStore.currentSession
@@ -49,7 +48,7 @@ onMounted(() => {
 
 function getRaDecFromTargetName () {
   targeterror.value = false
-  fetch(`${targetNameApiUrl}${targetName.value}?target_type=sidereal`)
+  fetch(configurationStore.targetNameUrl + `${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
       if (data.error) {
@@ -107,7 +106,7 @@ const sendGoCommand = async () => {
     name: 'test',
     ra: Number(ra.value)
   }
-  await fetchApiCall({ url: bridgeApiUrl, method: 'POST', body: requestBody, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
 
 </script>
