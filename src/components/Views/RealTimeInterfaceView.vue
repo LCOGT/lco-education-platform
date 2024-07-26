@@ -14,7 +14,7 @@ const site = computed(() => selectedSession.site)
 
 onMounted(async () => {
   // initiate the handshake and retrieve a token prior to polling
-  await sessionsStore.fetchToken()
+  await sessionsStore.fetchSessionToken()
 
   sessionsStore.startPolling()
 

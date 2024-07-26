@@ -44,11 +44,12 @@ export const useSessionsStore = defineStore('sessions', {
         }
       }
     },
-    async fetchToken () {
+    async fetchSessionToken () {
+      const requestBody = { ...this.currentSession }
       const response = await fetchApiCall({
         url: 'http://rti-bridge-dev.lco.gtn/login',
         method: 'POST',
-        body: this.currentSession
+        body: requestBody
       })
       if (!this.getTokenForCurrentSession) {
         this.sessionTokens[this.currentSessionId] = response.token
@@ -65,7 +66,6 @@ export const useSessionsStore = defineStore('sessions', {
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
-      console.log('response', response)
       this.currentStatus = response.session_status
     },
     startPolling () {
