@@ -3,21 +3,23 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchApiCall } from '../../utils/api'
 import { useUserDataStore } from '../../stores/userData'
+import { useConfigurationStore } from '../../stores/configuration'
 
 const userDataStore = useUserDataStore()
+const configurationStore = useConfigurationStore()
 const router = useRouter()
 
 const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
-const apiUrl = 'http://observation-portal-dev.lco.gtn/api/'
+const observationPortalUrl = configurationStore.observationPortalUrl
 
 const storeToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
-    await fetchApiCall({ url: apiUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
+    await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
   }
 }
 
@@ -33,7 +35,7 @@ const login = async () => {
     password: password.value
   }
   // store an auth token from login credentials
-  await fetchApiCall({ url: apiUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
+  await fetchApiCall({ url: observationPortalUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
 }
 </script>
 

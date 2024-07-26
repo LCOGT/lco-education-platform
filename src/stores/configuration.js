@@ -5,8 +5,9 @@ export const useConfigurationStore = defineStore('configuration', {
     return {
       isConfigLoaded: false,
       observationPortalUrl: '',
-      rtiBridgeUrl: '',
-      thumbnailArchiveUrl: ''
+      thumbnailArchiveUrl: '',
+      rtiBridgeUrl: ''
     }
-  }
+  },
+  persist: true
 })

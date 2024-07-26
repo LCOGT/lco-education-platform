@@ -2,9 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
+import { useConfigurationStore } from '../../stores/configuration'
 
 const sessionsStore = useSessionsStore()
 const currentSession = sessionsStore.currentSession
+
+const configurationStore = useConfigurationStore()
 
 const sessionId = currentSession.id
 
@@ -12,11 +15,9 @@ const sessionId = currentSession.id
 const thumbnails = ref([])
 let pollingInterval = null
 
-const thumbnailsApiUrl = `http://archive-api-dev.lco.gtn/thumbnails/?observation_id=${sessionId}&size=large`
-
 const getThumbnails = async () => {
   // ADD AUTH TOKEN
-  await fetchApiCall({ url: thumbnailsApiUrl, method: 'GET', successCallback: (data) => { thumbnails.value = data.results.map(result => result.url) }, failCallback: console.error })
+  await fetchApiCall({ url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`, method: 'GET', successCallback: (data) => { thumbnails.value = data.results.map(result => result.url) }, failCallback: console.error })
 }
 
 onMounted(() => {
