@@ -44,10 +44,9 @@ function formatCountdown (seconds) {
 function calculateTime (session) {
   const currentTime = new Date().getTime()
   const sessionStartTime = new Date(session.start).getTime()
-  const sessionEndTime = new Date(session.end).getTime()
-  let countdown
-  // this checks if the session has started or not
-  sessionStartTime > currentTime ? countdown = sessionStartTime : countdown = sessionEndTime
+  const sessionTime = new Date(session.end).getTime()
+  // checking if the session has started or not
+  const countdown = sessionStartTime > currentTime ? sessionStartTime : sessionTime
   return Math.floor((countdown - currentTime) / 1000)
 }
 
