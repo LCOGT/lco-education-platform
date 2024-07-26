@@ -40,11 +40,13 @@ function formatCountdown (seconds) {
   }
 }
 
+// calculates either the time left in the session or the time until the session starts
 function calculateTime (session) {
   const currentTime = new Date().getTime()
   const sessionStartTime = new Date(session.start).getTime()
   const sessionEndTime = new Date(session.end).getTime()
   let countdown
+  // this checks if the session has started or not
   sessionStartTime > currentTime ? countdown = sessionStartTime : countdown = sessionEndTime
   return Math.floor((countdown - currentTime) / 1000)
 }

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { fetchApiCall } from '../utils/api'
 import { calculateTime } from '../utils/formatTime'
+import { toRaw } from 'vue'
 
 export const useSessionsStore = defineStore('sessions', {
   state () {
@@ -15,7 +16,9 @@ export const useSessionsStore = defineStore('sessions', {
   persist: true,
   getters: {
     currentSession (state) {
-      return state.sessions.results.find(session => session.id === state.currentSessionId) || {}
+      const tempCurrentSession = state.sessions.results.find(session => session.id === state.currentSessionId)
+      // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
+      return toRaw(tempCurrentSession)
     },
     getAllSessions (state) {
       return state.sessions
@@ -41,21 +44,21 @@ export const useSessionsStore = defineStore('sessions', {
         }
       }
     },
-    async fetchToken () {
-      const requestBody = JSON.stringify(this.currentSession)
+    async fetchSessionToken () {
+      const requestBody = { ...this.currentSession }
       const response = await fetchApiCall({
         url: 'http://rti-bridge-dev.lco.gtn/login',
         method: 'POST',
-        body: JSON.parse(requestBody)
+        body: requestBody
       })
       if (!this.getTokenForCurrentSession) {
         this.sessionTokens[this.currentSessionId] = response.token
       }
     },
-    async fetchStatus () {
+    async fetchSessionStatus () {
       const token = this.getTokenForCurrentSession
       if (!token) {
-        await this.fetchToken()
+        await this.fetchSessionToken()
       }
 
       const response = await fetchApiCall({
@@ -63,13 +66,14 @@ export const useSessionsStore = defineStore('sessions', {
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
+      console.log('response', response)
       this.currentStatus = response.session_status
     },
     startPolling () {
       this.stopPolling()
 
       const poll = async () => {
-        await this.fetchStatus()
+        await this.fetchSessionStatus()
         const time = calculateTime(this.currentSession)
         let nextInterval = 60000
         // 10 minutes (600 seconds) before session start poll every second -- time is arbitrary

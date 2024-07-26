@@ -1,16 +1,16 @@
 /* eslint-disable no-unused-expressions */
 import { useUserDataStore } from '../stores/userData.js'
-import { useSessionsStore } from '../stores/sessions.js'
+// import { useSessionsStore } from '../stores/sessions.js'
 
 async function fetchApiCall ({ url, method, body = null, header, successCallback = null, failCallback = null }) {
   const store = useUserDataStore()
-  const sessionsStore = useSessionsStore()
+  // const sessionsStore = useSessionsStore()
 
   const defaultHeader = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }
-  // if (sessionsStore.getTokenForCurrentSession) {
+  // if (sessionsStore.getTokenForCurrentSession && url.match('session_status') && !url.match('login')) {
   //   defaultHeader.Authorization = `Token ${sessionsStore.getTokenForCurrentSession}`
   // } else
   if (store.authToken) {
