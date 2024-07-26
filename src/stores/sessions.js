@@ -77,10 +77,10 @@ export const useSessionsStore = defineStore('sessions', {
         let nextInterval = 60000
         // 10 minutes (600 seconds) before session start poll every second -- time is arbitrary
         if (time <= 600 && time > 0 && this.currentStatus === 'INACTIVE') {
-          nextInterval = 1000
+          nextInterval = 10000
           // During the session, poll every 10 seconds -- time is arbitrary
         } else if (this.currentStatus === 'ACTIVE') {
-          nextInterval = 10000
+          nextInterval = 1000
         }
 
         this.fetchInterval = setTimeout(poll, nextInterval)
