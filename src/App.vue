@@ -1,10 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AboutView from './components/Views/AboutView.vue'
 import { useUserDataStore } from './stores/userData'
-// import { useConfigurationStore } from './stores/configuration'
+import { useConfigurationStore } from './stores/configuration'
 
 const showNavTabs = ref(false)
 const route = useRoute()
@@ -13,32 +13,32 @@ const router = useRouter()
 const userDataStore = useUserDataStore()
 const username = userDataStore.username
 
-// const configurationStore = useConfigurationStore()
-// const loadedConfig = computed(() => configurationStore.isConfigLoaded)
+const configurationStore = useConfigurationStore()
+const loadedConfig = computed(() => configurationStore.isConfigLoaded)
 
 function handleObserveClick () {
   showNavTabs.value = true
   router.push('/dashboard')
 }
 
-// onMounted(async () => {
-//   try {
-//     const response = await fetch('config/config.json')
-//     console.log('response:', response)
-//     if (!response.ok) {
-//       throw Error('Failed to load configuration')
-//     }
-//     const config = await response.json()
-//     if (config) {
-//       configurationStore.observationPortalUrl = config.observationPortalUrl
-//       configurationStore.rtiBridgeUrl = config.rtiBridgeUrl
-//       configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
-//       configurationStore.isConfigLoaded = true
-//     }
-//   } catch (error) {
-//     console.error('Error loading configuration:', error)
-//   }
-// })
+onMounted(async () => {
+  try {
+    const response = await fetch('config/config.json')
+    if (!response.ok) {
+      throw Error('Failed to load configuration')
+    }
+    const config = await response.json()
+    if (config) {
+      configurationStore.observationPortalUrl = config.observationPortalUrl
+      configurationStore.rtiBridgeUrl = config.rtiBridgeUrl
+      configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
+      configurationStore.targetNameUrl = config.targetNameUrl
+      configurationStore.isConfigLoaded = true
+    }
+  } catch (error) {
+    console.error('Error loading configuration:', error)
+  }
+})
 
 watch(
   () => route.path,
@@ -54,7 +54,7 @@ watch(
 </script>
 
 <template>
-  <!-- <template v-if="loadedConfig"> -->
+  <template v-if="loadedConfig">
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <router-link class="navbar-item" to="/">
@@ -109,5 +109,5 @@ watch(
     </section>
     <router-view/>
   </div>
-<!-- </template> -->
+</template>
 </template>

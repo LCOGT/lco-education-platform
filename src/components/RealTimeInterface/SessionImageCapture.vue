@@ -2,13 +2,15 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
+import { useConfigurationStore } from '../../stores/configuration'
+
+const configurationStore = useConfigurationStore()
 
 const status = ref(null)
 let pollingInterval = null
-const telescopeStatusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
 const fetchTelescopeStatus = async () => {
-  await fetchApiCall({ url: telescopeStatusApiUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
 }
 
 onMounted(() => {
