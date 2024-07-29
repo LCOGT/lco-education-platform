@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 
@@ -13,6 +14,8 @@ const fetchStatus = async () => {
 
 onMounted(() => {
   fetchStatus()
+  // Iconify the responses with hover text as text response
+
   pollingInterval = setInterval(fetchStatus, 1000)
 })
 
@@ -25,16 +28,30 @@ onUnmounted(() => {
 
 <template>
     <div class="columns">
-        <div class="column">
+        <div class="column is-one-third">
             <div v-if="status">
-                <div v-for="item in status" :key="item">
-                    <p>Observatory: {{ item.availability }}</p>
-                    <p>Telescope: {{ item.telescope }}</p>
-                    <p>Camera: {{ item.instrument }}</p>
-                    <p>Progress: {{ item.progress }}</p>
+                <div v-for="item in status" :key="item" class="image-capture-grid">
+                    <div>
+                      <FontAwesomeIcon icon="fa-regular fa-location-dot" title="Observatory" />
+                      <span>{{ item.availability }}</span>
+                    </div>
+                    <div>
+                      <font-awesome-icon icon="fa-regular fa-telescope" title="Telescope"/>
+                      <span>{{ item.telescope }}</span>
+                    </div>
+                    <div>
+                      <font-awesome-icon icon="fa-regular fa-camera-retro" title="Camera" />
+                      <span>{{ item.instrument }}</span>
+                    </div>
+                    <div>
+                      <font-awesome-icon icon="fa-solid fa-list-check" title="Progress"/>
+                      <span>{{ item.progress }}</span>
+                    </div>
                 </div>
             </div>
-            <PolledThumbnails />
+            <div class="column">
+              <PolledThumbnails />
+            </div>
         </div>
     </div>
 </template>

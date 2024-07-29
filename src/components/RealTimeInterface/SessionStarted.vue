@@ -120,18 +120,23 @@ const sendGoCommand = async () => {
       <div class="column grey-bg">
         <AladinSkyMap ref="aladinRef" />
         <div class="content observe-form">
-          <div class="field has-addons">
-              <p class="control is-expanded">
-                <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
-              </p>
-              <p class="control">
-                <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                    Target Look Up
+            <div class="highlight-target-field">
+              <div class="field">
+                <label class="label">Target Look Up</label>
+              </div>
+              <div class="field has-addons">
+                <div class="control">
+                  <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                </div>
+                <div class="control">
+                  <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
+                    Search
                   </button>
-              </p>
-            </div>
-            <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
-            <div class="field is-horizontal">
+                </div>
+                <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
+              </div>
+          </div>
+          <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label class="label">Right Ascension</label>
           </div>
@@ -162,18 +167,24 @@ const sendGoCommand = async () => {
                 </div>
                 <div class="column is-one-third">
                     <span class="icon-text mosaic">
-                        <span class="icon">
+                        <input type="radio" name="mosaic" value="1x1" id="1x1" class="hide" checked />
+                        <label for="1x1">
+                          <span class="icon">
                             <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
-                        </span>
-                        <span>Single</span>
+                          </span>
+                          <span>Single</span>
+                        </label>
                     </span>
                 </div>
                 <div class="column is-one-third">
                     <span class="icon-text mosaic">
-                    <span class="icon">
+                      <input type="radio" name="mosaic" value="2x2" id="2x2" class="hide" />
+                      <label for="2x2">
+                      <span class="icon">
                         <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
-                    </span>
-                    <span>2 x 2 mosaic</span>
+                      </span>
+                      <span>2 x 2 mosaic</span>
+                      </label>
                     </span>
                 </div>
             </div>
@@ -187,7 +198,7 @@ const sendGoCommand = async () => {
                     <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
                   </p>
                 </div>
-                <div>
+                <div class="times">
                   <FontAwesomeIcon icon="fa-solid fa-xmark"  />
                 </div>
                 <div class="field">
