@@ -141,6 +141,14 @@ async function getAvailableTimes () {
   })
 }
 
+// Checks if a date is today or in the future
+const isDateAllowed = (date) => {
+  const today = new Date()
+  // Reset today's time to midnight
+  today.setHours(0, 0, 0, 0)
+  return date >= today
+}
+
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
     startTime.value = null
@@ -157,7 +165,6 @@ watch(startTime, (newTime, oldTime) => {
 
 onMounted(() => {
   getAvailableTimes()
-  console.log('availableTimes', availableTimes.value)
 })
 </script>
 
@@ -168,7 +175,7 @@ onMounted(() => {
     <div class="column is-one-third">
       <p>Select a date and time:</p>
       <div>
-        <v-date-picker v-model="date" class="blue-bg" />
+        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" />
       </div>
     </div>
     <div class="column">
