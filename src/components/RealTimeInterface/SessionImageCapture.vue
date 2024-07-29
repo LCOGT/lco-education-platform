@@ -3,20 +3,20 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
+import { useConfigurationStore } from '../../stores/configuration'
+
+const configurationStore = useConfigurationStore()
 
 const status = ref(null)
 let pollingInterval = null
-const statusApiUrl = 'http://rti-bridge-dev.lco.gtn/status'
 
-const fetchStatus = async () => {
-  await fetchApiCall({ url: statusApiUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
+const fetchTelescopeStatus = async () => {
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
 }
 
 onMounted(() => {
-  fetchStatus()
-  // Iconify the responses with hover text as text response
-
-  pollingInterval = setInterval(fetchStatus, 1000)
+  fetchTelescopeStatus()
+  pollingInterval = setInterval(fetchTelescopeStatus, 1000)
 })
 
 onUnmounted(() => {
