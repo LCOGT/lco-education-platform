@@ -1,11 +1,11 @@
 <script setup>
-import { ref, watch, defineEmits } from 'vue'
+import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
-import LeafletMap from './GlobeMap/LeafletMap.vue'
-import { formatToUTC, formatDate } from '../../utils/formatTime.js'
+import { formatToUTC, formatDate, formatTime } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
+import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
@@ -16,10 +16,86 @@ const startTime = ref(null)
 const endDate = ref(null)
 const errorMessage = ref(null)
 const selectedSite = ref(null)
-const emits = defineEmits(['changeView'])
+const availableTimes = ref({})
+const localTimes = ref([])
 
-// TO DO: Get times from API
-const times = ['10:45', '11:00', '11:15', '11:30', '11:45', '12:00', '12:15', '12:30', '12:45', '13:00', '13:15', '13:30', '13:45', '14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30', '15:45', '16:00', '16:15', '16:30', '16:45', '17:00', '17:15', '17:30', '17:45', '18:00', '18:15', '18:30', '18:45', '19:00', '19:15', '19:30']
+const emits = defineEmits(['timeSelected'])
+
+const hasAvailableTimes = computed(() => {
+  return Object.keys(availableTimes.value).length > 0
+})
+
+// Rounding times from ocs to the nearest 15 minutes
+function roundToNearest15Minutes (date, direction = 'up') {
+  // 15 minutes in milliseconds
+  const ms = 1000 * 60 * 15
+  const roundedDate = new Date(Math[direction === 'up' ? 'ceil' : 'floor'](date.getTime() / ms) * ms)
+  return roundedDate
+}
+
+// Because we get availability in ranges, we need to generate all the 15 minute intervals within those ranges
+function generate15MinuteIntervals (startDate, endDate) {
+  const intervals = []
+  let current = new Date(startDate)
+  while (current <= endDate) {
+    intervals.push(current.toISOString())
+    // Add 15 minutes in milliseconds
+    current = new Date(current.getTime() + 15 * 60 * 1000)
+  }
+  return intervals
+}
+
+function processTelescopeAvailability (data) {
+  const processedData = {}
+
+  // Loop through each telescope in the input data
+  Object.keys(data).forEach(telescope => {
+    // Loop through each time range for the current telescope
+    data[telescope].forEach(range => {
+      // Convert the start and end times to Date objects
+      const start = new Date(range[0])
+      const end = new Date(range[1])
+
+      const roundedStart = roundToNearest15Minutes(start, 'up')
+      const roundedEnd = roundToNearest15Minutes(end, 'down')
+
+      // Generate 15-minute intervals between the rounded start and end times
+      generate15MinuteIntervals(roundedStart, roundedEnd).forEach(interval => {
+        const dateStr = interval.split('T')[0]
+        // Initialize an array for the date if it doesn't exist
+        if (!processedData[dateStr]) {
+          processedData[dateStr] = []
+        }
+
+        // Add the interval, telescope, and location to the processed data
+        processedData[dateStr].push({
+          time: interval,
+          telescope,
+          location: telescope.split('.')[2]
+        })
+      })
+    })
+  })
+
+  return processedData
+}
+
+const convertToLocaleTimes = (times) => {
+  const uniqueTimes = new Set()
+  times.forEach(({ time }) => {
+    const localTime = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    uniqueTimes.add(localTime)
+  })
+  return Array.from(uniqueTimes)
+}
+
+watch(date, (newDate) => {
+  if (newDate) {
+    const dateStr = new Date(newDate).toISOString().split('T')[0]
+    const timesForDate = availableTimes.value[dateStr] || []
+    localTimes.value = convertToLocaleTimes(timesForDate)
+  }
+})
 
 const setEndDate = (startDate, startTime, minutesToAdd) => {
   const combinedDateTime = new Date(startDate)
@@ -50,12 +126,19 @@ const blockRti = async () => {
   await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
 
-// add function to block past times!! and gray them out
-
 const bookDate = () => {
   if (date.value && startTime.value && selectedSite.value) {
     router.push('/dashboard')
   }
+}
+
+async function getAvailableTimes () {
+  await fetchApiCall({
+    url: configurationStore.observationPortalUrl + 'realtime/availability/',
+    method: 'GET',
+    successCallback: (responseData) => { availableTimes.value = processTelescopeAvailability(responseData) },
+    failCallback: (error) => { console.error('API call failed with error', error) }
+  })
 }
 
 watch(date, (newDate, oldDate) => {
@@ -65,17 +148,21 @@ watch(date, (newDate, oldDate) => {
   }
 })
 
-// add function to be able to reclick on the same date and load the times again and display it as a back arrow
-
 watch(startTime, (newTime, oldTime) => {
   if (newTime !== oldTime) {
     resetSession()
+    emits('timeSelected', newTime)
   }
 })
 
+onMounted(() => {
+  getAvailableTimes()
+  console.log('availableTimes', availableTimes.value)
+})
 </script>
 
 <template>
+  <template v-if="hasAvailableTimes">
   <h2>Book your live observing session</h2>
   <div class="columns">
     <div class="column is-one-third">
@@ -88,7 +175,9 @@ watch(startTime, (newTime, oldTime) => {
       <div v-if="date && startTime == null" class="selected-date">
         <p>Select a time:</p>
         <div class="grid">
-          <div class="cell" v-for="time in times" :key="time"><button class="button" @click="startTime = time">{{ time }}</button></div>
+          <div class="cell" v-for="time in localTimes" :key="time">
+            <button class="button" @click="startTime = time">{{ time }}</button>
+          </div>
         </div>
       </div>
       <div v-if="startTime" class="column">
@@ -99,9 +188,10 @@ watch(startTime, (newTime, oldTime) => {
         </p>
         <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
       </div>
-      <LeafletMap v-if="startTime" @siteSelected="selectedSite = $event"/>
+      <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime" @siteSelected="selectedSite = $event" />
     </div>
   </div>
+</template>
 </template>
 
 <style scoped>
