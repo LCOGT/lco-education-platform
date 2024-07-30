@@ -12,7 +12,17 @@ function formatTime (timeString) {
 
 function formatToUTC (date, time) {
   const combinedDateTime = new Date(date)
-  const [hours, minutes] = time.split(':')
+  // Extract hours, minutes, and period (AM/PM) from the time string
+  let [hours, minutes, period] = time.match(/(\d+):(\d+)\s*(AM|PM)/i).slice(1)
+  hours = parseInt(hours, 10)
+  minutes = parseInt(minutes, 10)
+
+  // Convert PM times to 24-hour format to handle 12 PM and 12 AM correctly
+  if (period.toUpperCase() === 'PM' && hours !== 12) {
+    hours += 12
+  } else if (period.toUpperCase() === 'AM' && hours === 12) {
+    hours = 0
+  }
   combinedDateTime.setHours(hours)
   combinedDateTime.setMinutes(minutes)
   return combinedDateTime.toISOString().split('.')[0] + 'Z'
