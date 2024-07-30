@@ -34,18 +34,18 @@ const mapMarkerAvailable = createIcon(availableIcon)
 const mapMarkerUnavailable = createIcon(unavailableIcon)
 
 const updateMarkers = (map) => {
+  // Finds the date string that the selected time is in
   const selectedDateStr = Object.keys(props.availableTimes).find(date => {
     const times = props.availableTimes[date]
     return times.some(time => new Date(time.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) === props.selectedTime)
   })
-
+  // Filters out the available sites for the selected time
   const availableSites = (props.availableTimes[selectedDateStr] || [])
     .filter(time => new Date(time.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) === props.selectedTime)
     .map(time => time.location)
-
-  console.log('Available sites for selected time:', availableSites)
-
+  // Iterates over all sites and updates their markers on the map
   Object.entries(sites).forEach(([site, { lat, lon }]) => {
+    // Checks if the site is available for the selected time
     const available = availableSites.includes(site)
     const icon = available ? mapMarkerAvailable : mapMarkerUnavailable
     const popupText = available ? `${site}<br>available` : `${site}<br>unavailable`
@@ -68,6 +68,7 @@ onMounted(() => {
   updateMarkers(map)
 })
 
+// Updates the markers when the available times or selected time change
 watch(() => [props.availableTimes, props.selectedTime], () => {
   if (mapContainer.value) {
     const map = L.map(mapContainer.value).setView([0, 0], 2)
