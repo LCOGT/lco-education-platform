@@ -38,7 +38,6 @@ function generate15MinuteIntervals (startDate, endDate) {
   let current = new Date(startDate)
   while (current <= endDate) {
     intervals.push(current.toISOString())
-    // Adds 15 minutes in milliseconds
     current = new Date(current.getTime() + 15 * 60 * 1000)
   }
   return intervals
@@ -99,6 +98,16 @@ watch(date, (newDate) => {
   }
 })
 
+// Forcefully refreshes the available times for the selected date
+// This is used when the user selects a date, then a time, then the map appears
+// and they want to change the time but want the same date
+const refreshTimes = () => {
+  if (date.value) {
+    startTime.value = null
+    resetSession()
+  }
+}
+
 const resetSession = () => {
   errorMessage.value = null
   selectedSite.value = null
@@ -121,6 +130,7 @@ const blockRti = async () => {
     start,
     end
   }
+  console.log('Booking session with request body', requestBody)
   await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
 
@@ -141,12 +151,11 @@ async function getAvailableTimes () {
 
 // Used to block out dates that are not in the availableTimes object from the date picker
 const isDateAllowed = (date) => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  // Gets the last date from availableTimes
+  // Gets the dates from availableTimes
   const availableDates = Object.keys(availableTimes.value)
+  const firstDate = new Date(Math.min(...availableDates.map(date => new Date(date))))
   const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
-  return date >= today && date <= lastDate
+  return date >= firstDate && date <= lastDate
 }
 
 watch(date, (newDate, oldDate) => {
@@ -175,7 +184,7 @@ onMounted(() => {
     <div class="column is-one-third">
       <p>Select a date and time:</p>
       <div>
-        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" />
+        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes"/>
       </div>
     </div>
     <div class="column">
