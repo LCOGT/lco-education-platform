@@ -130,7 +130,6 @@ const blockRti = async () => {
     start,
     end
   }
-  console.log('Booking session with request body', requestBody)
   await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
 
