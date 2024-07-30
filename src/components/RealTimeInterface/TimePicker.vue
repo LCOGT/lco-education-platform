@@ -13,7 +13,6 @@ const configurationStore = useConfigurationStore()
 
 const date = ref(null)
 const startTime = ref(null)
-const endDate = ref(null)
 const errorMessage = ref(null)
 const selectedSite = ref(null)
 const availableTimes = ref({})
@@ -25,7 +24,7 @@ const hasAvailableTimes = computed(() => {
   return Object.keys(availableTimes.value).length > 0
 })
 
-// Rounding times from ocs to the nearest 15 minutes
+// Rounds times from ocs to the nearest 15 minutes
 function roundToNearest15Minutes (date, direction = 'up') {
   // 15 minutes in milliseconds
   const ms = 1000 * 60 * 15
@@ -39,7 +38,7 @@ function generate15MinuteIntervals (startDate, endDate) {
   let current = new Date(startDate)
   while (current <= endDate) {
     intervals.push(current.toISOString())
-    // Add 15 minutes in milliseconds
+    // Adds 15 minutes in milliseconds
     current = new Date(current.getTime() + 15 * 60 * 1000)
   }
   return intervals
@@ -48,26 +47,26 @@ function generate15MinuteIntervals (startDate, endDate) {
 function processTelescopeAvailability (data) {
   const processedData = {}
 
-  // Loop through each telescope in the input data
+  // Loops through each telescope in the input data
   Object.keys(data).forEach(telescope => {
-    // Loop through each time range for the current telescope
+    // Loops through each time range for the current telescope
     data[telescope].forEach(range => {
-      // Convert the start and end times to Date objects
+      // Converts the start and end times to Date objects
       const start = new Date(range[0])
       const end = new Date(range[1])
 
       const roundedStart = roundToNearest15Minutes(start, 'up')
       const roundedEnd = roundToNearest15Minutes(end, 'down')
 
-      // Generate 15-minute intervals between the rounded start and end times
+      // Generates 15-minute intervals between the rounded start and end times
       generate15MinuteIntervals(roundedStart, roundedEnd).forEach(interval => {
         const dateStr = interval.split('T')[0]
-        // Initialize an array for the date if it doesn't exist
+        // Initializes an array for the date if it doesn't exist
         if (!processedData[dateStr]) {
           processedData[dateStr] = []
         }
 
-        // Add the interval, telescope, and location to the processed data
+        // Adds the interval, telescope, and location to the processed data
         processedData[dateStr].push({
           time: interval,
           telescope,
@@ -76,35 +75,29 @@ function processTelescopeAvailability (data) {
       })
     })
   })
-
   return processedData
 }
 
-const convertToLocaleTimes = (times) => {
+// Filters out duplicate times and returns an array of unique local times
+const getUniqueLocaleTimes = (times) => {
   const uniqueTimes = new Set()
+  // Iterates over each time object
   times.forEach(({ time }) => {
     const localTime = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    // Adds the local time to the set (duplicates will be automatically ignored)
     uniqueTimes.add(localTime)
   })
   return Array.from(uniqueTimes)
 }
 
+// Watches the date and updates the available times for that date
 watch(date, (newDate) => {
   if (newDate) {
     const dateStr = new Date(newDate).toISOString().split('T')[0]
     const timesForDate = availableTimes.value[dateStr] || []
-    localTimes.value = convertToLocaleTimes(timesForDate)
+    localTimes.value = getUniqueLocaleTimes(timesForDate)
   }
 })
-
-const setEndDate = (startDate, startTime, minutesToAdd) => {
-  const combinedDateTime = new Date(startDate)
-  const [hours, minutes] = startTime.split(':')
-  combinedDateTime.setHours(hours)
-  combinedDateTime.setMinutes(minutes)
-  combinedDateTime.setMinutes(combinedDateTime.getMinutes() + minutesToAdd)
-  return combinedDateTime.toISOString().split('.')[0] + 'Z'
-}
 
 const resetSession = () => {
   errorMessage.value = null
@@ -113,15 +106,20 @@ const resetSession = () => {
 }
 
 const blockRti = async () => {
-  endDate.value = setEndDate(date.value, startTime.value, 15)
+  // Gets the start and end times for the session
+  const start = formatToUTC(date.value, startTime.value)
+  const startDateTime = new Date(start)
+  const endDateTime = new Date(startDateTime.getTime() + 15 * 60 * 1000)
+  const end = endDateTime.toISOString().split('.')[0] + 'Z'
+
   const requestBody = {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
-    site: 'tst',
+    site: selectedSite.value.site,
     enclosure: 'clma',
     telescope: '2m0a',
-    start: formatToUTC(date.value, startTime.value),
-    end: endDate.value
+    start,
+    end
   }
   await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
 }
@@ -141,12 +139,14 @@ async function getAvailableTimes () {
   })
 }
 
-// Checks if a date is today or in the future
+// Used to block out dates that are not in the availableTimes object from the date picker
 const isDateAllowed = (date) => {
   const today = new Date()
-  // Reset today's time to midnight
   today.setHours(0, 0, 0, 0)
-  return date >= today
+  // Gets the last date from availableTimes
+  const availableDates = Object.keys(availableTimes.value)
+  const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
+  return date >= today && date <= lastDate
 }
 
 watch(date, (newDate, oldDate) => {
