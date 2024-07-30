@@ -124,7 +124,9 @@ const blockRti = async () => {
   const requestBody = {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
-    site: selectedSite.value.site,
+    // sometimes the site is not valid, so for now I'm hardcoding 'tst'
+    // site: selectedSite.value.site,
+    site: 'tst',
     enclosure: 'clma',
     telescope: '2m0a',
     start,
