@@ -3,7 +3,7 @@ import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
-import { formatToUTC, formatDate, formatTime } from '../../utils/formatTime.js'
+import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
@@ -20,14 +20,14 @@ const localTimes = ref([])
 
 const emits = defineEmits(['timeSelected'])
 
+// Loads template only after the obs portal has returned available times
 const hasAvailableTimes = computed(() => {
   return Object.keys(availableTimes.value).length > 0
 })
 
-// Rounds times from ocs to the nearest 15 minutes
-function roundToNearest15Minutes (date, direction = 'up') {
-  // 15 minutes in milliseconds
-  const ms = 1000 * 60 * 15
+// Rounds times from the obs portal to the nearest 15 minutes (for now) because they are in time ranges
+function roundToNearestMinutes (date, direction = 'up', minutes = 15) {
+  const ms = 1000 * 60 * minutes
   const roundedDate = new Date(Math[direction === 'up' ? 'ceil' : 'floor'](date.getTime() / ms) * ms)
   return roundedDate
 }
@@ -36,67 +36,78 @@ function roundToNearest15Minutes (date, direction = 'up') {
 function generate15MinuteIntervals (startDate, endDate) {
   const intervals = []
   let current = new Date(startDate)
-  while (current <= endDate) {
-    intervals.push(current.toISOString())
+  while (current < endDate) {
+    intervals.push(new Date(current))
     current = new Date(current.getTime() + 15 * 60 * 1000)
   }
   return intervals
 }
 
+// Processes the telescope availability data from the obs portal
 function processTelescopeAvailability (data) {
   const processedData = {}
 
-  // Loops through each telescope in the input data
+  // Iterates over the data object to extract the telescope availability ranges
   Object.keys(data).forEach(telescope => {
-    // Loops through each time range for the current telescope
+    // Iterates over the ranges for each telescope
     data[telescope].forEach(range => {
-      // Converts the start and end times to Date objects
       const start = new Date(range[0])
       const end = new Date(range[1])
 
-      const roundedStart = roundToNearest15Minutes(start, 'up')
-      const roundedEnd = roundToNearest15Minutes(end, 'down')
+      const roundedStart = roundToNearestMinutes(start, 'up', 15)
+      const roundedEnd = roundToNearestMinutes(end, 'down', 15)
 
-      // Generates 15-minute intervals between the rounded start and end times
+      // Generates 15-minute intervals between the start and end times
       generate15MinuteIntervals(roundedStart, roundedEnd).forEach(interval => {
-        const dateStr = interval.split('T')[0]
-        // Initializes an array for the date if it doesn't exist
+        const dateStr = interval.toDateString()
+        const time = interval
+        // Splits the telescope identifier into size, enclosure, and site
+        const [telescopeSize, enclosure, site] = telescope.split('.')
+        // Initializes an object for the date if it doesn't exist
         if (!processedData[dateStr]) {
-          processedData[dateStr] = []
+          processedData[dateStr] = {}
         }
-
-        // Adds the interval, telescope, and location to the processed data
-        processedData[dateStr].push({
-          time: interval,
-          telescope,
-          location: telescope.split('.')[2]
+        // Initializes an object for the time if it doesn't exist
+        if (!processedData[dateStr][time]) {
+          processedData[dateStr][time] = { resources: [] }
+        }
+        // Adds telescope details to the resources array
+        processedData[dateStr][time].resources.push({
+          site,
+          enclosure,
+          telescope: telescopeSize
         })
       })
     })
   })
+  // processedData looks like this:
+  // // This is the selected date
+  // { Fri Aug 02 2024: {
+  // // This is the first time interval
+  // Thu Aug 01 2024 11:00:00 GMT-0700 (Pacific Daylight Time): {
+  //     "resources": [
+  //         {
+  //             "site": "coj",
+  //             "enclosure": "clma",
+  //             "telescope": "0m4a"
+  //         },
+  //         {
+  //             "site": "coj",
+  //             "enclosure": "clma",
+  //             "telescope": "0m4b"
+  //         },
+  //         {
+  //             "site": "cpt",
+  //             "enclosure": "aqwa",
+  //             "telescope": "0m4a"
+  //         }
+  //     ]
+  //    },
+  // // next time interval
+  // Thu Aug 01 2024 11:15:00 GMT-0700 (Pacific Daylight Time): {
+  // etc...
   return processedData
 }
-
-// Filters out duplicate times and returns an array of unique local times
-const getUniqueLocaleTimes = (times) => {
-  const uniqueTimes = new Set()
-  // Iterates over each time object
-  times.forEach(({ time }) => {
-    const localTime = new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    // Adds the local time to the set (duplicates will be automatically ignored)
-    uniqueTimes.add(localTime)
-  })
-  return Array.from(uniqueTimes)
-}
-
-// Watches the date and updates the available times for that date
-watch(date, (newDate) => {
-  if (newDate) {
-    const dateStr = new Date(newDate).toISOString().split('T')[0]
-    const timesForDate = availableTimes.value[dateStr] || []
-    localTimes.value = getUniqueLocaleTimes(timesForDate)
-  }
-})
 
 // Forcefully refreshes the available times for the selected date
 // This is used when the user selects a date, then a time, then the map appears
@@ -116,19 +127,48 @@ const resetSession = () => {
 
 const blockRti = async () => {
   // Gets the start and end times for the session
-  const start = formatToUTC(date.value, startTime.value)
+  const start = formatToUTC(startTime.value)
   const startDateTime = new Date(start)
   const endDateTime = new Date(startDateTime.getTime() + 15 * 60 * 1000)
   const end = endDateTime.toISOString().split('.')[0] + 'Z'
 
+  let enclosure = null
+  let telescope = null
+
+  // The following code is temporary since the user cannot select telescope and enclosure
+  // Finds the matching entry in availableTimes
+  const dateStr = date.value.toDateString()
+  // Get the available time entries for the selected date
+  const timeEntries = availableTimes.value[dateStr]
+
+  if (timeEntries) {
+    Object.keys(timeEntries).forEach(timeKey => {
+      const timeObj = new Date(timeKey)
+      // Checks if the time matches the selected start time
+      if (timeObj.getTime() === startDateTime.getTime()) {
+        // Gets the resources available at this time
+        const resources = timeEntries[timeKey].resources
+        // Finds the resource that matches the selected site
+        const matchedResource = resources.find(resource => resource.site === selectedSite.value.site)
+        if (matchedResource) {
+          // Gets enclosure and telescope from matchedResource
+          enclosure = matchedResource.enclosure
+          telescope = matchedResource.telescope
+        }
+      }
+    })
+  }
+  if (!enclosure || !telescope) {
+    errorMessage.value = 'Failed to find a matching telescope and enclosure for the selected site and time'
+    return
+  }
+
   const requestBody = {
     proposal: 'LCOSchedulerTest',
     name: 'Test Real Time',
-    // sometimes the site is not valid, so for now I'm hardcoding 'tst'
-    // site: selectedSite.value.site,
-    site: 'tst',
-    enclosure: 'clma',
-    telescope: '2m0a',
+    site: selectedSite.value.site,
+    enclosure,
+    telescope,
     start,
     end
   }
@@ -159,13 +199,17 @@ const isDateAllowed = (date) => {
   return date >= firstDate && date <= lastDate
 }
 
+// Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
     startTime.value = null
     resetSession()
+    const dateStr = newDate.toDateString()
+    localTimes.value = Object.keys(availableTimes.value[dateStr] || {}).map(time => new Date(time))
   }
 })
 
+// Resets the session and emits the selected time when startTime changes
 watch(startTime, (newTime, oldTime) => {
   if (newTime !== oldTime) {
     resetSession()
@@ -179,33 +223,33 @@ onMounted(() => {
 </script>
 
 <template>
-  <template v-if="hasAvailableTimes">
+<template v-if="hasAvailableTimes">
   <h2>Book your live observing session</h2>
   <div class="columns">
     <div class="column is-one-third">
       <p>Select a date and time:</p>
       <div>
-        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes"/>
+        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes" />
       </div>
     </div>
     <div class="column">
       <div v-if="date && startTime == null" class="selected-date">
         <p>Select a time:</p>
         <div class="grid">
-          <div class="cell" v-for="time in localTimes" :key="time">
-            <button class="button" @click="startTime = time">{{ time }}</button>
+          <div class="cell" v-for="time in localTimes" :key="time.toISOString()">
+            <button class="button" @click="startTime = time">{{ time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</button>
           </div>
         </div>
       </div>
       <div v-if="startTime" class="column">
         <p class="selected-datetime">
-          <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime }}</span>
-          <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime }}</span>
+          <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+          <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
           <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
         </p>
         <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
       </div>
-      <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime" @siteSelected="selectedSite = $event" />
+      <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
     </div>
   </div>
 </template>
