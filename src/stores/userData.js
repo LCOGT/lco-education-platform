@@ -5,7 +5,8 @@ export const useUserDataStore = defineStore('userData', {
     return {
       username: '',
       authToken: '',
-      profile: {}
+      profile: {},
+      archiveToken: ''
     }
   },
   persist: true,
