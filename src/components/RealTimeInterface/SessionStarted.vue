@@ -98,6 +98,7 @@ function changeFov (fov) {
 }
 
 const sendGoCommand = async () => {
+  const sessionToken = `Token ${sessionsStore.getTokenForCurrentSession}`
   const requestBody = {
     dec: Number(dec.value),
     // talk to Matt about this and populate based on choices
@@ -106,7 +107,7 @@ const sendGoCommand = async () => {
     name: 'test',
     ra: Number(ra.value)
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: sessionToken, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
 
 </script>

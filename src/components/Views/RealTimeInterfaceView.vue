@@ -36,7 +36,7 @@ onBeforeUnmount(() => {
 <template>
   <section>
     <div class="container">
-      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED'">
+      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && sessionsStore.currentStatus === 'EXPIRED'">
         <!-- temporary message -->
         <p><span class="red-bg px-2 py-2">Session has ended</span></p>
       </div>

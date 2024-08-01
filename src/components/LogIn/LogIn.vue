@@ -16,7 +16,6 @@ const errorMessage = ref('')
 const observationPortalUrl = configurationStore.observationPortalUrl
 
 const storeAPIToken = async (data) => {
-  console.log('data', data)
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
