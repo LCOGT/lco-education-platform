@@ -26,7 +26,6 @@ const storeAPIToken = async (data) => {
 const storeUser = (user) => {
   userDataStore.username = username.value
   userDataStore.profile = user
-  userDataStore.archiveToken = user.tokens.archive
   router.push('/dashboard')
 }
 
