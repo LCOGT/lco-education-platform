@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
@@ -12,20 +12,33 @@ const timeRemaining = ref(0)
 const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 
+const updateTimeRemaining = () => {
+  if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE') {
+    timeRemaining.value = calculateSessionCountdown(selectedSession)
+  }
+}
+
+function countdown () {
+  const countdown = setInterval(() => {
+    updateTimeRemaining()
+    if (timeRemaining.value <= 0) {
+      clearInterval(countdown)
+    }
+  }, 1000)
+}
+
 onMounted(async () => {
   // initiate the handshake and retrieve a token prior to polling
   await sessionsStore.fetchSessionToken()
 
   sessionsStore.startPolling()
+  countdown()
+})
 
-  const countdown = setInterval(() => {
-    if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') {
-      timeRemaining.value = calculateSessionCountdown(selectedSession)
-      if (timeRemaining.value <= 0) {
-        clearInterval(countdown)
-      }
-    }
-  }, 1000)
+watch(() => sessionsStore.currentStatus, (newStatus, oldStatus) => {
+  if (newStatus === 'ACTIVE') {
+    countdown()
+  }
 })
 
 onBeforeUnmount(() => {
