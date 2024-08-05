@@ -30,9 +30,6 @@ const createIcon = (iconUrl) => {
   })
 }
 
-const mapMarkerAvailable = createIcon(availableIcon)
-const mapMarkerUnavailable = createIcon(unavailableIcon)
-
 // Updates markers on the map based on the available times and selected time
 const updateMarkers = (map) => {
   const selectedTime = new Date(props.selectedTime)
@@ -57,7 +54,7 @@ const updateMarkers = (map) => {
   // Iterates over all sites and updates markers on the map
   Object.entries(sites).forEach(([site, { lat, lon }]) => {
     const available = availableSites.includes(site)
-    const icon = available ? mapMarkerAvailable : mapMarkerUnavailable
+    const icon = available ? createIcon(availableIcon) : createIcon(unavailableIcon)
     const popupText = available ? `${site}<br>available` : `${site}<br>unavailable`
 
     const marker = L.marker([lat, lon], { icon })
