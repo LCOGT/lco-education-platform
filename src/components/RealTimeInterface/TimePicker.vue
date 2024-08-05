@@ -18,6 +18,8 @@ const selectedSite = ref(null)
 const availableTimes = ref({})
 const localTimes = ref([])
 
+const timeInterval = 15
+
 const emits = defineEmits(['timeSelected'])
 
 // Loads template only after the obs portal has returned available times
@@ -26,7 +28,7 @@ const hasAvailableTimes = computed(() => {
 })
 
 // Rounds times from the obs portal to the nearest 15 minutes (for now) because they are in time ranges
-function roundToNearestMinutes (date, direction = 'up', minutes = 15) {
+function roundToNearestMinutes (date, direction = 'up', minutes = timeInterval) {
   const ms = 1000 * 60 * minutes
   const roundedDate = new Date(Math[direction === 'up' ? 'ceil' : 'floor'](date.getTime() / ms) * ms)
   return roundedDate
@@ -34,7 +36,6 @@ function roundToNearestMinutes (date, direction = 'up', minutes = 15) {
 
 // Because we get availability in ranges, we need to generate all the 15 minute intervals within those ranges
 function generateTimeIntervals (startDate, endDate) {
-  const timeInterval = 15
   const intervals = []
   let current = new Date(startDate)
   while (current < endDate) {
@@ -55,8 +56,8 @@ function processTelescopeAvailability (data) {
       const start = new Date(range[0])
       const end = new Date(range[1])
 
-      const roundedStart = roundToNearestMinutes(start, 'up', 15)
-      const roundedEnd = roundToNearestMinutes(end, 'down', 15)
+      const roundedStart = roundToNearestMinutes(start, 'up', timeInterval)
+      const roundedEnd = roundToNearestMinutes(end, 'down', timeInterval)
 
       // Generates time intervals between the start and end times
       generateTimeIntervals(roundedStart, roundedEnd).forEach(interval => {
@@ -130,7 +131,7 @@ const blockRti = async () => {
   // Gets the start and end times for the session
   const start = formatToUTC(startTime.value)
   const startDateTime = new Date(start)
-  const endDateTime = new Date(startDateTime.getTime() + 15 * 60 * 1000)
+  const endDateTime = new Date(startDateTime.getTime() + timeInterval * 60 * 1000)
   const end = endDateTime.toISOString().split('.')[0] + 'Z'
 
   let enclosure = null
