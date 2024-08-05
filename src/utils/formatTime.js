@@ -10,12 +10,12 @@ function formatTime (timeString) {
   return date.toLocaleTimeString('en-US', options)
 }
 
-function formatToUTC (date, time) {
-  const combinedDateTime = new Date(date)
-  const [hours, minutes] = time.split(':')
-  combinedDateTime.setHours(hours)
-  combinedDateTime.setMinutes(minutes)
-  return combinedDateTime.toISOString().split('.')[0] + 'Z'
+function formatToUTC (dateTime) {
+  const dateObject = new Date(dateTime)
+  if (isNaN(dateObject)) {
+    return
+  }
+  return dateObject.toISOString().split('.')[0] + 'Z'
 }
 
 function formatCountdown (seconds) {
