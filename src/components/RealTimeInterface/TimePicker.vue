@@ -33,12 +33,13 @@ function roundToNearestMinutes (date, direction = 'up', minutes = 15) {
 }
 
 // Because we get availability in ranges, we need to generate all the 15 minute intervals within those ranges
-function generate15MinuteIntervals (startDate, endDate) {
+function generateTimeIntervals (startDate, endDate) {
+  const timeInterval = 15
   const intervals = []
   let current = new Date(startDate)
   while (current < endDate) {
     intervals.push(new Date(current))
-    current = new Date(current.getTime() + 15 * 60 * 1000)
+    current = new Date(current.getTime() + timeInterval * 60 * 1000)
   }
   return intervals
 }
@@ -57,8 +58,8 @@ function processTelescopeAvailability (data) {
       const roundedStart = roundToNearestMinutes(start, 'up', 15)
       const roundedEnd = roundToNearestMinutes(end, 'down', 15)
 
-      // Generates 15-minute intervals between the start and end times
-      generate15MinuteIntervals(roundedStart, roundedEnd).forEach(interval => {
+      // Generates time intervals between the start and end times
+      generateTimeIntervals(roundedStart, roundedEnd).forEach(interval => {
         const dateStr = interval.toDateString()
         const time = interval
         // Splits the telescope identifier into size, enclosure, and site
