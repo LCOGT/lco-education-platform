@@ -16,8 +16,10 @@ const thumbnails = ref([])
 let pollingInterval = null
 
 const getThumbnails = async () => {
+  // const token = `Token ${userDataStore.authToken}`
   // ADD AUTH TOKEN
   await fetchApiCall({ url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`, method: 'GET', successCallback: (data) => { thumbnails.value = data.results.map(result => result.url) }, failCallback: console.error })
+  console.log('thumbnails', thumbnails.value)
 }
 
 onMounted(() => {

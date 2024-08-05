@@ -38,6 +38,8 @@ onMounted(async () => {
 watch(() => sessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
+  } else if (newStatus === 'EXPIRED') {
+    timeRemaining.value = 0
   }
 })
 
@@ -49,7 +51,7 @@ onBeforeUnmount(() => {
 <template>
   <section>
     <div class="container">
-      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && sessionsStore.currentStatus === 'EXPIRED'">
+      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE') && sessionsStore.currentStatus !== 'ACTIVE'">
         <!-- temporary message -->
         <p><span class="red-bg px-2 py-2">Session has ended</span></p>
       </div>

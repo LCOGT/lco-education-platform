@@ -98,16 +98,29 @@ function changeFov (fov) {
 }
 
 const sendGoCommand = async () => {
-  const sessionToken = `Token ${sessionsStore.getTokenForCurrentSession}`
+  const token = sessionsStore.getTokenForCurrentSession
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': token
+  }
   const requestBody = {
     dec: Number(dec.value),
     // talk to Matt about this and populate based on choices
     expFilter: ['ip', 'rp', 'gp'],
-    expTime: [50, 50, 50],
+    expTime: [5, 5, 5],
     name: 'test',
     ra: Number(ra.value)
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: sessionToken, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: headers, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+}
+
+function updateRenderGallery (value) {
+  renderGallery.value = value
+  if (!value) {
+    moveTelescope.value = false
+    captureImages.value = false
+  }
 }
 
 </script>
@@ -237,7 +250,7 @@ const sendGoCommand = async () => {
     </div>
   </div>
   <div v-else-if="moveTelescope === true && captureImages === false">
-    <SessionImageCapture @update:renderGallery="renderGallery = $event" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
+    <SessionImageCapture  @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
   <div v-else-if="captureImages === true && progressBar < 100">
     <RealTimeGallery @updateProgress="handleProgressUpdate" />

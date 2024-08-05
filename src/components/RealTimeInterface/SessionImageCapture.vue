@@ -9,9 +9,26 @@ const configurationStore = useConfigurationStore()
 
 const status = ref(null)
 let pollingInterval = null
+const imagesDone = ref(false)
+const renderGallery = ref(false)
+const emits = defineEmits(['updateRenderGallery'])
 
 const fetchTelescopeStatus = async () => {
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl,
+    method: 'GET',
+    successCallback: (response) => {
+      status.value = response
+      if (response.every(item => item.progress === 'done')) {
+        imagesDone.value = true
+      }
+    },
+    failCallback: (error) => { console.error('Error fetching status:', error) }
+  })
+}
+
+const goBackToSessionStarted = () => {
+  emits('updateRenderGallery', false)
 }
 
 onMounted(() => {
@@ -54,4 +71,7 @@ onUnmounted(() => {
             </div>
         </div>
     </div>
+    <button v-if="imagesDone" class="button blue-bg" @click="goBackToSessionStarted">
+    Capture another target
+  </button>
 </template>
