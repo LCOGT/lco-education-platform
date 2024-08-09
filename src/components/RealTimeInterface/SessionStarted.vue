@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
@@ -13,8 +13,6 @@ import celestial from 'd3-celestial'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
 
-const exposureCount = 1
-
 const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
 
@@ -24,6 +22,9 @@ const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
 // highlight what's selected
+const exposureTime = ref('')
+const exposureCount = ref(1)
+const selectedFilter = ref('')
 const fieldOfView = ref(1.0)
 const progressBar = ref(0)
 const moveTelescope = ref(false)
@@ -102,15 +103,18 @@ const sendGoCommand = async () => {
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Authorization': token
+    'Authorization': `${token}`
   }
   const requestBody = {
     dec: Number(dec.value),
     // talk to Matt about this and populate based on choices
-    expFilter: ['ip', 'rp', 'gp'],
-    expTime: [5, 5, 5],
-    name: 'test',
-    ra: Number(ra.value)
+    expFilter: ['V', 'ip', 'gp'],
+    expTime: [15, 0, 0],
+    name: targetName.value,
+    ra: Number(ra.value) / 15,
+    proposalId: sessionsStore.currentSession.proposal,
+    requestGroupId: sessionsStore.currentSession.request_group_id,
+    requestId: sessionsStore.currentSession.request.id
   }
   await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: headers, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
@@ -122,6 +126,10 @@ function updateRenderGallery (value) {
     captureImages.value = false
   }
 }
+
+const incompleteSelection = computed(() => {
+  return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === ''
+})
 
 </script>
 <template>
@@ -173,7 +181,7 @@ function updateRenderGallery (value) {
             </div>
           </div>
         </div>
-        <div v-if="ra && dec">
+        <div v-if="ra && dec && !targeterror">
           <div class="columns">
                 <div class="column">
                   <p>Mosaic</p>
@@ -245,7 +253,7 @@ function updateRenderGallery (value) {
               </div>
         </div>
         <!--return to computed prop-->
-        <button :disabled="ra === '' || dec === '' || exposureTime === '' || exposureCount === '' || selectedFilter === ''" class="button red-bg" @click="sendGoCommand()">Go</button>
+        <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
       </div>
     </div>
   </div>
