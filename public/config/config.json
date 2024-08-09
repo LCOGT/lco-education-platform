@@ -1,6 +1,6 @@
 {
-    "observationPortalUrl": "http://observation-portal-dev.lco.gtn/api/",
-    "thumbnailArchiveUrl": "http://archive-api-dev.lco.gtn/",
-    "rtiBridgeUrl": "http://rti-bridge-dev.lco.gtn/",
+    "observationPortalUrl": "https://observe.lco.global/api/",
+    "thumbnailArchiveUrl": "https://archive-api.lco.global/",
+    "rtiBridgeUrl": "https://lco-edu-rti-bridge.lco.earth/",
     "targetNameUrl": "https://simbad2k.lco.global/"
 }

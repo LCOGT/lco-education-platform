@@ -15,7 +15,7 @@ const errorMessage = ref('')
 
 const observationPortalUrl = configurationStore.observationPortalUrl
 
-const storeToken = async (data) => {
+const storeAPIToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
@@ -35,7 +35,7 @@ const login = async () => {
     password: password.value
   }
   // store an auth token from login credentials
-  await fetchApiCall({ url: observationPortalUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
+  await fetchApiCall({ url: observationPortalUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeAPIToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
 }
 </script>
 

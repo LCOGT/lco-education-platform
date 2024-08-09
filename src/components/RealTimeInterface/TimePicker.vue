@@ -2,6 +2,7 @@
 import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionsStore } from '../../stores/sessions'
+import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
@@ -10,6 +11,7 @@ import LeafletMap from './GlobeMap/LeafletMap.vue'
 const router = useRouter()
 const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
+const userDataStore = useUserDataStore()
 
 const date = ref(null)
 const startTime = ref(null)
@@ -166,7 +168,7 @@ const blockRti = async () => {
   }
 
   const requestBody = {
-    proposal: 'LCOSchedulerTest',
+    proposal: 'LCORealtimeTest',
     name: 'Test Real Time',
     site: selectedSite.value.site,
     enclosure,
@@ -184,9 +186,11 @@ const bookDate = () => {
 }
 
 async function getAvailableTimes () {
+  const token = userDataStore.authToken
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + 'realtime/availability/',
     method: 'GET',
+    header: { Authorization: `Token ${token}` },
     successCallback: (responseData) => { availableTimes.value = processTelescopeAvailability(responseData) },
     failCallback: (error) => { console.error('API call failed with error', error) }
   })

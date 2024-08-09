@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
@@ -12,20 +12,39 @@ const timeRemaining = ref(0)
 const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 
+const statusNotExpired = computed(() => {
+  return sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE'
+})
+
+const updateTimeRemaining = () => {
+  if (statusNotExpired.value) {
+    timeRemaining.value = calculateSessionCountdown(selectedSession)
+  }
+}
+
+function countdown () {
+  const countdown = setInterval(() => {
+    updateTimeRemaining()
+    if (timeRemaining.value <= 0) {
+      clearInterval(countdown)
+    }
+  }, 1000)
+}
+
 onMounted(async () => {
   // initiate the handshake and retrieve a token prior to polling
   await sessionsStore.fetchSessionToken()
 
   sessionsStore.startPolling()
+  countdown()
+})
 
-  const countdown = setInterval(() => {
-    if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') {
-      timeRemaining.value = calculateSessionCountdown(selectedSession)
-      if (timeRemaining.value <= 0) {
-        clearInterval(countdown)
-      }
-    }
-  }, 1000)
+watch(() => sessionsStore.currentStatus, (newStatus, oldStatus) => {
+  if (newStatus === 'ACTIVE') {
+    countdown()
+  } else if (newStatus === 'EXPIRED') {
+    timeRemaining.value = 0
+  }
 })
 
 onBeforeUnmount(() => {
@@ -36,11 +55,7 @@ onBeforeUnmount(() => {
 <template>
   <section>
     <div class="container">
-      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED'">
-        <!-- temporary message -->
-        <p><span class="red-bg px-2 py-2">Session has ended</span></p>
-      </div>
-      <div v-else-if="sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED'" class="content">
+      <div v-if="sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED'" class="content">
         <h2>Session Not Started</h2>
         <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
@@ -51,6 +66,10 @@ onBeforeUnmount(() => {
         <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
         <SessionStarted/>
+      </div>
+      <div v-else-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE') && sessionsStore.currentStatus !== 'ACTIVE'">
+        <!-- temporary message -->
+        <p><span class="red-bg px-2 py-2">Session has ended</span></p>
       </div>
     </div>
   </section>

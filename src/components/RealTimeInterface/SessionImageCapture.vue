@@ -1,17 +1,63 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useSessionsStore } from '../../stores/sessions'
 
 const configurationStore = useConfigurationStore()
+const sessionsStore = useSessionsStore()
 
 const status = ref(null)
 let pollingInterval = null
+const thumbnailsFetched = ref(false)
+const imagesDone = ref(false)
+const emits = defineEmits(['updateRenderGallery'])
+
+const imagesCaptured = computed(() => {
+  return status.value.status.availability === 'Available' && status.value.status.instrument === 'Idle' && status.value.status.progress === 'Ready' && status.value.status.telescope === 'Tracking' && thumbnailsFetched.value === true
+})
 
 const fetchTelescopeStatus = async () => {
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl, method: 'GET', successCallback: (response) => { status.value = response }, failCallback: (error) => { console.error('Error fetching status:', error) } })
+  const token = sessionsStore.getTokenForCurrentSession
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `${token}`
+  }
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'status',
+    method: 'GET',
+    header: headers,
+    successCallback: (response) => {
+      status.value = response
+      if (imagesCaptured.value === true) {
+        imagesDone.value = true
+      }
+    },
+    failCallback: (error) => { console.error('Error fetching status:', error) }
+  })
+}
+
+const handleThumbnailsFetched = (fetched) => {
+  if (fetched) {
+    thumbnailsFetched.value = true
+  }
+}
+
+const goBackToSessionStarted = () => {
+  emits('updateRenderGallery', false)
+}
+
+const sendStopCommand = async () => {
+  const token = sessionsStore.getTokenForCurrentSession
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `${token}`
+  }
+  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
 
 onMounted(() => {
@@ -22,7 +68,6 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(pollingInterval)
 })
-// add button that's disabled when images are not done and enabled when images are done to go back to session started
 
 </script>
 
@@ -50,8 +95,14 @@ onUnmounted(() => {
                 </div>
             </div>
             <div class="column">
-              <PolledThumbnails />
+              <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
             </div>
         </div>
     </div>
+    <button class="button red-bg" @click="sendStopCommand">
+    stop
+    </button>
+    <button :disabled="!imagesDone" class="button blue-bg" @click="goBackToSessionStarted">
+    Capture another target
+  </button>
 </template>
