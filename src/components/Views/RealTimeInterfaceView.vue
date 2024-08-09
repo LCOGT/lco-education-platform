@@ -12,8 +12,12 @@ const timeRemaining = ref(0)
 const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 
+const statusNotExpired = computed(() => {
+  return sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE'
+})
+
 const updateTimeRemaining = () => {
-  if (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE') {
+  if (statusNotExpired.value) {
     timeRemaining.value = calculateSessionCountdown(selectedSession)
   }
 }
@@ -51,11 +55,7 @@ onBeforeUnmount(() => {
 <template>
   <section>
     <div class="container">
-      <div v-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE') && sessionsStore.currentStatus !== 'ACTIVE'">
-        <!-- temporary message -->
-        <p><span class="red-bg px-2 py-2">Session has ended</span></p>
-      </div>
-      <div v-else-if="sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED'" class="content">
+      <div v-if="sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED'" class="content">
         <h2>Session Not Started</h2>
         <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
@@ -66,6 +66,10 @@ onBeforeUnmount(() => {
         <p>You are controlling the telescope in {{ site }}</p>
         <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
         <SessionStarted/>
+      </div>
+      <div v-else-if="timeRemaining <= 0 && sessionsStore.currentStatus !== 'UNEXPIRED' && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE') && sessionsStore.currentStatus !== 'ACTIVE'">
+        <!-- temporary message -->
+        <p><span class="red-bg px-2 py-2">Session has ended</span></p>
       </div>
     </div>
   </section>

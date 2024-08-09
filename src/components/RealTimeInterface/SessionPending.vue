@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import WindyMap from './GlobeMap/WindyMap.vue'
+
 const sessionsStore = useSessionsStore()
 
 const selectedSession = sessionsStore.currentSession
