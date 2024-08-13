@@ -95,6 +95,7 @@ onUnmounted(() => {
                 </div>
             </div>
             <div class="column">
+              <v-progress-circular indeterminate color="white" v-if="!imagesDone" class="loading"/>
               <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
             </div>
         </div>
@@ -103,6 +104,6 @@ onUnmounted(() => {
     stop
     </button>
     <button :disabled="!imagesDone" class="button blue-bg" @click="goBackToSessionStarted">
-    Capture another target
-  </button>
+      Capture another target
+    </button>
 </template>
