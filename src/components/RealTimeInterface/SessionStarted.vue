@@ -32,6 +32,7 @@ const captureImages = ref(false)
 const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
+const loading = ref(false)
 
 const Celestial = celestial.Celestial()
 const currentSession = sessionsStore.currentSession
@@ -99,6 +100,7 @@ function changeFov (fov) {
 }
 
 const sendGoCommand = async () => {
+  loading.value = true
   const token = sessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -116,7 +118,17 @@ const sendGoCommand = async () => {
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: headers, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'command/go',
+    method: 'POST',
+    body: requestBody,
+    header: headers,
+    successCallback: () => {
+      moveTelescope.value = true
+      loading.value = false
+    },
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
 }
 
 function updateRenderGallery (value) {
@@ -254,6 +266,7 @@ const incompleteSelection = computed(() => {
         </div>
         <!--return to computed prop-->
         <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
+        <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
     </div>
   </div>
