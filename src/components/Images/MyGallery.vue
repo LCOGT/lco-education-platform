@@ -47,6 +47,7 @@ const getThumbnails = async (sessionId) => {
 }
 
 onMounted(() => {
+  // Fetch thumbnails for all sessions in filteredSessions
   filteredSessions.value.forEach(session => {
     getThumbnails(session.id)
   })
