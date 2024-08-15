@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useSessionsStore } from '../../../stores/sessions'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
+const sessionsStore = useSessionsStore()
 
 const lat = ref(35)
 const lng = ref(-105)
@@ -16,11 +17,10 @@ function updateLocation () {
 
   Celestial.date(time)
   Celestial.location([lat, lng])
+  Celestial.resize({ width: 0 })
 }
 
-onMounted(() => {
-  const sessionsStore = useSessionsStore()
-
+function initializeCelestial () {
   const config = {
     width: 600,
     projection: 'stereographic',
@@ -141,18 +141,22 @@ onMounted(() => {
       opacity: 0.1
     }
   }
+  Celestial.display(config)
+  updateLocation()
+}
+
+onMounted(() => {
   const currentSession = sessionsStore.currentSession
   if (currentSession && currentSession.site) {
     const siteInfo = sites[currentSession.site]
-    if (siteInfo) {
+    if (siteInfo && Celestial) {
       lat.value = siteInfo.lat
       lng.value = siteInfo.lon
+      initializeCelestial()
     }
   }
-
-  Celestial.display(config)
-  updateLocation()
 })
+
 </script>
 
 <template>
