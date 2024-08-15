@@ -101,6 +101,13 @@ const sendGoCommand = async () => {
     successCallback: () => {
       sessionsStore.updateImageCaptureState(true)
       loading.value = false
+      ra.value = ''
+      dec.value = ''
+      targetName.value = ''
+      exposureTime.value = ''
+      exposureCount.value = 1
+      selectedFilter.value = ''
+      fieldOfView.value = 1.0
     },
     failCallback: (error) => { console.error('API failed with error', error) }
   })
@@ -243,7 +250,7 @@ const incompleteSelection = computed(() => {
     </div>
   </div>
   <div v-else-if="isCapturingImages">
-    <SessionImageCapture  @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
+    <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
 </template>
 
