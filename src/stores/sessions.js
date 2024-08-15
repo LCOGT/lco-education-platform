@@ -11,7 +11,8 @@ export const useSessionsStore = defineStore('sessions', {
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
-      sessionTokens: {}
+      sessionTokens: {},
+      isCapturingImagesMap: {}
     }
   },
   persist: true,
@@ -26,9 +27,17 @@ export const useSessionsStore = defineStore('sessions', {
     },
     getTokenForCurrentSession (state) {
       return state.sessionTokens[state.currentSessionId] || ''
+    },
+    isCapturingImagesForCurrentSession (state) {
+      return state.isCapturingImagesMap[state.currentSessionId] || false
     }
   },
   actions: {
+    resetSessionState () {
+      if (this.currentSessionId) {
+        this.isCapturingImagesMap[this.currentSessionId] = false
+      }
+    },
     async fetchSessions () {
       const configurationStore = useConfigurationStore()
       await fetchApiCall({
@@ -96,6 +105,11 @@ export const useSessionsStore = defineStore('sessions', {
       if (this.fetchInterval) {
         clearTimeout(this.fetchInterval)
         this.fetchInterval = null
+      }
+    },
+    updateImageCaptureState (isCapturing) {
+      if (this.currentSessionId) {
+        this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
     }
   }
