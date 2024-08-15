@@ -12,6 +12,7 @@ const loading = ref(true)
 
 const selectedSession = sessionsStore.currentSession
 const site = computed(() => selectedSession.site)
+const telescope = computed(() => selectedSession.telescope)
 
 const statusNotExpired = computed(() => {
   return sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE'
@@ -35,8 +36,10 @@ function countdown () {
 watch(() => sessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
-  } else if (newStatus === 'EXPIRED') {
+  } else {
+    sessionsStore.resetSessionState()
     timeRemaining.value = 0
+    sessionsStore.updateImageCaptureState(false)
   }
 })
 
@@ -52,13 +55,13 @@ onMounted(async () => {
   sessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {
-    if (timeRemaining.value > 0 && (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE')) {
-      clearInterval(checkTimeRemaining)
-      loading.value = false
-    } else if (sessionsStore.currentStatus === 'EXPIRED') {
-      clearInterval(checkTimeRemaining)
-      loading.value = false
-    }
+    // if (timeRemaining.value > 0 && (sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE')) {
+    clearInterval(checkTimeRemaining)
+    loading.value = false
+    // } else if (sessionsStore.currentStatus === 'EXPIRED' || timeRemaining.value <= 0) {
+    // clearInterval(checkTimeRemaining)
+    // loading.value = false
+    // }
   }, 100)
 })
 </script>
@@ -70,20 +73,19 @@ onMounted(async () => {
   <template v-else>
     <section>
       <div class="container">
-        <div v-if="(sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining >= 0" class="content">
+       <div v-if="(sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining >= 0" class="content">
           <h2>Session Not Started</h2>
-          <p>You are controlling the telescope in {{ site }}</p>
+          <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionPending/>
         </div>
-        <div v-else-if="sessionsStore.currentStatus === 'ACTIVE'" class="content">
+       <div v-else-if="sessionsStore.currentStatus === 'ACTIVE'" class="content">
           <h2>Live Observing Session</h2>
-          <p>You are controlling the telescope in {{ site }}</p>
+          <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionStarted/>
         </div>
-        <div v-else-if="timeRemaining <= 0 && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE')">
-          <!-- temporary message -->
+       <div v-else-if="timeRemaining <= 0 && (sessionsStore.currentStatus === 'EXPIRED' || sessionsStore.currentStatus === 'INACTIVE')">
           <p><span class="red-bg px-2 py-2">Session has ended</span></p>
         </div>
       </div>
