@@ -46,8 +46,8 @@ function hideView () {
     background-color: transparent;
     font-size: 1.5em;
     position: absolute;
-    top: 0;
-    right: 15%;
+    top: 1%;
+    right: 2%;
 }
 @media (max-width: 1200px) {
 

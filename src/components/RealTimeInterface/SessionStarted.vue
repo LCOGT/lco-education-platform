@@ -1,51 +1,34 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
-import RealTimeGallery from '../RealTimeInterface/RealTimeGallery.vue'
 import { calcAltAz } from '../../utils/visibility.js'
 import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
-import celestial from 'd3-celestial'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
 
 const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
 
-const router = useRouter()
+const isCapturingImages = computed(() => sessionsStore.isCapturingImagesForCurrentSession)
+
 const aladinRef = ref(null)
 const ra = ref('')
 const dec = ref('')
 const targetName = ref('')
-// highlight what's selected
 const exposureTime = ref('')
 const exposureCount = ref(1)
 const selectedFilter = ref('')
 const fieldOfView = ref(1.0)
-const progressBar = ref(0)
-const moveTelescope = ref(false)
-const captureImages = ref(false)
-const renderGallery = ref(false)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
+const loading = ref(false)
 
-const Celestial = celestial.Celestial()
 const currentSession = sessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
-
-onMounted(() => {
-  if (siteInfo) {
-    Celestial.location([siteInfo.lat, siteInfo.lon])
-  }
-
-  const startDate = new Date(currentSession.start)
-  Celestial.date(startDate)
-  Celestial.resize({ width: 0 })
-})
 
 function getRaDecFromTargetName () {
   targeterror.value = false
@@ -75,13 +58,6 @@ function getRaDecFromTargetName () {
     })
 }
 
-function handleProgressUpdate (progress) {
-  progressBar.value = progress
-  if (progress === 100) {
-    router.push('/images')
-  }
-}
-
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
   if (aladinRef.value) {
@@ -99,6 +75,7 @@ function changeFov (fov) {
 }
 
 const sendGoCommand = async () => {
+  loading.value = true
   const token = sessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -108,22 +85,30 @@ const sendGoCommand = async () => {
   const requestBody = {
     dec: Number(dec.value),
     // talk to Matt about this and populate based on choices
-    expFilter: ['V', 'ip', 'gp'],
-    expTime: [15, 0, 0],
+    expFilter: ['B', 'rp', 'V'],
+    expTime: [5, 0, 0],
     name: targetName.value,
     ra: Number(ra.value) / 15,
     proposalId: sessionsStore.currentSession.proposal,
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/go', method: 'POST', body: requestBody, header: headers, successCallback: () => { moveTelescope.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'command/go',
+    method: 'POST',
+    body: requestBody,
+    header: headers,
+    successCallback: () => {
+      sessionsStore.updateImageCaptureState(true)
+      loading.value = false
+    },
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
 }
 
 function updateRenderGallery (value) {
-  renderGallery.value = value
   if (!value) {
-    moveTelescope.value = false
-    captureImages.value = false
+    sessionsStore.updateImageCaptureState(false)
   }
 }
 
@@ -133,7 +118,7 @@ const incompleteSelection = computed(() => {
 
 </script>
 <template>
-  <div v-if="moveTelescope === false && captureImages === false">
+  <div v-if="!isCapturingImages">
     <div class="columns">
       <div class="column is-two-thirds">
           <SkyChart />
@@ -252,16 +237,13 @@ const incompleteSelection = computed(() => {
                 </div>
               </div>
         </div>
-        <!--return to computed prop-->
         <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
+        <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
     </div>
   </div>
-  <div v-else-if="moveTelescope === true && captureImages === false">
+  <div v-else-if="isCapturingImages">
     <SessionImageCapture  @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
-  </div>
-  <div v-else-if="captureImages === true && progressBar < 100">
-    <RealTimeGallery @updateProgress="handleProgressUpdate" />
   </div>
 </template>
 

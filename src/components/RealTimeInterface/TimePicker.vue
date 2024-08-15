@@ -229,39 +229,48 @@ onMounted(() => {
 </script>
 
 <template>
-<template v-if="hasAvailableTimes">
-  <h2>Book your live observing session</h2>
-  <div class="columns">
-    <div class="column is-one-third">
-      <p>Select a date and time:</p>
-      <div>
-        <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes" />
-      </div>
-    </div>
-    <div class="column">
-      <div v-if="date && startTime == null" class="selected-date">
-        <p>Select a time:</p>
-        <div class="grid">
-          <div class="cell" v-for="time in localTimes" :key="time.toISOString()">
-            <button class="button" @click="startTime = time">{{ time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</button>
-          </div>
+  <template v-if="!hasAvailableTimes">
+    <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
+  </template>
+  <template v-if="hasAvailableTimes">
+    <h2>Book your live observing session</h2>
+    <div class="columns">
+      <div class="column is-one-third">
+        <p>Select a date and time:</p>
+        <div>
+          <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes" />
         </div>
       </div>
-      <div v-if="startTime" class="column">
-        <p class="selected-datetime">
-          <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
-          <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
-          <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
-        </p>
-        <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+      <div class="column">
+        <div v-if="date && startTime == null" class="selected-date">
+          <p>Select a time:</p>
+          <div class="grid">
+            <div class="cell" v-for="time in localTimes" :key="time.toISOString()">
+              <button class="button" @click="startTime = time">{{ time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</button>
+            </div>
+          </div>
+        </div>
+        <div v-if="startTime" class="column">
+          <p class="selected-datetime">
+            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
+          </p>
+          <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+        </div>
+        <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
-      <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
     </div>
-  </div>
-</template>
+  </template>
 </template>
 
 <style scoped>
+.loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 .error {
   color: red;
 }
