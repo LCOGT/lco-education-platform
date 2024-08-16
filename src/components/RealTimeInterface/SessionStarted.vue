@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -77,6 +77,9 @@ function changeFov (fov) {
   }
 }
 
+const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
+const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
+
 const sendGoCommand = async () => {
   loading.value = true
   const token = sessionsStore.getTokenForCurrentSession
@@ -87,15 +90,15 @@ const sendGoCommand = async () => {
   }
   const requestBody = {
     dec: Number(dec.value),
-    // talk to Matt about this and populate based on choices
-    expFilter: ['B', 'rp', 'V'],
-    expTime: [5, 0, 0],
+    expFilter: exposFilter,
+    expTime: exposTime,
     name: targetName.value,
     ra: Number(ra.value) / 15,
     proposalId: sessionsStore.currentSession.proposal,
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
   }
+  console.log('request body', requestBody)
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'command/go',
     method: 'POST',
@@ -116,6 +119,8 @@ const sendGoCommand = async () => {
   })
 }
 
+// This should change from configdbUrl/opticalelementgroups/128/ to
+// https://observe.lco.global/api/instruments and map the instruments based on what telescope is being used
 const getFilterList = async () => {
   const token = userDataStore.authToken
   const headers = {
@@ -125,7 +130,7 @@ const getFilterList = async () => {
   }
 
   await fetchApiCall({
-    url: 'http://configdb.lco.gtn/opticalelementgroups/128/',
+    url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
     method: 'GET',
     header: headers,
     successCallback: (data) => {
@@ -149,6 +154,13 @@ const incompleteSelection = computed(() => {
 
 onMounted(() => {
   getFilterList()
+})
+
+watch(() => exposureCount.value, (newVal) => {
+  exposFilter.length = newVal
+  exposTime.length = newVal
+  exposFilter.fill(selectedFilter.value)
+  exposTime.fill(Number(exposureTime.value))
 })
 
 </script>
