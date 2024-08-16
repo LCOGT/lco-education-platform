@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -9,9 +9,11 @@ import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useUserDataStore } from '../../stores/userData'
 
 const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
+const userDataStore = useUserDataStore()
 
 const isCapturingImages = computed(() => sessionsStore.isCapturingImagesForCurrentSession)
 
@@ -21,6 +23,7 @@ const dec = ref('')
 const targetName = ref('')
 const exposureTime = ref('')
 const exposureCount = ref(1)
+const filterList = ref([])
 const selectedFilter = ref('')
 const fieldOfView = ref(1.0)
 const targeterror = ref(false)
@@ -113,6 +116,27 @@ const sendGoCommand = async () => {
   })
 }
 
+const getFilterList = async () => {
+  const token = userDataStore.authToken
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Token ${token}`
+  }
+
+  await fetchApiCall({
+    url: 'http://configdb.lco.gtn/opticalelementgroups/128/',
+    method: 'GET',
+    header: headers,
+    successCallback: (data) => {
+      filterList.value = data.optical_elements
+        .filter(filter => filter.schedulable)
+        .map(filter => ({ name: filter.name, code: filter.code }))
+    },
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
+}
+
 function updateRenderGallery (value) {
   if (!value) {
     sessionsStore.updateImageCaptureState(false)
@@ -121,6 +145,10 @@ function updateRenderGallery (value) {
 
 const incompleteSelection = computed(() => {
   return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === ''
+})
+
+onMounted(() => {
+  getFilterList()
 })
 
 </script>
@@ -230,12 +258,10 @@ const incompleteSelection = computed(() => {
                     <div class="control">
                         <div class="select is-fullwidth">
                             <select id="filter" v-model="selectedFilter">
-                                <option disabled value="">Choose a filter</option>
-                                <option value="ip">RGB color</option>
-                                <option value="rp">Blue</option>
-                                <option value="gb">Green (V)</option>
-                                <option value="Red">Red</option>
-                                <option value="H-Alpha">H-Alpha</option>
+                              <option disabled value="">Choose a filter</option>
+                              <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
+                                {{ filter.name }}
+                              </option>
                             </select>
                         </div>
                     </div>
