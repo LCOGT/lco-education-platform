@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -9,9 +9,11 @@ import { useSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useUserDataStore } from '../../stores/userData'
 
 const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
+const userDataStore = useUserDataStore()
 
 const isCapturingImages = computed(() => sessionsStore.isCapturingImagesForCurrentSession)
 
@@ -21,6 +23,7 @@ const dec = ref('')
 const targetName = ref('')
 const exposureTime = ref('')
 const exposureCount = ref(1)
+const filterList = ref([])
 const selectedFilter = ref('')
 const fieldOfView = ref(1.0)
 const targeterror = ref(false)
@@ -74,6 +77,17 @@ function changeFov (fov) {
   }
 }
 
+const resetValues = () => {
+  sessionsStore.updateImageCaptureState(true)
+  ra.value = ''
+  dec.value = ''
+  targetName.value = ''
+  exposureTime.value = ''
+  exposureCount.value = 1
+  selectedFilter.value = ''
+  fieldOfView.value = 1.0
+}
+
 const sendGoCommand = async () => {
   loading.value = true
   const token = sessionsStore.getTokenForCurrentSession
@@ -82,11 +96,14 @@ const sendGoCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
+  const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
+  const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
-    // talk to Matt about this and populate based on choices
-    expFilter: ['B', 'rp', 'V'],
-    expTime: [5, 0, 0],
+    expFilter: exposFilter,
+    expTime: exposTime,
+    // expFilter: ['rp'],
+    // expTime: [30],
     name: targetName.value,
     ra: Number(ra.value) / 15,
     proposalId: sessionsStore.currentSession.proposal,
@@ -98,9 +115,23 @@ const sendGoCommand = async () => {
     method: 'POST',
     body: requestBody,
     header: headers,
-    successCallback: () => {
-      sessionsStore.updateImageCaptureState(true)
-      loading.value = false
+    successCallback: resetValues,
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
+}
+
+// This should change from configdbUrl/opticalelementgroups/128/ to
+// https://observe.lco.global/api/instruments and map the instruments based on what telescope is being used
+const getFilterList = async () => {
+  const token = userDataStore.authToken
+
+  await fetchApiCall({
+    url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
+    method: 'GET',
+    successCallback: (data) => {
+      filterList.value = data.optical_elements
+        .filter(filter => filter.schedulable)
+        .map(filter => ({ name: filter.name, code: filter.code }))
     },
     failCallback: (error) => { console.error('API failed with error', error) }
   })
@@ -114,6 +145,10 @@ function updateRenderGallery (value) {
 
 const incompleteSelection = computed(() => {
   return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === ''
+})
+
+onMounted(() => {
+  getFilterList()
 })
 
 </script>
@@ -223,12 +258,10 @@ const incompleteSelection = computed(() => {
                     <div class="control">
                         <div class="select is-fullwidth">
                             <select id="filter" v-model="selectedFilter">
-                                <option disabled value="">Choose a filter</option>
-                                <option value="ip">RGB color</option>
-                                <option value="rp">Blue</option>
-                                <option value="gb">Green (V)</option>
-                                <option value="Red">Red</option>
-                                <option value="H-Alpha">H-Alpha</option>
+                              <option disabled value="">Choose a filter</option>
+                              <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
+                                {{ filter.name }}
+                              </option>
                             </select>
                         </div>
                     </div>
@@ -243,7 +276,7 @@ const incompleteSelection = computed(() => {
     </div>
   </div>
   <div v-else-if="isCapturingImages">
-    <SessionImageCapture  @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
+    <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
 </template>
 

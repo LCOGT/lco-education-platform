@@ -25,7 +25,6 @@ const getThumbnails = async () => {
     'Accept': 'application/json',
     'Authorization': `Token ${token}`
   }
-  // ADD AUTH TOKEN
   await fetchApiCall({
     url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`,
     method: 'GET',

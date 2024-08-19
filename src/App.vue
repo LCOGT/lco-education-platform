@@ -33,6 +33,7 @@ onMounted(async () => {
       configurationStore.rtiBridgeUrl = config.rtiBridgeUrl
       configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
       configurationStore.targetNameUrl = config.targetNameUrl
+      configurationStore.configdbUrl = config.configdbUrl
       configurationStore.isConfigLoaded = true
     }
   } catch (error) {
