@@ -77,8 +77,16 @@ function changeFov (fov) {
   }
 }
 
-const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
-const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
+const resetValues = () => {
+  sessionsStore.updateImageCaptureState(true)
+  ra.value = ''
+  dec.value = ''
+  targetName.value = ''
+  exposureTime.value = ''
+  exposureCount.value = 1
+  selectedFilter.value = ''
+  fieldOfView.value = 1.0
+}
 
 const sendGoCommand = async () => {
   loading.value = true
@@ -88,33 +96,28 @@ const sendGoCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
+  const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
+  const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
+    // expFilter: ['rp'],
+    // expTime: [30],
     name: targetName.value,
     ra: Number(ra.value) / 15,
     proposalId: sessionsStore.currentSession.proposal,
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
   }
+  console.log('selected filter', selectedFilter.value)
   console.log('request body', requestBody)
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'command/go',
     method: 'POST',
     body: requestBody,
     header: headers,
-    successCallback: () => {
-      sessionsStore.updateImageCaptureState(true)
-      loading.value = false
-      ra.value = ''
-      dec.value = ''
-      targetName.value = ''
-      exposureTime.value = ''
-      exposureCount.value = 1
-      selectedFilter.value = ''
-      fieldOfView.value = 1.0
-    },
+    successCallback: resetValues,
     failCallback: (error) => { console.error('API failed with error', error) }
   })
 }
@@ -123,17 +126,12 @@ const sendGoCommand = async () => {
 // https://observe.lco.global/api/instruments and map the instruments based on what telescope is being used
 const getFilterList = async () => {
   const token = userDataStore.authToken
-  const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Token ${token}`
-  }
 
   await fetchApiCall({
     url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
     method: 'GET',
-    header: headers,
     successCallback: (data) => {
+      console.log('data', data)
       filterList.value = data.optical_elements
         .filter(filter => filter.schedulable)
         .map(filter => ({ name: filter.name, code: filter.code }))
@@ -154,13 +152,6 @@ const incompleteSelection = computed(() => {
 
 onMounted(() => {
   getFilterList()
-})
-
-watch(() => exposureCount.value, (newVal) => {
-  exposFilter.length = newVal
-  exposTime.length = newVal
-  exposFilter.fill(selectedFilter.value)
-  exposTime.fill(Number(exposureTime.value))
 })
 
 </script>
