@@ -110,8 +110,6 @@ const sendGoCommand = async () => {
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
   }
-  console.log('selected filter', selectedFilter.value)
-  console.log('request body', requestBody)
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'command/go',
     method: 'POST',
@@ -131,7 +129,6 @@ const getFilterList = async () => {
     url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
     method: 'GET',
     successCallback: (data) => {
-      console.log('data', data)
       filterList.value = data.optical_elements
         .filter(filter => filter.schedulable)
         .map(filter => ({ name: filter.name, code: filter.code }))
