@@ -10,5 +10,12 @@ module.exports = {
         additionalData: `@import '~bulma';`
       }
     }
+  },
+  pages: {
+    index: {
+      // entry for the page
+      entry: 'src/main.js',
+      title: 'Observe @ Photon Ranch',
+    },
   }
 }
