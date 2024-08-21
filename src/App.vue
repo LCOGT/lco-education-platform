@@ -23,7 +23,7 @@ function handleObserveClick () {
 
 onMounted(async () => {
   try {
-    const response = await fetch('config/config.json')
+    const response = await fetch('/config/config.json')
     if (!response.ok) {
       throw Error('Failed to load configuration')
     }
