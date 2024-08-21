@@ -23,7 +23,7 @@ function handleObserveClick () {
 
 onMounted(async () => {
   try {
-    const response = await fetch('config/config.json')
+    const response = await fetch('/config/config.json')
     if (!response.ok) {
       throw Error('Failed to load configuration')
     }
@@ -59,7 +59,7 @@ watch(
   <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <router-link class="navbar-item" to="/">
-        <img src="@/assets/ptr_logo.png" alt="Kiosk logo"/>
+        <img src="@/assets/ptr_logo.png" alt="Photon Ranch logo"/>
       </router-link>
       <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
         <span aria-hidden="true"></span>
