@@ -9,7 +9,7 @@ describe('formatUtils.js', () => {
     })
 
     it('returns an empty string for an invalid date', () => {
-      const date = 'invalid-date'
+      const date = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
       expect(formatDate(date)).toBe('Invalid Date')
     })
   })
@@ -21,14 +21,14 @@ describe('formatUtils.js', () => {
     })
 
     it('returns an empty string for an invalid time', () => {
-      const time = 'invalid-time'
+      const time = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
       expect(formatTime(time)).toBe('Invalid Date')
     })
   })
 
   describe('formatToUTC', () => {
     it('converts a date-time string to UTC format', () => {
-      const dateTime = '2024-08-15T15:30:00Z'
+      const dateTime = 'Wed Aug 15 2024 08:30:00 GMT-0700 (Pacific Daylight Time)'
       expect(formatToUTC(dateTime)).toBe('2024-08-15T15:30:00Z')
     })
 
