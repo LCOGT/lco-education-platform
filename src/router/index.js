@@ -7,8 +7,6 @@ import About from '../components/Views/AboutView.vue'
 import BookRTI from '../components/Views/BookRTIView.vue'
 import LogIn from '../components/LogIn/LogIn.vue'
 
-import TimePicker from '@/components/RealTimeInterface/TimePicker.vue'
-
 const routes = [
   {
     path: '/',
