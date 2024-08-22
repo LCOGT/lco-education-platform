@@ -4,7 +4,9 @@ import { useSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'
+import { useConfigurationStore } from '../../stores/configuration'
 
+const configurationStore = useConfigurationStore()
 const sessionsStore = useSessionsStore()
 
 const timeRemaining = ref(0)
@@ -16,6 +18,14 @@ const telescope = computed(() => selectedSession.telescope)
 
 const statusNotExpired = computed(() => {
   return sessionsStore.currentStatus === 'ACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || sessionsStore.currentStatus === 'INACTIVE'
+})
+
+const statusSessionNotActive = computed(() => {
+  if (configurationStore.demo == true) {
+    return false
+  } else {
+    return ((sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || configurationStore.demo == false) && timeRemaining.value >= 0)
+  }
 })
 
 const updateTimeRemaining = () => {
@@ -73,13 +83,13 @@ onMounted(async () => {
   <template v-else>
     <section>
       <div class="container">
-       <div v-if="(sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining >= 0" class="content">
+       <div v-if="statusSessionNotActive" class="content">
           <h2>Session Not Started</h2>
           <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionPending/>
         </div>
-       <div v-else-if="sessionsStore.currentStatus === 'ACTIVE'" class="content">
+       <div v-else-if="(sessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
           <h2>Live Observing Session</h2>
           <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>

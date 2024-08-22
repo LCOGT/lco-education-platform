@@ -15,7 +15,14 @@ const sessionsStore = useSessionsStore()
 const configurationStore = useConfigurationStore()
 const userDataStore = useUserDataStore()
 
-const isCapturingImages = computed(() => sessionsStore.isCapturingImagesForCurrentSession)
+const isCapturingImages = computed(() => {
+  if (configurationStore.demo == true) {
+    // Change this to true to test the image capture component and false for target select
+    return true
+  } else {
+    return sessionsStore.isCapturingImagesForCurrentSession
+  }
+})
 
 const aladinRef = ref(null)
 const ra = ref('')
@@ -109,6 +116,11 @@ const sendGoCommand = async () => {
     proposalId: sessionsStore.currentSession.proposal,
     requestGroupId: sessionsStore.currentSession.request_group_id,
     requestId: sessionsStore.currentSession.request.id
+  }
+  if (configurationStore.demo == true) {
+    loading.value = false
+    resetValues()
+    return
   }
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'command/go',

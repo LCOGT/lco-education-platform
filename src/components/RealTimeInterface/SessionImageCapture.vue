@@ -5,12 +5,16 @@ import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useSessionsStore } from '../../stores/sessions'
+import { LottieAnimation } from 'lottie-web-vue'
+import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
+import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const configurationStore = useConfigurationStore()
 const sessionsStore = useSessionsStore()
 
 const status = ref(null)
 let pollingInterval = null
+const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
 const emits = defineEmits(['updateRenderGallery'])
@@ -20,6 +24,18 @@ const imagesCaptured = computed(() => {
 })
 
 const fetchTelescopeStatus = async () => {
+  if (configurationStore.demo) {
+    status.value = {
+      status: {
+        availability: 'Available',
+        telescope: 'Tracking',
+        instrument: 'Exposing',
+        progress: 'Ready'
+      }
+    }
+    imagesDone.value = false
+    return
+  }
   const token = sessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -63,11 +79,16 @@ const sendStopCommand = async () => {
 onMounted(() => {
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
+  anim.value.goToAndPlay(0, true)
 })
 
 onUnmounted(() => {
   clearInterval(pollingInterval)
 })
+
+const setCameraState = computed(() => ({
+  'status-in-progress': status.value.status.instrument === 'Exposing'
+}))
 
 </script>
 
@@ -75,30 +96,56 @@ onUnmounted(() => {
     <div class="columns">
         <div class="column is-one-third">
             <div v-if="status">
-                <div v-for="item in status" :key="item" class="image-capture-grid">
+                <div v-for="item in status" :key="item" class="image-capture">
                     <div>
-                      <FontAwesomeIcon icon="fa-regular fa-location-dot" title="Observatory" />
-                      <span>{{ item.availability }}</span>
+                      <span class="icon-text">
+                        <span class="icon is-large">
+                          <font-awesome-icon icon="fa-regular fa-location-dot" title="Observatory" />
+                        </span>
+                        <span>{{ item.availability }}</span>
+                      </span>
                     </div>
                     <div>
-                      <font-awesome-icon icon="fa-regular fa-telescope" title="Telescope"/>
-                      <span>{{ item.telescope }}</span>
+                      <span class="icon-text">
+                        <span class="icon is-large">
+                          <font-awesome-icon icon="fa-regular fa-telescope" title="Telescope"/>
+                        </span>
+                        <span>{{ item.telescope }}</span>
+                      </span>
+                    </div>
+                    <div :class="setCameraState">
+                      <span class="icon-text">
+                        <span class="icon is-large">
+                          <font-awesome-icon icon="fa-regular fa-camera-retro" title="Camera" />
+                        </span>
+                        <span>{{ item.instrument }}</span>
+                      </span>
                     </div>
                     <div>
-                      <font-awesome-icon icon="fa-regular fa-camera-retro" title="Camera" />
-                      <span>{{ item.instrument }}</span>
-                    </div>
-                    <div>
-                      <font-awesome-icon icon="fa-solid fa-list-check" title="Progress"/>
-                      <span>{{ item.progress }}</span>
+                      <span class="icon-text">
+                        <span class="icon is-large">
+                          <font-awesome-icon icon="fa-solid fa-list-check" title="Progress"/>
+                        </span>
+                        <span>{{ item.progress }}</span>
+                      </span>
                     </div>
                 </div>
+              </div>
             </div>
-            <div class="column">
-              <v-progress-circular indeterminate color="white" v-if="!imagesDone" class="loading"/>
-              <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
-            </div>
-        </div>
+          <div class="column">
+            <LottieAnimation v-if="!imagesDone"
+              ref="anim"
+              :animation-data="GalaxyJSON"
+              :loop="true"
+              :auto-play="true"
+              :speed="1"
+              @loopComplete="loopComplete"
+              @complete="complete"
+              @enterFrame="enterFrame"
+              @segmentStart="segmentStart"
+              @stopped="stopped"/>
+            <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
+          </div>
     </div>
     <button class="button red-bg" @click="sendStopCommand">
     stop

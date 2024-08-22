@@ -243,9 +243,25 @@ input[type="radio"]:checked + label
     height: 100%;
 }
 
-.image-capture-grid svg {
-    height: 2rem;
-    margin: 0 auto;
+.image-capture .icon-text {
+    font-size: 1.5em;
+}
+
+.image-capture .icon-text > span {
+    vertical-align: middle;
+    font-family: $font-headers;
+    text-transform: uppercase
+}
+
+.status-in-progress {
+    color: $blue;
+    animation: blinker 1s linear infinite;
+}
+      
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
 }
 
 .hide { display: none; }

@@ -34,6 +34,7 @@ onMounted(async () => {
       configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
       configurationStore.targetNameUrl = config.targetNameUrl
       configurationStore.configdbUrl = config.configdbUrl
+      configurationStore.demo = config.demo
       configurationStore.isConfigLoaded = true
     }
   } catch (error) {
