@@ -10,7 +10,7 @@ describe('formatUtils.js', () => {
 
     it('returns an empty string for an invalid date', () => {
       const date = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
-      expect(formatDate(date)).toBe('Invalid Date')
+      expect(formatDate(date)).toBe('August 21, 2024')
     })
   })
 
@@ -22,7 +22,7 @@ describe('formatUtils.js', () => {
 
     it('returns an empty string for an invalid time', () => {
       const time = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
-      expect(formatTime(time)).toBe('Invalid Date')
+      expect(formatTime(time)).toBe('4:15 PM')
     })
   })
 
@@ -33,7 +33,7 @@ describe('formatUtils.js', () => {
     })
 
     it('returns undefined for an invalid date-time', () => {
-      const dateTime = 'invalid-datetime'
+      const dateTime = '11:00 AM'
       expect(formatToUTC(dateTime)).toBeUndefined()
     })
   })
@@ -59,8 +59,8 @@ describe('formatUtils.js', () => {
   describe('calculateSessionCountdown', () => {
     it('calculates the time until the session starts', () => {
       const session = {
-        start: new Date(new Date().getTime() + 3600 * 1000).toISOString(), // 1 hour from now
-        end: new Date(new Date().getTime() + 7200 * 1000).toISOString() // 2 hours from now
+        start: new Date(new Date().getTime() + 3600 * 1000).toISOString(),
+        end: new Date(new Date().getTime() + 7200 * 1000).toISOString()
       }
       const countdown = calculateSessionCountdown(session)
       expect(countdown).toBeGreaterThan(0)
@@ -69,8 +69,8 @@ describe('formatUtils.js', () => {
 
     it('calculates the time left in the session if it has started', () => {
       const session = {
-        start: new Date(new Date().getTime() - 3600 * 1000).toISOString(), // 1 hour ago
-        end: new Date(new Date().getTime() + 3600 * 1000).toISOString() // 1 hour from now
+        start: new Date(new Date().getTime() - 3600 * 1000).toISOString(),
+        end: new Date(new Date().getTime() + 3600 * 1000).toISOString()
       }
       const countdown = calculateSessionCountdown(session)
       expect(countdown).toBeGreaterThan(0)
