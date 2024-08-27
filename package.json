@@ -23,7 +23,6 @@
     "material-icons": "^1.13.12",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
-    "pnpm": "^9.7.1",
     "sass": "^1.75.0",
     "sass-loader": "^14.2.1",
     "vue": "^3.2.13",
