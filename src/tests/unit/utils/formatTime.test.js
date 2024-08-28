@@ -8,19 +8,19 @@ describe('formatUtils.js', () => {
       expect(formatDate(date)).toBe('August 14, 2024')
     })
 
-    it('returns an empty string for an invalid date', () => {
+    it('formats a UTC date string to "Month Day, Year" format', () => {
       const date = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
       expect(formatDate(date)).toBe('August 21, 2024')
     })
   })
 
   describe('formatTime', () => {
-    it('formats a time string to "Hour:Minute AM/PM" format', () => {
+    it('formats a UTC time string to "Hour:Minute AM/PM" format', () => {
       const time = '2024-08-15T15:30:00Z'
       expect(formatTime(time)).toBe('8:30 AM')
     })
 
-    it('returns an empty string for an invalid time', () => {
+    it('formats a time string to "Hour:Minute AM/PM" format', () => {
       const time = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
       expect(formatTime(time)).toBe('4:15 PM')
     })
