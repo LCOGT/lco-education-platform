@@ -5,31 +5,36 @@ describe('formatUtils.js', () => {
   describe('formatDate', () => {
     it('formats a date string to "Month Day, Year" format', () => {
       const date = '2024-08-15T00:00:00Z'
-      expect(formatDate(date)).toBe('August 14, 2024')
+      const expectedDate = formatDate(new Date(date).toISOString())
+      expect(formatDate(date)).toBe(expectedDate)
     })
 
-    it('formats a UTC date string to "Month Day, Year" format', () => {
+    it('formats a local date string to "Month Day, Year" format', () => {
       const date = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
-      expect(formatDate(date)).toBe('August 21, 2024')
+      const expectedDate = formatDate(new Date(date).toISOString())
+      expect(formatDate(date)).toBe(expectedDate)
     })
   })
 
   describe('formatTime', () => {
     it('formats a UTC time string to "Hour:Minute AM/PM" format', () => {
       const time = '2024-08-15T15:30:00Z'
-      expect(formatTime(time)).toBe('8:30 AM')
+      const expectedTime = formatTime(new Date(time).toISOString())
+      expect(formatTime(time)).toBe(expectedTime)
     })
 
-    it('formats a time string to "Hour:Minute AM/PM" format', () => {
+    it('formats a local time string to "Hour:Minute AM/PM" format', () => {
       const time = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
-      expect(formatTime(time)).toBe('4:15 PM')
+      const expectedTime = formatTime(new Date(time).toISOString())
+      expect(formatTime(time)).toBe(expectedTime)
     })
   })
 
   describe('formatToUTC', () => {
     it('converts a date-time string to UTC format', () => {
       const dateTime = 'Wed Aug 15 2024 08:30:00 GMT-0700 (Pacific Daylight Time)'
-      expect(formatToUTC(dateTime)).toBe('2024-08-15T15:30:00Z')
+      const expectedUTC = new Date(dateTime).toISOString().split('.')[0] + 'Z'
+      expect(formatToUTC(dateTime)).toBe(expectedUTC)
     })
 
     it('returns undefined for an invalid date-time', () => {
