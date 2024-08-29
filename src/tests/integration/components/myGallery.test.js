@@ -6,76 +6,62 @@ import MyGallery from '../../../components/Images/MyGallery.vue'
 import { fetchApiCall } from '../../../utils/api.js'
 import { formatDate } from '../../../utils/formatTime.js'
 
+// Mock the fetchApiCall function
 vi.mock('../../../utils/api.js', () => ({
   fetchApiCall: vi.fn()
 }))
 
-describe('MyGallery.vue', () => {
-  let wrapper
-  let pinia
-  let useSessionsStore
-  let useUserDataStore
-  let useConfigurationStore
+// Creates a fresh component instance so that each test is isolated
+// Avoids cross-test pollution and ensures a clean slate for each test
+function createComponent () {
+  const pinia = createPinia()
+  setActivePinia(pinia)
 
-  beforeEach(() => {
-    pinia = createPinia()
-    setActivePinia(pinia)
-
-    // Define and initialize Pinia stores
-    useSessionsStore = defineStore('sessions', {
-      state: () => ({
-        sessions: {
-          results: [
-            { id: 'session1', start: '2024-08-01T12:00:00Z' },
-            { id: 'session2', start: '2024-08-01T12:30:00Z' }
-          ]
-        }
-      })
-    })
-
-    useUserDataStore = defineStore('userData', {
-      state: () => ({
-        authToken: 'mock-token'
-      })
-    })
-
-    useConfigurationStore = defineStore('configuration', {
-      state: () => ({
-        thumbnailArchiveUrl: 'http://mock-api.com/'
-      })
-    })
-
-    // Initialize the stores
-    const sessionsStore = useSessionsStore()
-    const userDataStore = useUserDataStore()
-    const configurationStore = useConfigurationStore()
-
-    fetchApiCall.mockClear()
-    console.log('HERE')
-
-    // Mount the component with the Pinia stores provided
-    wrapper = mount(MyGallery, {
-      global: {
-        plugins: [pinia]
+  const useSessionsStore = defineStore('sessions', {
+    state: () => ({
+      sessions: {
+        results: [
+          { id: 'session1', start: '2024-08-01T12:00:00Z' },
+          { id: 'session2', start: '2024-08-01T12:30:00Z' }
+        ]
       }
     })
   })
 
-  it('renders a loading indicator on mounted', () => {
-    expect(wrapper.find('.loading').exists()).toBe(true)
+  const useUserDataStore = defineStore('userData', {
+    state: () => ({
+      authToken: 'mock-token'
+    })
   })
 
-  it('does not render sessions without thumbnails', async () => {
-    // Mock API response for one session with no thumbnails
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback({ results: [] })
+  const useConfigurationStore = defineStore('configuration', {
+    state: () => ({
+      thumbnailArchiveUrl: 'http://mock-api.com/'
     })
+  })
 
-    await wrapper.vm.$nextTick()
-    await flushPromises()
+  // Initialize the stores
+  const sessionsStore = useSessionsStore()
+  const userDataStore = useUserDataStore()
+  const configurationStore = useConfigurationStore()
 
-    const thumbnails = wrapper.findAll('.thumbnail')
-    expect(thumbnails.length).toBe(0)
+  // Mount the component with the pinia stores provided
+  return mount(MyGallery, {
+    global: {
+      plugins: [pinia]
+    }
+  })
+}
+
+describe('MyGallery.vue', () => {
+  beforeEach(() => {
+    // Reset all mocks before each test
+    vi.resetAllMocks()
+  })
+
+  it('renders a loading indicator on mounted', () => {
+    const wrapper = createComponent()
+    expect(wrapper.find('.loading').exists()).toBe(true)
   })
 
   it('fetches thumbnails for each session on mount', async () => {
@@ -91,7 +77,7 @@ describe('MyGallery.vue', () => {
       }
     })
 
-    // Waits for component to update
+    const wrapper = createComponent()
     await wrapper.vm.$nextTick()
 
     // Two API calls are made - one for each session ID - to fetch images for both sessions
@@ -121,6 +107,7 @@ describe('MyGallery.vue', () => {
       }
     })
 
+    const wrapper = createComponent()
     await wrapper.vm.$nextTick()
 
     expect(wrapper.find('.loading').exists()).toBe(false)
@@ -144,12 +131,11 @@ describe('MyGallery.vue', () => {
       }
     })
 
-    // Ensure promises are resolved before continuing
+    const wrapper = createComponent()
     await flushPromises()
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     const sessionElements = wrapper.findAll('h3.startTime')
-
     expect(sessionElements.length).toBe(2)
 
     const mostRecentSession = sessionElements[0]
@@ -157,5 +143,17 @@ describe('MyGallery.vue', () => {
 
     expect(mostRecentSession.text()).toContain(formatDate('2024-08-01T12:30:00Z'))
     expect(earlierSession.text()).toContain(formatDate('2024-08-01T12:00:00Z'))
+  })
+
+  it('does not render sessions without thumbnails', async () => {
+    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
+      successCallback({ results: [] })
+    })
+
+    const wrapper = createComponent()
+    await flushPromises()
+
+    const thumbnails = wrapper.findAll('.thumbnail')
+    expect(thumbnails.length).toBe(0)
   })
 })
