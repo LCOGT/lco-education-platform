@@ -1,12 +1,11 @@
 import { mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createPinia, setActivePinia, defineStore } from 'pinia'
 import flushPromises from 'flush-promises'
 import MyGallery from '../../../components/Images/MyGallery.vue'
 import { fetchApiCall } from '../../../utils/api.js'
 import { formatDate } from '../../../utils/formatTime.js'
 
-// Mock the fetchApiCall function
 vi.mock('../../../utils/api.js', () => ({
   fetchApiCall: vi.fn()
 }))
@@ -51,8 +50,8 @@ describe('MyGallery.vue', () => {
     const userDataStore = useUserDataStore()
     const configurationStore = useConfigurationStore()
 
-    // Reset fetchApiCall mock
     fetchApiCall.mockClear()
+    console.log('HERE')
 
     // Mount the component with the Pinia stores provided
     wrapper = mount(MyGallery, {
@@ -62,12 +61,11 @@ describe('MyGallery.vue', () => {
     })
   })
 
-  afterEach(() => {
-    vi.clearAllMocks() // Clear all mocks after each test to avoid shared state issues
+  it('renders a loading indicator on mounted', () => {
+    expect(wrapper.find('.loading').exists()).toBe(true)
   })
 
   it('does not render sessions without thumbnails', async () => {
-    vi.clearAllMocks()
     // Mock API response for one session with no thumbnails
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
       successCallback({ results: [] })
@@ -78,11 +76,6 @@ describe('MyGallery.vue', () => {
 
     const thumbnails = wrapper.findAll('.thumbnail')
     expect(thumbnails.length).toBe(0)
-  })
-
-  it('renders a loading indicator on mounted', () => {
-    console.log('Initial loading state:', wrapper.find('.loading').exists())
-    expect(wrapper.find('.loading').exists()).toBe(true)
   })
 
   it('fetches thumbnails for each session on mount', async () => {
@@ -100,8 +93,6 @@ describe('MyGallery.vue', () => {
 
     // Waits for component to update
     await wrapper.vm.$nextTick()
-
-    console.log('API Call Count:', fetchApiCall.mock.calls.length)
 
     // Two API calls are made - one for each session ID - to fetch images for both sessions
     expect(fetchApiCall).toHaveBeenCalledTimes(2)
@@ -156,11 +147,6 @@ describe('MyGallery.vue', () => {
     // Ensure promises are resolved before continuing
     await flushPromises()
     await new Promise(resolve => setTimeout(resolve, 100))
-
-    // Log the internal state of the component
-    console.log('Thumbnails Map:', wrapper.vm.thumbnailsMap)
-    console.log('Filtered Sessions:', wrapper.vm.filteredSessions)
-    console.log('Sessions with Thumbnails:', wrapper.vm.sessionsWithThumbnails)
 
     const sessionElements = wrapper.findAll('h3.startTime')
 
