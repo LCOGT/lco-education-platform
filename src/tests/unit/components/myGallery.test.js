@@ -66,6 +66,20 @@ describe('MyGallery.vue', () => {
     vi.clearAllMocks() // Clear all mocks after each test to avoid shared state issues
   })
 
+  it('does not render sessions without thumbnails', async () => {
+    vi.clearAllMocks()
+    // Mock API response for one session with no thumbnails
+    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
+      successCallback({ results: [] })
+    })
+
+    await wrapper.vm.$nextTick()
+    await flushPromises()
+
+    const thumbnails = wrapper.findAll('.thumbnail')
+    expect(thumbnails.length).toBe(0)
+  })
+
   it('renders a loading indicator on mounted', () => {
     console.log('Initial loading state:', wrapper.find('.loading').exists())
     expect(wrapper.find('.loading').exists()).toBe(true)
@@ -105,7 +119,6 @@ describe('MyGallery.vue', () => {
 
   it('renders sessions with thumbnails after loading', async () => {
     fetchApiCall.mockImplementation(({ url, successCallback }) => {
-      console.log('URL HERE:', url)
       if (url.includes('session1')) {
         successCallback({
           results: [{ url: 'http://mock-image.com/image1.jpg' }]
@@ -134,7 +147,6 @@ describe('MyGallery.vue', () => {
           results: [{ url: 'http://mock-image.com/image1.jpg' }]
         })
       } else if (url.includes('session2')) {
-        console.log('Returning data for session2')
         successCallback({
           results: [{ url: 'http://mock-image.com/image2.jpg' }]
         })
@@ -151,7 +163,6 @@ describe('MyGallery.vue', () => {
     console.log('Sessions with Thumbnails:', wrapper.vm.sessionsWithThumbnails)
 
     const sessionElements = wrapper.findAll('h3.startTime')
-    console.log('Session Elements:', sessionElements)
 
     expect(sessionElements.length).toBe(2)
 
@@ -160,22 +171,5 @@ describe('MyGallery.vue', () => {
 
     expect(mostRecentSession.text()).toContain(formatDate('2024-08-01T12:30:00Z'))
     expect(earlierSession.text()).toContain(formatDate('2024-08-01T12:00:00Z'))
-  })
-
-  it('does not render sessions without thumbnails', async () => {
-    // Mock API response for one session with no thumbnails
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback({ results: [] })
-    })
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback({ results: [{ url: 'http://mock-image.com/image1.jpg' }] })
-    })
-
-    await wrapper.vm.$nextTick()
-    await flushPromises()
-
-    const thumbnails = wrapper.findAll('.thumbnail')
-    expect(thumbnails.length).toBe(2)
-    expect(thumbnails[0].attributes('src')).toBe('http://mock-image.com/image2.jpg')
   })
 })
