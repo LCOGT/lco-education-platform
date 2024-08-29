@@ -2,10 +2,15 @@
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
+import { useUserDataStore } from '../../stores/userData'
+import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
+import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
+const userDataStore = useUserDataStore()
+const configurationStore = useConfigurationStore()
 
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
@@ -33,6 +38,18 @@ const selectSession = (sessionId) => {
   router.push(`/realtime/${sessionId}`)
 }
 
+async function deleteSession (sessionId) {
+  sessionsStore.currentSessionId = sessionId
+  const token = userDataStore.authToken
+  await fetchApiCall({
+    url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
+    method: 'DELETE',
+    header: { Authorization: `Token ${token}` },
+    successCallback: sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== sessionId),
+    failCallback: (error) => { console.error('API call failed with error', error) }
+  })
+}
+
 onMounted(() => {
   sessionsStore.fetchSessions()
 })
@@ -46,6 +63,7 @@ onMounted(() => {
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
             <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
+            <button @click="deleteSession(session.id)">x</button>
         </div>
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
