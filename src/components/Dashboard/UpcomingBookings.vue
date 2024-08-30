@@ -17,13 +17,10 @@ const sortedSessions = computed(() => {
   const now = new Date().getTime()
   // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
-  if (sessionsStore.sessions.results === undefined) {
-    return []
-  } else {
-    return sessionsStore.sessions.results.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
-      .slice()
-      .sort((a, b) => new Date(a.start) - new Date(b.start))
-  }
+  const sessions = sessionsStore.sessions.results || []
+  return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
+    .slice()
+    .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
 
 const observations = ref([
@@ -63,7 +60,7 @@ onMounted(() => {
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
             <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
-            <button @click="deleteSession(session.id)">x</button>
+            <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
