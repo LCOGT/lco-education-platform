@@ -15,7 +15,7 @@ vi.mock('../../../utils/api.js', () => ({
 // Avoids cross-test pollution and ensures a clean slate for each test
 function createComponent () {
   // Initialize the stores using the shared utility
-  const { pinia, sessionsStore, userDataStore, configurationStore } = createTestStores()
+  const { pinia, sessionsStore } = createTestStores()
 
   // Set up initial state for the sessions store
   sessionsStore.sessions = {
