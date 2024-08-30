@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createPinia, setActivePinia, defineStore } from 'pinia'
 import flushPromises from 'flush-promises'
 import MyGallery from '../../../components/Images/MyGallery.vue'
 import { fetchApiCall } from '../../../utils/api.js'
 import { formatDate } from '../../../utils/formatTime.js'
+import { createTestStores } from '../../../utils/testUtils.js'
 
 // Mock the fetchApiCall function
 vi.mock('../../../utils/api.js', () => ({
@@ -14,36 +14,16 @@ vi.mock('../../../utils/api.js', () => ({
 // Creates a fresh component instance so that each test is isolated
 // Avoids cross-test pollution and ensures a clean slate for each test
 function createComponent () {
-  const pinia = createPinia()
-  setActivePinia(pinia)
+  // Initialize the stores using the shared utility
+  const { pinia, sessionsStore } = createTestStores()
 
-  const useSessionsStore = defineStore('sessions', {
-    state: () => ({
-      sessions: {
-        results: [
-          { id: 'session1', start: '2024-08-01T12:00:00Z' },
-          { id: 'session2', start: '2024-08-01T12:30:00Z' }
-        ]
-      }
-    })
-  })
-
-  const useUserDataStore = defineStore('userData', {
-    state: () => ({
-      authToken: 'mock-token'
-    })
-  })
-
-  const useConfigurationStore = defineStore('configuration', {
-    state: () => ({
-      thumbnailArchiveUrl: 'http://mock-api.com/'
-    })
-  })
-
-  // Initialize the stores
-  const sessionsStore = useSessionsStore()
-  const userDataStore = useUserDataStore()
-  const configurationStore = useConfigurationStore()
+  // Set up initial state for the sessions store
+  sessionsStore.sessions = {
+    results: [
+      { id: 'session1', start: '2024-08-01T12:00:00Z' },
+      { id: 'session2', start: '2024-08-01T12:30:00Z' }
+    ]
+  }
 
   // Mount the component with the pinia stores provided
   return mount(MyGallery, {
