@@ -23,15 +23,6 @@ const filteredSessions = computed(() => {
   return filtered
 })
 
-const checkIfLoadingComplete = () => {
-  const totalSessions = filteredSessions.value.length
-  const processedSessions = Object.keys(thumbnailsMap.value).length
-
-  if (processedSessions === totalSessions) {
-    loading.value = false
-  }
-}
-
 const getThumbnails = async (sessionId) => {
   const token = userDataStore.authToken
   const headers = {
@@ -48,11 +39,11 @@ const getThumbnails = async (sessionId) => {
       if (data.results.length > 0) {
         thumbnailsMap.value[sessionId] = data.results.map(result => result.url)
       }
-      checkIfLoadingComplete()
+      loading.value = false
     },
     failCallback: (error) => {
       console.error('Error fetching thumbnails for session:', sessionId, error)
-      checkIfLoadingComplete()
+      loading.value = false
     }
   })
 }
