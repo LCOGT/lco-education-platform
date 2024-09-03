@@ -59,7 +59,7 @@ onMounted(() => {
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
+            <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
             <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
         </div>

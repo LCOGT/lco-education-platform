@@ -52,4 +52,22 @@ describe('UpcomingBookings.vue', () => {
     const h3Text = wrapper.find('h3').text()
     expect(h3Text).toBe('Upcoming Bookings')
   })
+
+  it('deletes a session on click', async () => {
+    fetchApiCall.mockImplementation(({ url }) => {
+      if (url.includes('session1')) {
+        sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== 'session1')
+      }
+    })
+    const deleteButtons = wrapper.findAll('.deleteButton')
+    expect(deleteButtons.length).toBe(2)
+    await deleteButtons.at(0).trigger('click')
+    expect(fetchApiCall).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'http://mock-api.com/realtime/session1/',
+        method: 'DELETE'
+      })
+    )
+    expect(sessionsStore.sessions.results.length).toBe(1)
+  })
 })
