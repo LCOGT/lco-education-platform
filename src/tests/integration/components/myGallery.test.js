@@ -46,7 +46,6 @@ describe('MyGallery.vue', () => {
 
   it('fetches thumbnails for each session on mount', async () => {
     fetchApiCall.mockImplementation(({ url, successCallback }) => {
-      console.log('THIS IS URL:', url)
       if (url.includes('session1')) {
         successCallback({
           results: [{ url: 'http://mock-image.com/image1.jpg' }]

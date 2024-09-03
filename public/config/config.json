@@ -4,5 +4,5 @@
     "rtiBridgeUrl": "https://lco-edu-rti-bridge.lco.earth/",
     "targetNameUrl": "https://simbad2k.lco.global/",
     "configdbUrl": "http://configdb.lco.gtn/",
-    "demo": true
+    "demo": false
 }
