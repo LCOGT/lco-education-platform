@@ -1,32 +1,25 @@
-import { createPinia, setActivePinia, defineStore } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import { useSessionsStore } from '../stores/sessions'
+import { useUserDataStore } from '../stores/userData'
+import { useConfigurationStore } from '../stores/configuration'
 
 export function createTestStores () {
   const pinia = createPinia()
   setActivePinia(pinia)
 
-  const useSessionsStore = defineStore('sessions', {
-    state: () => ({
-      sessions: {
-        results: []
-      }
-    })
-  })
+  // Create stores and set the necessary state for the tests
+  const sessionsStore = useSessionsStore()
+  const userDataStore = useUserDataStore()
+  const configurationStore = useConfigurationStore()
 
-  const useUserDataStore = defineStore('userData', {
-    state: () => ({
-      authToken: 'mock-token'
-    })
-  })
-
-  const useConfigurationStore = defineStore('configuration', {
-    state: () => ({
-      thumbnailArchiveUrl: 'http://mock-api.com/'
-    })
-  })
+  // Set the initial state needed for your tests
+  userDataStore.authToken = 'mock-token'
+  configurationStore.thumbnailArchiveUrl = 'http://mock-api.com/'
 
   return {
-    sessionsStore: useSessionsStore(),
-    userDataStore: useUserDataStore(),
-    configurationStore: useConfigurationStore()
+    pinia,
+    sessionsStore,
+    userDataStore,
+    configurationStore
   }
 }
