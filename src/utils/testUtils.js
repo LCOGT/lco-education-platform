@@ -15,6 +15,7 @@ export function createTestStores () {
   // Set the initial state needed for your tests
   userDataStore.authToken = 'mock-token'
   configurationStore.thumbnailArchiveUrl = 'http://mock-api.com/'
+  configurationStore.observationPortalUrl = 'http://mock-api.com/'
 
   return {
     pinia,
