@@ -15,9 +15,11 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/pro-regular-svg-icons": "^6.6.0",
     "@fortawesome/vue-fontawesome": "^3.0.6",
+    "@vitejs/plugin-vue": "^5.1.2",
     "bulma": "^1.0.0",
     "core-js": "^3.8.3",
     "d3-celestial": "^0.7.35",
+    "flush-promises": "^1.0.2",
     "leaflet": "^1.9.4",
     "lottie-web-vue": "^2.0.7",
     "material-icons": "^1.13.12",
@@ -43,6 +45,7 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.25.0",
+    "jsdom": "^25.0.0",
     "vitest": "^2.0.5"
   },
   "eslintConfig": {

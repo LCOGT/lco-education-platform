@@ -2,23 +2,25 @@
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
+import { useUserDataStore } from '../../stores/userData'
+import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
+import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
 const sessionsStore = useSessionsStore()
+const userDataStore = useUserDataStore()
+const configurationStore = useConfigurationStore()
 
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
   // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
-  if (sessionsStore.sessions.results === undefined) {
-    return []
-  } else {
-    return sessionsStore.sessions.results.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
-      .slice()
-      .sort((a, b) => new Date(a.start) - new Date(b.start))
-  }
+  const sessions = sessionsStore.sessions.results || []
+  return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
+    .slice()
+    .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
 
 const observations = ref([
@@ -33,6 +35,18 @@ const selectSession = (sessionId) => {
   router.push(`/realtime/${sessionId}`)
 }
 
+async function deleteSession (sessionId) {
+  sessionsStore.currentSessionId = sessionId
+  const token = userDataStore.authToken
+  await fetchApiCall({
+    url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
+    method: 'DELETE',
+    header: { Authorization: `Token ${token}` },
+    successCallback: sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== sessionId),
+    failCallback: (error) => { console.error('API call failed with error', error) }
+  })
+}
+
 onMounted(() => {
   sessionsStore.fetchSessions()
 })
@@ -45,7 +59,8 @@ onMounted(() => {
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
+            <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
+            <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
