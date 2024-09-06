@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'jsdom',
-    globals: true
+    globals: true,
+    coverage: {
+      reporter: ['text', 'json', 'html']
+    }
   },
   resolve: {
     alias: {
