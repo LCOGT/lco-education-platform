@@ -36,6 +36,8 @@ const fieldOfView = ref(1.0)
 const targeterror = ref(false)
 const targeterrorMsg = ref('')
 const loading = ref(false)
+const exposureError = ref('')
+const isExposureTimeValid = ref(true)
 
 const currentSession = sessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -93,10 +95,14 @@ const resetValues = () => {
   exposureCount.value = 1
   selectedFilter.value = ''
   fieldOfView.value = 1.0
+  loading.value = false
 }
 
 const sendGoCommand = async () => {
   loading.value = true
+  exposureError.value = ''
+  isExposureTimeValid.value = true
+
   const token = sessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -109,8 +115,6 @@ const sendGoCommand = async () => {
     dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
-    // expFilter: ['rp'],
-    // expTime: [30],
     name: targetName.value,
     ra: Number(ra.value) / 15,
     proposalId: sessionsStore.currentSession.proposal,
@@ -128,7 +132,15 @@ const sendGoCommand = async () => {
     body: requestBody,
     header: headers,
     successCallback: resetValues,
-    failCallback: (error) => { console.error('API failed with error', error) }
+    failCallback: (error) => {
+      loading.value = false
+      if (error?.errors?.expTime) {
+        isExposureTimeValid.value = false
+        exposureError.value = error.errors.expTime[0]
+      } else {
+        console.error('API failed with error', error)
+      }
+    }
   })
 }
 
@@ -156,10 +168,16 @@ function updateRenderGallery (value) {
 }
 
 const incompleteSelection = computed(() => {
-  return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === ''
+  return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === '' || isExposureTimeValid.value === false
+})
+
+watch(exposureTime, (newTime) => {
+  isExposureTimeValid.value = true
+  exposureError.value = ''
 })
 
 onMounted(() => {
+  loading.value = false
   getFilterList()
 })
 
@@ -250,6 +268,7 @@ onMounted(() => {
                   <p class="control is-expanded">
                     <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
                   </p>
+                  <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
                 </div>
                 <div class="times">
                   <FontAwesomeIcon icon="fa-solid fa-xmark"  />
