@@ -77,6 +77,7 @@ const sendStopCommand = async () => {
 }
 
 onMounted(() => {
+  imagesDone.value = false
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
@@ -84,6 +85,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(pollingInterval)
+  imagesDone.value = false
 })
 
 const setCameraState = computed(() => ({

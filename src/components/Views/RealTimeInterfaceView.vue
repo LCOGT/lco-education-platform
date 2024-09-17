@@ -61,7 +61,6 @@ onMounted(async () => {
   loading.value = true
   // initiate the handshake and retrieve a token prior to polling
   await sessionsStore.fetchSessionToken()
-
   sessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {

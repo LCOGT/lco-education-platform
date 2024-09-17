@@ -7,7 +7,7 @@ module.exports = {
   css: {
     loaderOptions: {
       scss: {
-        additionalData: `@import '~bulma';`
+        additionalData: '@import \'~bulma\';'
       }
     }
   },
@@ -15,7 +15,7 @@ module.exports = {
     index: {
       // entry for the page
       entry: 'src/main.js',
-      title: 'Observe @ Photon Ranch',
-    },
+      title: 'Observe @ Photon Ranch'
+    }
   }
 }
