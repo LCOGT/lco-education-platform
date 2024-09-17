@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/service.json
+apiVersion: v1
+kind: Service
+metadata: # kpt-merge: /example
+  name: frontend
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|Service|default|frontend'
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: frontend
+
+ports:
+  - name: frontend
+    port: 8080
+    targetPort: frontend
