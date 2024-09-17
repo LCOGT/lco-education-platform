@@ -23,3 +23,5 @@ pnpm-debug.log*
 *.sw?
 .devenv
 .pre-commit-config.yaml
+
+k8s/envs/local/secrets.env
