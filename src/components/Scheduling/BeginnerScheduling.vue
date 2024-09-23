@@ -110,6 +110,7 @@ const scheduleObservation = () => {
         </div>
       </div>
     </div>
+    <div v-if="objectSelected">
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
         <h3>Scheduling Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
             <div class="columns is-column-gap-3">
@@ -127,7 +128,6 @@ const scheduleObservation = () => {
             </div>
             </div>
             </div>
-        <button class="button" @click="handleObjectSelection(null)">Different targets</button>
     </div>
     <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
         <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection blue">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
@@ -141,6 +141,8 @@ const scheduleObservation = () => {
           </p>
         </div>
     </div>
+    <button class="button" @click="handleObjectSelection(null)">Different targets</button>
+  </div>
     <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <h4>Photon Ranch will schedule this for you</h4>
         <div class="columns">
