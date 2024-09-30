@@ -24,10 +24,6 @@ const showProjectName = (name) => {
   }
 }
 
-const editProjectName = () => {
-  projectName.value = ''
-}
-
 const addTarget = (newTarget) => {
   targets.push({ name: newTarget, saved: true, editing: false })
   addingNewTarget.value = false
@@ -88,7 +84,6 @@ const scheduleObservation = () => {
   <ProjectName v-if="!projectName" @nameEntered="showProjectName" />
   <div v-if="projectName">
     <p class="p-text">Project Name: {{ projectName }}</p>
-    <v-btn color="teal" @click="editProjectName">edit</v-btn>
   </div>
   <div v-for="(target, index) in targets" :key="index" class="input-wrapper">
     <p class="p-text">Target: <span v-if="!target.editing">{{ target.name }}</span></p>
