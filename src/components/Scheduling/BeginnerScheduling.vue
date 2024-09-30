@@ -7,7 +7,6 @@ import { fetchApiCall } from '../../utils/api.js'
 
 const emits = defineEmits(['scheduled'])
 
-// TO DO: Save selections to store
 const categories = ref([
   {
     location: 'Deep Space',
@@ -46,28 +45,36 @@ const handleObjectSelection = (option) => {
   objectSelection.value = option
   objectSelected.value = true
 
-  // Find the correct regex for the selected object from objectCategories
   const categoryRegex = objectCategories.find(cat => cat.label === option.object)?.value
 
   if (!categoryRegex) {
     return
   }
 
-  // Filter targets using the appropriate regex
   const filteredTargets = selectedTargets.value.filter(
     target => target.avmdesc.match(categoryRegex)
-  ).slice(0, 3) // Only show the top 3
+  ).slice(0, 3)
 
   // Populate the targets for the selected object
   objectSelection.value.targets = filteredTargets.map(target => ({
     name: target.name,
-    desc: target.desc
+    desc: target.desc,
+    filters: target.filters
   }))
 }
 
 const handleTargetSelection = (target) => {
   targetSelection.value = target
   targetSelected.value = true
+  exposureSettings.splice(0)
+  target.filters.forEach(filter => {
+    exposureSettings.push({
+      filter: filter.name,
+      exposureTime: filter.exposure,
+      saved: true,
+      editing: false
+    })
+  })
 }
 
 const addSettings = (newSettings) => {
@@ -214,50 +221,61 @@ const resetSelections = () => {
   </div>
   <button class="button" @click="resetSelections">Different targets</button>
 </div>
-    <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
-        <h2>Scheduling observation of <span v-if="objectSelection.targets"> a </span> <span class="selection blue">{{ objectSelection.object }} <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span></span></h2>
-        <p>How do you want to set up your observation?</p>
-        <div class="field is-grouped">
-          <p class="control">
-            <button class="button" @click="beginner = false">Let Me Choose</button>
-          </p>
-          <p class="control">
-            <button class="button" @click="beginner = true">I'm OK with Defaults</button>
-          </p>
-        </div>
-        <button class="button" @click="resetSelections">Different targets</button>
+<div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
+  <h2>
+    Scheduling observation of
+    <span v-if="objectSelection.targets"> a </span>
+    <span class="selection blue">{{ objectSelection.object }}
+      <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>
+    </span>
+  </h2>
+  <p>How do you want to set up your observation?</p>
+  <div class="field is-grouped">
+    <p class="control">
+      <button class="button" @click="beginner = false">Let Me Choose</button>
+    </p>
+    <p class="control">
+      <button class="button" @click="beginner = true">I'm OK with Defaults</button>
+    </p>
+  </div>
+  <button class="button" @click="resetSelections">Different targets</button>
+</div>
+<div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+  <h4>Photon Ranch will schedule this for you</h4>
+  <div class="columns">
+    <div class="column is-half">
+      <span class="icon-text">
+        <span class="icon is-large">
+          <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
+        </span>
+        <span>Any 0.35m telescope</span>
+      </span>
+      <p></p>
+      <span class="icon-text">
+        <span class="icon is-large">
+          <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
+        </span>
+        <span>As soon as possible</span>
+      </span>
     </div>
-    <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
-        <h4>Photon Ranch will schedule this for you</h4>
-        <div class="columns">
-          <div class="column is-half">
-            <span class="icon-text">
-              <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
-              </span>
-              <span>Any 0.35m telescope</span>
-            </span>
-            <p></p>
-            <span class="icon-text">
-              <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
-              </span>
-              <span>As soon as possible</span>
-            </span>
-          </div>
-          <div class="column">
-            <span class="icon-text">
-              <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
-              </span>
-              <span class="icon-text-list">
-                <ul><li>3 color image</li><li>120s</li><li>1 x 1 mosaic</li><li>100% zoom level</li></ul>
-              </span>
-            </span>
-          </div>
-        </div>
-        <button class="button red-bg" @click="scheduleObservation">Schedule my observation!</button>
-      </div>
+    <div class="column">
+      <span class="icon-text">
+        <span class="icon is-large">
+          <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
+        </span>
+        <span class="icon-text-list">
+          <ul>
+            <li>{{ exposureSettings.length }} color images</li>
+            <li v-for="(setting, index) in exposureSettings" :key="index">
+              {{ setting.exposureTime }}s with {{ setting.filter }} filter
+            </li>
+          </ul>
+        </span>
+      </span>
+    </div>
+  </div>
+  <button class="button red-bg" @click="scheduleObservation">Schedule my observation!</button>
+</div>
     <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
     <div v-for="(setting, index) in exposureSettings" :key="index" class="input-wrapper">
       <div v-if="!setting.editing">
