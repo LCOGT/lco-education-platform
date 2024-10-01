@@ -1,11 +1,27 @@
 <script setup>
-import { ref, defineEmits, reactive, computed } from 'vue'
+import { ref, defineEmits, computed } from 'vue'
 import ExposureSettings from './ExposureSettings.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import { fetchApiCall } from '../../utils/api.js'
+import { useUserDataStore } from '../../stores/userData.js'
 
 const emits = defineEmits(['scheduled'])
+const userDataStore = useUserDataStore()
+
+const beginner = ref()
+const dateRange = ref()
+const objectSelection = ref('')
+const objectSelected = ref(false)
+const targetSelection = ref('')
+const targetSelected = ref(false)
+const exposureSettings = ref([])
+const defaultSettings = ref([])
+const addingNewSettings = ref(false)
+const loading = ref(false)
+const selectedTargets = ref([])
+const startDate = ref('')
+const endDate = ref('')
 
 const categories = ref([
   {
@@ -30,16 +46,12 @@ const categories = ref([
   }
 ])
 
-const beginner = ref()
-const dateRange = ref()
-const objectSelection = ref('')
-const objectSelected = ref(false)
-const targetSelection = ref('')
-const targetSelected = ref(false)
-const exposureSettings = reactive([])
-const addingNewSettings = ref(false)
-const loading = ref(false)
-const selectedTargets = ref([])
+const objectCategories = [
+  { label: 'Star Cluster', value: /cluster|Cluster of Stars/i },
+  { label: 'Supernova', value: /supernov/i },
+  { label: 'Galaxy', value: /galax/i },
+  { label: 'Nebula', value: /nebul/i }
+]
 
 const handleObjectSelection = (option) => {
   objectSelection.value = option
@@ -59,26 +71,28 @@ const handleObjectSelection = (option) => {
   objectSelection.value.targets = filteredTargets.map(target => ({
     name: target.name,
     desc: target.desc,
-    filters: target.filters
+    filters: target.filters,
+    ra: target.ra,
+    dec: target.dec
   }))
+  console.log('objectSelection:', objectSelection.value.targets)
 }
 
 const handleTargetSelection = (target) => {
+  console.log('target:', target)
   targetSelection.value = target
   targetSelected.value = true
-  exposureSettings.splice(0)
-  target.filters.forEach(filter => {
-    exposureSettings.push({
-      filter: filter.name,
-      exposureTime: filter.exposure,
-      saved: true,
-      editing: false
-    })
-  })
+  defaultSettings.value = target.filters.map(filter => ({
+    filter: filter.name,
+    exposureTime: filter.exposure,
+    saved: true,
+    editing: false
+  }))
+  exposureSettings.value = [...defaultSettings.value]
 }
 
 const addSettings = (newSettings) => {
-  exposureSettings.push({ ...newSettings, saved: true, editing: false })
+  exposureSettings.value.push({ ...newSettings, saved: true, editing: false })
   addingNewSettings.value = false
 }
 
@@ -93,29 +107,104 @@ const saveEditedSettings = (index) => {
   addingNewSettings.value = false
 }
 
-const addNewSettings = () => {
-  addingNewSettings.value = true
-}
-
 const disableButton = computed(() => {
-  return !exposureSettings.length || !exposureSettings.every(s => s.saved) || addingNewSettings.value
+  return !exposureSettings.value.length || !exposureSettings.value.every(s => s.saved) || addingNewSettings.value
 })
 
-const scheduleObservation = () => {
+const scheduleObservation = async () => {
   if (objectSelected.value && (targetSelected.value || !objectSelection.value.targets)) {
-    emits('scheduled')
+    const instrumentConfigs = exposureSettings.value.map((setting) => {
+      return {
+        exposure_count: setting.count || 1,
+        exposure_time: setting.exposureTime,
+        mode: 'central30x30',
+        rotator_mode: '',
+        extra_params: {
+          offset_ra: 0,
+          offset_dec: 0,
+          defocus: 0
+        },
+        optical_elements: {
+          filter: setting.filter
+        }
+      }
+    })
+    const token = userDataStore.authToken
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Token ${token}`
+    }
+    await fetchApiCall({
+      url: 'https://observe.lco.global/api/requestgroups/',
+      method: 'POST',
+      header: headers,
+      body: {
+        'name': targetSelection.value.name,
+        'proposal': 'LCOSchedulerTest',
+        'ipp_value': 1.05,
+        'operator': 'SINGLE',
+        'observation_type': 'NORMAL',
+        'requests': [
+          {
+            'acceptability_threshold': 90,
+            'configuration_repeats': 1,
+            'optimization_type': 'TIME',
+            'configurations': [
+              {
+                'type': 'EXPOSE',
+                'instrument_type': '0M4-SCICAM-QHY600',
+                'instrument_configs': instrumentConfigs,
+                'acquisition_config': {
+                  'mode': 'OFF',
+                  'extra_params': {}
+                },
+                'guiding_config': {
+                  'mode': 'ON',
+                  'optional': true,
+                  'extra_params': {}
+                },
+                'target': {
+                  'name': targetSelection.value.name,
+                  'type': 'ICRS',
+                  'ra': targetSelection.value.ra,
+                  'dec': targetSelection.value.dec,
+                  'proper_motion_ra': 0,
+                  'proper_motion_dec': 0,
+                  'epoch': 2000,
+                  'parallax': 0,
+                  'extra_params': {}
+                },
+                'constraints': {
+                  'max_airmass': 1.6,
+                  'min_lunar_distance': 30,
+                  'max_lunar_phase': 1
+                }
+              }
+            ],
+            'windows': [
+              {
+                'start': startDate.value + ' 17:00:00',
+                'end': endDate.value + ' 17:00:00'
+              }
+            ],
+            'location': {
+              'telescope_class': '0m4'
+            }
+          }
+        ]
+      },
+      successCallback: () => {
+        console.log('Observation scheduled successfully')
+      },
+      failCallback: (error) => {
+        console.error('Error scheduling observation:', error)
+      }
+    })
   }
 }
 
-// List of avmdesc categories that the user can select
-const objectCategories = [
-  { label: 'Star Cluster', value: /cluster|Cluster of Stars/i },
-  { label: 'Supernova', value: /supernov/i },
-  { label: 'Galaxy', value: /galax/i },
-  { label: 'Nebula', value: /nebul/i }
-]
-
-const saveTargets = (response) => {
+const populateTargets = (response) => {
   const allTargets = response.targets
   const filteredTargetsByCategory = {}
 
@@ -146,7 +235,6 @@ const saveTargets = (response) => {
       }
     })
   }
-
   loading.value = false
 }
 
@@ -155,7 +243,7 @@ const fetchTargets = async (startDate, endDate) => {
   await fetchApiCall({
     url: `https://whatsup.lco.global/range/?start=${startDate}T22:00:00&end=${endDate}T22:00:00&aperture=0m4&mode=full`,
     method: 'GET',
-    successCallback: saveTargets,
+    successCallback: populateTargets,
     failCallback: (error) => {
       console.error('Error fetching targets:', error)
     }
@@ -164,9 +252,9 @@ const fetchTargets = async (startDate, endDate) => {
 
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
-  const startDate = newDateRange[0].toISOString().split('T')[0]
-  const endDate = newDateRange[1].toISOString().split('T')[0]
-  fetchTargets(startDate, endDate)
+  startDate.value = newDateRange[0].toISOString().split('T')[0]
+  endDate.value = newDateRange[1].toISOString().split('T')[0]
+  fetchTargets(startDate.value, endDate.value)
 }
 
 const resetSelections = () => {
@@ -174,6 +262,17 @@ const resetSelections = () => {
   objectSelected.value = false
   targetSelection.value = ''
   targetSelected.value = false
+}
+
+const letMeChoose = () => {
+  beginner.value = false
+  exposureSettings.value = []
+}
+
+const useDefaults = () => {
+  beginner.value = true
+  exposureSettings.value.splice(0)
+  exposureSettings.value.push(...defaultSettings.value)
 }
 
 </script>
@@ -232,10 +331,10 @@ const resetSelections = () => {
   <p>How do you want to set up your observation?</p>
   <div class="field is-grouped">
     <p class="control">
-      <button class="button" @click="beginner = false">Let Me Choose</button>
+      <button class="button" @click="letMeChoose">Let Me Choose</button>
     </p>
     <p class="control">
-      <button class="button" @click="beginner = true">I'm OK with Defaults</button>
+      <button class="button" @click="useDefaults">I'm OK with Defaults</button>
     </p>
   </div>
   <button class="button" @click="resetSelections">Different targets</button>
@@ -255,7 +354,7 @@ const resetSelections = () => {
         <span class="icon is-large">
           <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
         </span>
-        <span>As soon as possible</span>
+        <span>Between {{ startDate }} and {{ endDate }}</span>
       </span>
     </div>
     <div class="column">
@@ -296,7 +395,7 @@ const resetSelections = () => {
     <v-btn v-if="setting.editing" @click="saveEditedSettings(index)" color="indigo">Save</v-btn>
   </div>
   <ExposureSettings v-if="addingNewSettings || !exposureSettings.length" @settingsAdded="addSettings" />
-  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addNewSettings" color="indigo">Add another exposure</v-btn>
+  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addingNewSettings = true" color="indigo">Add another exposure</v-btn>
   <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
     </div>
   </div>
