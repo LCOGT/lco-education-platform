@@ -1,5 +1,12 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, defineProps } from 'vue'
+
+const props = defineProps({
+  showProjectField: {
+    type: Boolean,
+    default: true
+  }
+})
 
 const projectName = ref('')
 const targetList = ref([{ name: '', exposures: [] }]) // Initialize with at least one target
@@ -10,10 +17,11 @@ const settings = reactive({
   exposureTime: '',
   count: ''
 })
-const dateRange = ref([])
 
 // State for enabling/disabling fields
-const targetEnabled = computed(() => projectName.value.trim() !== '')
+const targetEnabled = computed(() => {
+  return props.showProjectField ? projectName.value.trim() !== '' : true
+})
 const exposureEnabled = computed(() => targetList.value[activeTargetIndex.value]?.name.trim() !== '')
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
 const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
@@ -46,13 +54,11 @@ const formatExposures = (exposures) => {
 
 <template>
   <div class="container">
-    <!-- Project Name Input -->
-    <div class="input-wrapper">
+    <div v-if="showProjectField" class="input-wrapper">
       <label for="project-name">Project Name:</label>
       <input id="project-name" v-model="projectName" class="scheduling-inputs" placeholder="Enter project name" />
     </div>
-
-    <!-- Render All Saved Targets and Exposures -->
+    <!-- Render saved targets and exposures -->
     <div v-if="targetList.length > 1">
       <div v-for="(target, index) in targetList" :key="index">
         <div v-if="index !== activeTargetIndex && target.exposures.length > 0">
@@ -60,21 +66,18 @@ const formatExposures = (exposures) => {
         </div>
       </div>
     </div>
-
-    <!-- Render Saved Exposures for the Active Target -->
+    <!-- Render saved exposures for the active target -->
     <div v-if="targetList[activeTargetIndex].exposures.length > 0">
       <div>
         {{ targetList[activeTargetIndex].name }}: {{ formatExposures(targetList[activeTargetIndex].exposures) }}
       </div>
     </div>
-
-    <!-- Target Input -->
+    <!-- Target input -->
     <div class="input-wrapper">
       <label for="target-list">Target:</label>
       <input id="target-list" v-model="targetList[activeTargetIndex].name" :disabled="!targetEnabled" class="scheduling-inputs" placeholder="Enter target" />
     </div>
-
-    <!-- Exposure Settings -->
+    <!-- Exposure settings -->
     <div class="exposure-settings" :class="{ disabled: !exposureEnabled }">
       <div class="field is-horizontal">
         <label>Filter</label>
@@ -86,7 +89,6 @@ const formatExposures = (exposures) => {
           <option value="H-Alpha">H-Alpha</option>
         </select>
       </div>
-
       <div class="field is-horizontal">
         <label>Exposure Time</label>
         <input type="text" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Exp time" />
@@ -94,20 +96,10 @@ const formatExposures = (exposures) => {
         <input type="text" v-model="settings.count" :disabled="!exposureEnabled" placeholder="Count" />
       </div>
     </div>
-
-    <!-- Add Exposure Button -->
-    <button @click="addExposure" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</button>
-
-    <!-- Add Another Target Button -->
-    <button @click="addTarget" :disabled="!addTargetEnabled" class="add-target">Add Another Target</button>
-
-    <!-- Date Range Input -->
-    <div class="input-wrapper">
-      <label for="date-range">Date Range:</label>
-      <input id="date-range" v-model="dateRange" class="scheduling-inputs" placeholder="Select date range" />
-    </div>
-
-    <v-btn color="indigo" :disabled="targetList.length === 0">Schedule my observations!</v-btn>
+    <!-- Add exposure button -->
+    <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
+    <!-- Add another target button -->
+    <v-btn @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
   </div>
 </template>
 
