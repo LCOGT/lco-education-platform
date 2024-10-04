@@ -1,13 +1,14 @@
 <script setup>
 import { ref, defineEmits, computed } from 'vue'
-import ExposureSettings from './ExposureSettings.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
+import SchedulingSettings from './SchedulingSettings.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useUserDataStore } from '../../stores/userData.js'
 
-const emits = defineEmits(['scheduled'])
 const userDataStore = useUserDataStore()
+
+const emits = defineEmits('selectionsComplete')
 
 const beginner = ref()
 const dateRange = ref()
@@ -75,36 +76,18 @@ const handleObjectSelection = (option) => {
     ra: target.ra,
     dec: target.dec
   }))
-  console.log('objectSelection:', objectSelection.value.targets)
 }
 
 const handleTargetSelection = (target) => {
-  console.log('target:', target)
   targetSelection.value = target
   targetSelected.value = true
   defaultSettings.value = target.filters.map(filter => ({
     filter: filter.name,
     exposureTime: filter.exposure,
-    saved: true,
-    editing: false
+    saved: true
   }))
   exposureSettings.value = [...defaultSettings.value]
-}
-
-const addSettings = (newSettings) => {
-  exposureSettings.value.push({ ...newSettings, saved: true, editing: false })
-  addingNewSettings.value = false
-}
-
-const editSettings = (index) => {
-  exposureSettings[index].editing = true
-  exposureSettings[index].saved = false
-}
-
-const saveEditedSettings = (index) => {
-  exposureSettings[index].saved = true
-  exposureSettings[index].editing = false
-  addingNewSettings.value = false
+  emits('selectionsComplete', { target: targetSelection.value, settings: exposureSettings.value })
 }
 
 const disableButton = computed(() => {
@@ -376,26 +359,7 @@ const useDefaults = () => {
   <button class="button red-bg" @click="scheduleObservation">Schedule my observation!</button>
 </div>
     <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
-    <div v-for="(setting, index) in exposureSettings" :key="index" class="input-wrapper">
-      <div v-if="!setting.editing">
-        <p class="p-text">Filter: {{ setting.filter }}</p>
-        <p class="p-text">Exposure Time: {{ setting.exposureTime }}</p>
-        <p class="p-text">Count: {{ setting.count }}</p>
-        <v-btn @click="editSettings(index)" :disabled="addingNewSettings" color="teal">Edit</v-btn>
-      </div>
-      <select v-if="setting.editing" v-model="setting.filter" class="scheduling-inputs">
-        <option disabled value="">Choose a filter</option>
-        <option value="Blue">Blue</option>
-        <option value="Green (V)">Green (V)</option>
-        <option value="Red">Red</option>
-        <option value="H-Alpha">H-Alpha</option>
-      </select>
-    <input v-if="setting.editing" v-model="setting.exposureTime" class="scheduling-inputs">
-    <input v-if="setting.editing" v-model="setting.count" class="scheduling-inputs">
-    <v-btn v-if="setting.editing" @click="saveEditedSettings(index)" color="indigo">Save</v-btn>
-  </div>
-  <ExposureSettings v-if="addingNewSettings || !exposureSettings.length" @settingsAdded="addSettings" />
-  <v-btn v-if="exposureSettings.length && exposureSettings[exposureSettings.length - 1].saved" :disabled="addingNewSettings || exposureSettings.some(s => s.editing === true)" @click="addingNewSettings = true" color="indigo">Add another exposure</v-btn>
+      <SchedulingSettings :show-project-field="false" :show-title-field="false"/>
   <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
     </div>
   </div>

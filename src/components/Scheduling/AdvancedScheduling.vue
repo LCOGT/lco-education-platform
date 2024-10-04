@@ -7,7 +7,7 @@ import Calendar from './Calendar.vue'
 <template>
   <h2>Photon Ranch</h2>
   <h4>Scheduling Observations</h4>
-  <SchedulingSettings :show-project-field="true"/>
+  <SchedulingSettings :show-project-field="true" :show-title-field="true"/>
   <Calendar />
 </template>
 

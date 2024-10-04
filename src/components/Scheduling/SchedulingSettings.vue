@@ -5,12 +5,16 @@ const props = defineProps({
   showProjectField: {
     type: Boolean,
     default: true
+  },
+  showTitleField: {
+    type: Boolean,
+    default: true
   }
 })
 
 const projectName = ref('')
-const targetList = ref([{ name: '', exposures: [] }]) // Initialize with at least one target
-const activeTargetIndex = ref(0) // To track the currently active target
+const targetList = ref([{ name: '', exposures: [] }])
+const activeTargetIndex = ref(0)
 
 const settings = reactive({
   filter: '',
@@ -22,7 +26,12 @@ const settings = reactive({
 const targetEnabled = computed(() => {
   return props.showProjectField ? projectName.value.trim() !== '' : true
 })
-const exposureEnabled = computed(() => targetList.value[activeTargetIndex.value]?.name.trim() !== '')
+
+const exposureEnabled = computed(() => {
+  // If showTitleField is false (beginner), exposure settings should be enabled
+  return !props.showTitleField || targetList.value[activeTargetIndex.value]?.name.trim() !== ''
+})
+
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
 const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
 
@@ -42,8 +51,9 @@ const addExposure = () => {
 
 // Add a new target with empty exposure settings
 const addTarget = () => {
-  targetList.value.push({ name: '', exposures: [] }) // Ensure exposures is always initialized as an empty array
-  activeTargetIndex.value = targetList.value.length - 1 // Set the new target as active
+  targetList.value.push({ name: '', exposures: [] })
+  // Set the new target as active
+  activeTargetIndex.value = targetList.value.length - 1
 }
 
 // Function to display exposures for a target as a concatenated string
@@ -73,7 +83,7 @@ const formatExposures = (exposures) => {
       </div>
     </div>
     <!-- Target input -->
-    <div class="input-wrapper">
+    <div v-if="showTitleField" class="input-wrapper">
       <label for="target-list">Target:</label>
       <input id="target-list" v-model="targetList[activeTargetIndex].name" :disabled="!targetEnabled" class="scheduling-inputs" placeholder="Enter target" />
     </div>
