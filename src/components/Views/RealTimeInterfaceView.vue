@@ -24,7 +24,7 @@ const statusSessionNotActive = computed(() => {
   if (configurationStore.demo == true) {
     return false
   } else {
-    return ((sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED' || configurationStore.demo == false) && timeRemaining.value >= 0)
+    return ((sessionsStore.currentStatus === 'INACTIVE' || sessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining.value >= 0)
   }
 })
 
