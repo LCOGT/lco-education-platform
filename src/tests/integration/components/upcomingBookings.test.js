@@ -29,7 +29,7 @@ describe('UpcomingBookings.vue', () => {
     const { pinia, sessionsStore: store } = createTestStores()
     sessionsStore = store
 
-    sessionsStore.sessions = {
+    sessionsStore.fulfilledRequests = {
       results: [
         { id: 'session1', start: startTime },
         { id: 'session2', start: startTime2 }
@@ -45,7 +45,7 @@ describe('UpcomingBookings.vue', () => {
 
   it('fetches sessions on mount', async () => {
     expect(fetchApiCall).toHaveBeenCalled()
-    expect(sessionsStore.sessions.results.length).toBe(2)
+    expect(sessionsStore.fulfilledRequests.length).toBe(2)
 
     await wrapper.vm.$nextTick()
 
@@ -56,7 +56,7 @@ describe('UpcomingBookings.vue', () => {
   it('deletes a session on click', async () => {
     fetchApiCall.mockImplementation(({ url }) => {
       if (url.includes('session1')) {
-        sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== 'session1')
+        sessionsStore.fulfilledRequests = sessionsStore.fulfilledRequests.filter(session => session.id !== 'session1')
       }
     })
     const deleteButtons = wrapper.findAll('.deleteButton')
@@ -68,6 +68,6 @@ describe('UpcomingBookings.vue', () => {
         method: 'DELETE'
       })
     )
-    expect(sessionsStore.sessions.results.length).toBe(1)
+    expect(sessionsStore.fulfilledRequests.length).toBe(1)
   })
 })

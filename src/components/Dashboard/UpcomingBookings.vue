@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useObservationsStore } from '../../stores/observations'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
@@ -11,24 +12,19 @@ const router = useRouter()
 const sessionsStore = useSessionsStore()
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
+const observationsStore = useObservationsStore()
 
+let observations = []
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
   // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
-  const sessions = sessionsStore.sessions.results || []
+  const sessions = sessionsStore.upcomingRealTimeSessions || []
   return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
     .slice()
     .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
-
-const observations = ref([
-  { id: 1, title: 'M83', progress: 10, state: 'scheduled' },
-  { id: 2, title: 'NGC891', progress: 30 },
-  { id: 3, title: 'Andromeda in RGB', progress: 80 },
-  { id: 4, title: 'M16', progress: 30 }
-])
 
 const selectSession = (sessionId) => {
   sessionsStore.currentSessionId = sessionId
@@ -42,13 +38,15 @@ async function deleteSession (sessionId) {
     url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
     method: 'DELETE',
     header: { Authorization: `Token ${token}` },
-    successCallback: sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== sessionId),
+    successCallback: sessionsStore.upcomingRealTimeSessions = sessionsStore.upcomingRealTimeSessions.filter(session => session.id !== sessionId),
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
 }
 
 onMounted(() => {
   sessionsStore.fetchSessions()
+  observationsStore.fetchPendingObservations()
+  observations = observationsStore.pendingObservations
 })
 
 </script>
@@ -66,10 +64,10 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations">
-        <h3>Scheduled Observations</h3>
+        <h3>Pending Observations</h3>
         <div class="table-summary">
-            <div v-for="({id, title, progress}) in observations" :key="id">
-                <div>{{ title }}</div><div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
+            <div v-for="observation in observations" :key="observation.id">
+                <div>{{ observation.name }}</div><div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
             </div>
         </div>
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>
