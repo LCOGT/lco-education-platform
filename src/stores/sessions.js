@@ -3,11 +3,13 @@ import { fetchApiCall } from '../utils/api'
 import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
 import { useConfigurationStore } from './configuration'
+import { useUserDataStore } from './userData'
 
 export const useSessionsStore = defineStore('sessions', {
   state () {
     return {
-      sessions: [],
+      fulfilledRequests: [],
+      upcomingRealTimeSessions: [],
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
@@ -18,12 +20,9 @@ export const useSessionsStore = defineStore('sessions', {
   persist: true,
   getters: {
     currentSession (state) {
-      const currentSession = state.sessions.results.find(session => session.id === state.currentSessionId)
+      const currentSession = state.upcomingRealTimeSessions.find(session => session.id === state.currentSessionId)
       // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
       return toRaw(currentSession)
-    },
-    getAllSessions (state) {
-      return state.sessions
     },
     getTokenForCurrentSession (state) {
       return state.sessionTokens[state.currentSessionId] || ''
@@ -38,22 +37,32 @@ export const useSessionsStore = defineStore('sessions', {
         this.isCapturingImagesMap[this.currentSessionId] = false
       }
     },
-    async fetchSessions () {
-      const configurationStore = useConfigurationStore()
-      await fetchApiCall({
-        url: configurationStore.observationPortalUrl + 'observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
-        method: 'GET',
-        successCallback: (response) => {
-          this.sessions = response
-        }
-      })
-      if (this.sessions.results.length > 0) {
-        for (const session of this.sessions.results) {
-          if (session.date) {
-            session.date = new Date(session.date)
+    sortSessions (response) {
+      const sessionCutoff = new Date(new Date().getTime() - 16 * 60 * 1000).toISOString()
+      for (const result of response.results) {
+        const sessionEnd = new Date(result.end).toISOString()
+        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < sessionCutoff)) {
+          if (!this.fulfilledRequests.some(req => req.id === result.id)) {
+            this.fulfilledRequests.push(result)
+          }
+        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > sessionCutoff) {
+          if (!this.upcomingRealTimeSessions.some(req => req.id === result.id)) {
+            this.upcomingRealTimeSessions.push(result)
           }
         }
       }
+    },
+    async fetchSessions () {
+      const configurationStore = useConfigurationStore()
+      const userDataStore = useUserDataStore()
+      const username = userDataStore.username
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start`,
+        method: 'GET',
+        successCallback: (response) => {
+          this.sortSessions(response)
+        }
+      })
     },
     async fetchSessionToken () {
       const configurationStore = useConfigurationStore()
