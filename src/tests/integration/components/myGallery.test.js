@@ -24,7 +24,6 @@ function createComponent () {
       { id: 'session2', start: '2024-08-01T12:30:00Z' }
     ]
   }
-
   // Mount the component with the pinia stores provided
   return mount(MyGallery, {
     global: {

@@ -4,7 +4,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
-import { useObservationsStore } from '../../stores/observations'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
@@ -12,9 +11,8 @@ const router = useRouter()
 const sessionsStore = useSessionsStore()
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
-const observationsStore = useObservationsStore()
 
-let observations = []
+const observations = ref([])
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
@@ -45,8 +43,8 @@ async function deleteSession (sessionId) {
 
 onMounted(() => {
   sessionsStore.fetchSessions()
-  observationsStore.fetchPendingObservations()
-  observations = observationsStore.pendingObservations
+  sessionsStore.fetchPendingObservations()
+  observations.value = sessionsStore.requestedObservations
 })
 
 </script>
@@ -67,7 +65,10 @@ onMounted(() => {
         <h3>Pending Observations</h3>
         <div class="table-summary">
             <div v-for="observation in observations" :key="observation.id">
-                <div>{{ observation.name }}</div><div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
+              <div v-for="request in observation.requests" :key="request.id">
+                <div>{{ request.configurations[0].target.name }}</div>
+                <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
+              </div>
             </div>
         </div>
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>

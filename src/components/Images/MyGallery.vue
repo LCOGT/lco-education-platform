@@ -3,7 +3,6 @@ import { computed, ref, onMounted } from 'vue'
 import { useSessionsStore } from '../../stores/sessions'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
-import { useObservationsStore } from '../../stores/observations'
 import { formatDate } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
@@ -17,7 +16,7 @@ const loading = ref(true)
 const filteredSessions = computed(() => {
   const now = new Date()
   const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
-  const sessions = sessionsStore.fulfilledRequests || []
+  const sessions = sessionsStore.fulfilledRequests?.results || []
   const filtered = sessions
     .filter(session => new Date(session.start) < cutoffTime)
     .sort((a, b) => new Date(b.start) - new Date(a.start))
