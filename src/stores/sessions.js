@@ -10,6 +10,7 @@ export const useSessionsStore = defineStore('sessions', {
     return {
       fulfilledRequests: [],
       upcomingRealTimeSessions: [],
+      requestedObservations: [],
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
@@ -120,6 +121,25 @@ export const useSessionsStore = defineStore('sessions', {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
+    },
+    fetchPendingObservations () {
+      const configurationStore = useConfigurationStore()
+      const userDataStore = useUserDataStore()
+      const username = userDataStore.username
+      const token = userDataStore.authToken
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Token ${token}`
+      }
+      fetchApiCall({
+        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}`,
+        method: 'GET',
+        header: headers,
+        successCallback: (response) => {
+          this.requestedObservations = response.results
+        }
+      })
     }
   }
 })
