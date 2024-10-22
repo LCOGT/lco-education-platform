@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { fetchApiCall } from '../../../utils/api.js'
 import { createTestStores } from '../../../utils/testUtils'
 import flushPromises from 'flush-promises'
@@ -11,8 +11,14 @@ describe('Sessions Store', () => {
   let sessionsStore
 
   beforeEach(() => {
+    fetchApiCall.mockClear()
     const { sessionsStore: store } = createTestStores()
     sessionsStore = store
+  })
+
+  afterEach(() => {
+    sessionsStore.stopPolling()
+    vi.clearAllMocks()
   })
 
   it('fetches real time observations and normal observations and sorts them correctly in the store', async () => {
@@ -50,10 +56,8 @@ describe('Sessions Store', () => {
     await sessionsStore.fetchSessions()
     // Verify that the API was called correctly
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
-
     // Check that fulfilledRequests contains the COMPLETED NORMAL and past REAL_TIME observations
     expect(sessionsStore.fulfilledRequests).toEqual([mockResponse.results[0], mockResponse.results[2]])
-
     // Check that upcomingRealTimeSessions contains only the future REAL_TIME observation
     expect(sessionsStore.upcomingRealTimeSessions).toEqual([mockResponse.results[1]])
   })
@@ -91,27 +95,54 @@ describe('Sessions Store', () => {
     sessionsStore.currentSessionId = mockSession.id
     sessionsStore.upcomingRealTimeSessions = [mockSession]
 
+    // Mocking API calls to handle multiple polling iterations
     fetchApiCall
-      // First API call (fetch token)
+    // First API call (fetch token)
       .mockResolvedValueOnce(mockTokenResponse)
-      // Second API call (fetch session status)
+    // Second API call (first poll)
       .mockResolvedValueOnce(mockSessionStatusResponse)
+      // All subsequent polling calls
+      .mockResolvedValue(mockSessionStatusResponse)
 
+    // Using fake timers to control the time
     vi.useFakeTimers()
 
-    // Third API call (fetch session status)
-    // Fourth API call (fetch session token)
     sessionsStore.startPolling()
 
-    // Fast forward the timer to simulate 10 seconds passing for polling
+    // Fast forward the timer to simulate polling (10 seconds)
     vi.advanceTimersByTime(10000)
-
+    // Resolve promises
     await flushPromises()
 
     expect(sessionsStore.currentStatus).toBe('ACTIVE')
-    expect(fetchApiCall).toHaveBeenCalledTimes(4)
+    // Token + first status fetch
+    expect(fetchApiCall).toHaveBeenCalledTimes(2)
 
-    // Restore real timers at the end of the test
-    vi.useRealTimers()
+    // Fast-forward more time for another polling iteration
+    vi.advanceTimersByTime(10000)
+    await flushPromises()
+
+    // Token + two status fetches
+    expect(fetchApiCall).toHaveBeenCalledTimes(3)
+
+    vi.useRealTimers() // Restore real timers
   }, 10000)
+
+  it('fetches pending observations (/requestgroups) and updates requestedObservations correctly', async () => {
+    const mockPendingObservationsResponse = {
+      results: [
+        { id: 1, state: 'PENDING' },
+        { id: 2, state: 'PENDING' }
+      ]
+    }
+
+    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
+      successCallback(mockPendingObservationsResponse)
+    })
+
+    await sessionsStore.fetchPendingObservations()
+
+    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    expect(sessionsStore.requestedObservations).toEqual(mockPendingObservationsResponse.results)
+  })
 })
