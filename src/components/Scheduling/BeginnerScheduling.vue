@@ -1,12 +1,9 @@
 <script setup>
-import { ref, defineEmits, computed } from 'vue'
+import { ref, defineEmits } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import { fetchApiCall } from '../../utils/api.js'
-import { useUserDataStore } from '../../stores/userData.js'
-
-const userDataStore = useUserDataStore()
 
 const emits = defineEmits('selectionsComplete')
 
@@ -18,7 +15,6 @@ const targetSelection = ref('')
 const targetSelected = ref(false)
 const exposureSettings = ref([])
 const defaultSettings = ref([])
-const addingNewSettings = ref(false)
 const loading = ref(false)
 const selectedTargets = ref([])
 const startDate = ref('')
@@ -78,6 +74,17 @@ const handleObjectSelection = (option) => {
   }))
 }
 
+const emitSelections = () => {
+  if (targetSelection.value && exposureSettings.value.length > 0) {
+    emits('selectionsComplete', {
+      target: targetSelection.value,
+      settings: exposureSettings.value,
+      startDate: startDate.value,
+      endDate: endDate.value
+    })
+  }
+}
+
 const handleTargetSelection = (target) => {
   targetSelection.value = target
   targetSelected.value = true
@@ -87,104 +94,7 @@ const handleTargetSelection = (target) => {
     saved: true
   }))
   exposureSettings.value = [...defaultSettings.value]
-  emits('selectionsComplete', { target: targetSelection.value, settings: exposureSettings.value })
-}
-
-const disableButton = computed(() => {
-  return !exposureSettings.value.length || !exposureSettings.value.every(s => s.saved) || addingNewSettings.value
-})
-
-const scheduleObservation = async () => {
-  if (objectSelected.value && (targetSelected.value || !objectSelection.value.targets)) {
-    const instrumentConfigs = exposureSettings.value.map((setting) => {
-      return {
-        exposure_count: setting.count || 1,
-        exposure_time: setting.exposureTime,
-        mode: 'central30x30',
-        rotator_mode: '',
-        extra_params: {
-          offset_ra: 0,
-          offset_dec: 0,
-          defocus: 0
-        },
-        optical_elements: {
-          filter: setting.filter
-        }
-      }
-    })
-    const token = userDataStore.authToken
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Token ${token}`
-    }
-    await fetchApiCall({
-      url: 'https://observe.lco.global/api/requestgroups/',
-      method: 'POST',
-      header: headers,
-      body: {
-        'name': targetSelection.value.name,
-        'proposal': 'LCOSchedulerTest',
-        'ipp_value': 1.05,
-        'operator': 'SINGLE',
-        'observation_type': 'NORMAL',
-        'requests': [
-          {
-            'acceptability_threshold': 90,
-            'configuration_repeats': 1,
-            'optimization_type': 'TIME',
-            'configurations': [
-              {
-                'type': 'EXPOSE',
-                'instrument_type': '0M4-SCICAM-QHY600',
-                'instrument_configs': instrumentConfigs,
-                'acquisition_config': {
-                  'mode': 'OFF',
-                  'extra_params': {}
-                },
-                'guiding_config': {
-                  'mode': 'ON',
-                  'optional': true,
-                  'extra_params': {}
-                },
-                'target': {
-                  'name': targetSelection.value.name,
-                  'type': 'ICRS',
-                  'ra': targetSelection.value.ra,
-                  'dec': targetSelection.value.dec,
-                  'proper_motion_ra': 0,
-                  'proper_motion_dec': 0,
-                  'epoch': 2000,
-                  'parallax': 0,
-                  'extra_params': {}
-                },
-                'constraints': {
-                  'max_airmass': 1.6,
-                  'min_lunar_distance': 30,
-                  'max_lunar_phase': 1
-                }
-              }
-            ],
-            'windows': [
-              {
-                'start': startDate.value + ' 17:00:00',
-                'end': endDate.value + ' 17:00:00'
-              }
-            ],
-            'location': {
-              'telescope_class': '0m4'
-            }
-          }
-        ]
-      },
-      successCallback: () => {
-        console.log('Observation scheduled successfully')
-      },
-      failCallback: (error) => {
-        console.error('Error scheduling observation:', error)
-      }
-    })
-  }
+  emitSelections()
 }
 
 const populateTargets = (response) => {
@@ -256,6 +166,11 @@ const useDefaults = () => {
   beginner.value = true
   exposureSettings.value.splice(0)
   exposureSettings.value.push(...defaultSettings.value)
+}
+
+const handleExposuresUpdate = (exposures) => {
+  exposureSettings.value = exposures
+  emitSelections()
 }
 
 </script>
@@ -356,11 +271,13 @@ const useDefaults = () => {
       </span>
     </div>
   </div>
-  <button class="button red-bg" @click="scheduleObservation">Schedule my observation!</button>
 </div>
     <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
-      <SchedulingSettings :show-project-field="false" :show-title-field="false"/>
-  <v-btn :disabled="disableButton"  color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+      <SchedulingSettings
+      :show-project-field="false"
+      :show-title-field="false"
+      :target="targetSelection?.name"
+      @exposuresUpdated="handleExposuresUpdate" />
     </div>
   </div>
 </template>
