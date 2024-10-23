@@ -18,12 +18,10 @@ function createComponent () {
   const { pinia, sessionsStore } = createTestStores()
 
   // Set up initial state for the sessions store
-  sessionsStore.fulfilledRequests = {
-    results: [
-      { id: 'session1', start: '2024-08-01T12:00:00Z' },
-      { id: 'session2', start: '2024-08-01T12:30:00Z' }
-    ]
-  }
+  sessionsStore.fulfilledRequests = [
+    { id: 'session1', start: '2024-08-01T12:00:00Z' },
+    { id: 'session2', start: '2024-08-01T12:30:00Z' }
+  ]
   // Mount the component with the pinia stores provided
   return mount(MyGallery, {
     global: {

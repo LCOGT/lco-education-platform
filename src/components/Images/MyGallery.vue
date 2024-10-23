@@ -16,7 +16,7 @@ const loading = ref(true)
 const filteredSessions = computed(() => {
   const now = new Date()
   const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
-  const sessions = sessionsStore.fulfilledRequests?.results || []
+  const sessions = sessionsStore.fulfilledRequests || []
   const filtered = sessions
     .filter(session => new Date(session.start) < cutoffTime)
     .sort((a, b) => new Date(b.start) - new Date(a.start))
