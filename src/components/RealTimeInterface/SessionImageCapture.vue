@@ -23,6 +23,10 @@ const imagesCaptured = computed(() => {
   return status.value.status.availability === 'Available' && status.value.status.instrument === 'Idle' && status.value.status.progress === 'Ready' && status.value.status.telescope === 'Tracking' && thumbnailsFetched.value === true
 })
 
+const failedToCaptureImages = computed(() => {
+  return status.value.status === 'Unknown'
+})
+
 const fetchTelescopeStatus = async () => {
   if (configurationStore.demo) {
     status.value = {
@@ -97,7 +101,13 @@ const setCameraState = computed(() => ({
 <template>
     <div class="columns">
         <div class="column is-one-third">
-            <div v-if="status">
+          <div v-if="status">
+            <div v-if="failedToCaptureImages">
+                <div class="notification is-danger">
+                  <p>Unable to fetch telescope status</p>
+                </div>
+            </div>
+            <div v-else>
                 <div v-for="item in status" :key="item" class="image-capture">
                     <div>
                       <span class="icon-text">
@@ -148,6 +158,7 @@ const setCameraState = computed(() => ({
               @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
+        </div>
     </div>
     <button class="button red-bg" @click="sendStopCommand">
     stop
