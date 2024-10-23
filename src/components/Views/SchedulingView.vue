@@ -12,6 +12,7 @@ const level = ref('')
 const observationData = ref(null)
 const showScheduled = ref(false)
 const userDataStore = useUserDataStore()
+const operatorValue = ref('')
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -101,7 +102,12 @@ const scheduleObservation = async () => {
       'Accept': 'application/json',
       'Authorization': `Token ${token}`
     }
-    const operatorValue = observationData.value.target ? 'SINGLE' : 'MANY'
+
+    if (observationData.value.target || observationData.value.targets.length === 1) {
+      operatorValue.value = 'SINGLE'
+    } else if (observationData.value.targets.length > 1) {
+      operatorValue.value = 'MANY'
+    }
 
     await fetchApiCall({
       url: 'https://observe.lco.global/api/requestgroups/',
@@ -111,7 +117,7 @@ const scheduleObservation = async () => {
         'name': 'UserObservation',
         'proposal': 'LCOSchedulerTest',
         'ipp_value': 1.05,
-        'operator': operatorValue,
+        'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
       },
