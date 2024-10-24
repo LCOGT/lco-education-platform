@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
@@ -13,6 +13,7 @@ const observationData = ref(null)
 const showScheduled = ref(false)
 const userDataStore = useUserDataStore()
 const operatorValue = ref('')
+const displayButton = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -134,6 +135,11 @@ const scheduleObservation = async () => {
 const handleUserSelections = (data) => {
   observationData.value = data
 }
+
+const enableButton = computed(() => {
+  return observationData.value && observationData.value.settings.length > 0
+})
+
 </script>
 
 <template>
@@ -146,13 +152,12 @@ const handleUserSelections = (data) => {
     </div>
 
     <div v-else-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling @selectionsComplete="handleUserSelections" />
+        <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
+        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
     </div>
 
     <div v-else-if="level === 'advanced' && !showScheduled">
       <AdvancedScheduling @selectionsComplete="handleUserSelections" />
-    </div>
-    <div v-if="!showScheduled">
       <v-btn :disabled="!observationData" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
     </div>
     <div v-if="showScheduled">

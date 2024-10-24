@@ -5,7 +5,7 @@ import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import { fetchApiCall } from '../../utils/api.js'
 
-const emits = defineEmits('selectionsComplete')
+const emits = defineEmits(['selectionsComplete', 'showButton'])
 
 const beginner = ref()
 const dateRange = ref()
@@ -54,6 +54,7 @@ const handleObjectSelection = (option) => {
   objectSelection.value = option
   objectSelected.value = true
 
+  // Find the category regex for the selected object
   const categoryRegex = objectCategories.find(cat => cat.label === option.object)?.value
 
   if (!categoryRegex) {
@@ -75,14 +76,14 @@ const handleObjectSelection = (option) => {
 }
 
 const emitSelections = () => {
-  if (targetSelection.value && exposureSettings.value.length > 0) {
-    emits('selectionsComplete', {
-      target: targetSelection.value,
-      settings: exposureSettings.value,
-      startDate: startDate.value,
-      endDate: endDate.value
-    })
-  }
+  // if (targetSelection.value && exposureSettings.value.length > 0) {
+  emits('selectionsComplete', {
+    target: targetSelection.value,
+    settings: exposureSettings.value,
+    startDate: startDate.value,
+    endDate: endDate.value
+  })
+  // }
 }
 
 const handleTargetSelection = (target) => {
@@ -155,17 +156,22 @@ const resetSelections = () => {
   objectSelected.value = false
   targetSelection.value = ''
   targetSelected.value = false
+  beginner.value = ''
+  emits('showButton', false)
 }
 
 const letMeChoose = () => {
   beginner.value = false
   exposureSettings.value = []
+  emitSelections()
+  emits('showButton', true)
 }
 
 const useDefaults = () => {
   beginner.value = true
   exposureSettings.value.splice(0)
   exposureSettings.value.push(...defaultSettings.value)
+  emits('showButton', true)
 }
 
 const handleExposuresUpdate = (exposures) => {
