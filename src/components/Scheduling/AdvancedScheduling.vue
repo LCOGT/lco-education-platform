@@ -52,7 +52,7 @@ const emitSelections = () => {
 
 <template>
   <h2>Photon Ranch</h2>
-  <h4>Scheduling Observations</h4>
+  <h4>Requesting an Observation</h4>
 
   <SchedulingSettings
     :show-project-field="true"

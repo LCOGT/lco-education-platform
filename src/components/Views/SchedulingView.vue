@@ -12,7 +12,6 @@ const level = ref('')
 const observationData = ref(null)
 const showScheduled = ref(false)
 const userDataStore = useUserDataStore()
-const operatorValue = ref('')
 const displayButton = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
@@ -77,11 +76,12 @@ const createRequest = (target, exposures, startDate, endDate) => ({
     }
   ],
   'location': {
+    // TO DO: remove hardcoded 0m4 and get telescope classes from api --> allow user to select
     'telescope_class': '0m4'
   }
 })
 
-const scheduleObservation = async () => {
+const sendObservationRequest = async () => {
   if (observationData.value) {
     const requestList = []
 
@@ -104,21 +104,15 @@ const scheduleObservation = async () => {
       'Authorization': `Token ${token}`
     }
 
-    if (observationData.value.target || observationData.value.targets.length === 1) {
-      operatorValue.value = 'SINGLE'
-    } else if (observationData.value.targets.length > 1) {
-      operatorValue.value = 'MANY'
-    }
-
     await fetchApiCall({
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
       header: headers,
       body: {
         'name': 'UserObservation',
+        // TO DO: get proposals from user and use the proposal ID here
         'proposal': 'LCOSchedulerTest',
         'ipp_value': 1.05,
-        'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
       },
@@ -126,7 +120,7 @@ const scheduleObservation = async () => {
         showScheduled.value = true
       },
       failCallback: (error) => {
-        console.error('Error scheduling observation:', error)
+        console.error('Error requesting observation:', error)
       }
     })
   }
@@ -145,7 +139,7 @@ const enableButton = computed(() => {
 <template>
   <div class="container">
     <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
-      <h2>Schedule an Observation</h2>
+      <h2>Submit a Request</h2>
       <p>What level are you?</p>
       <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
       <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
@@ -153,12 +147,12 @@ const enableButton = computed(() => {
 
     <div v-else-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
-        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
     <div v-else-if="level === 'advanced' && !showScheduled">
       <AdvancedScheduling @selectionsComplete="handleUserSelections" />
-      <v-btn :disabled="!observationData" color="indigo" @click="scheduleObservation">Schedule my observation!</v-btn>
+      <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
     <div v-if="showScheduled">
       <ScheduledObservations />

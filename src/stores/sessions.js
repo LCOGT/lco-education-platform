@@ -5,12 +5,15 @@ import { toRaw } from 'vue'
 import { useConfigurationStore } from './configuration'
 import { useUserDataStore } from './userData'
 
-export const useSessionsStore = defineStore('sessions', {
+const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+const fifteenDaysAgo = new Date(new Date().getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+
+export const useObsPortalDataStore = defineStore('sessions', {
   state () {
     return {
-      fulfilledRequests: [],
+      completedObservations: {},
       upcomingRealTimeSessions: [],
-      requestedObservations: [],
+      pendingRequestGroups: [],
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
@@ -43,8 +46,8 @@ export const useSessionsStore = defineStore('sessions', {
       for (const result of response.results) {
         const sessionEnd = new Date(result.end).toISOString()
         if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < sessionCutoff)) {
-          if (!this.fulfilledRequests.some(req => req.id === result.id)) {
-            this.fulfilledRequests.push(result)
+          if (!this.completedObservations[result.id]) {
+            this.completedObservations[result.id] = result
           }
         } else if (result.observation_type === 'REAL_TIME' && sessionEnd > sessionCutoff) {
           if (!this.upcomingRealTimeSessions.some(req => req.id === result.id)) {
@@ -53,12 +56,12 @@ export const useSessionsStore = defineStore('sessions', {
         }
       }
     },
-    async fetchSessions () {
+    async fetchObservations () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start`,
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start&created_after=${fifteenDaysAgo}&created_before=${tomorrow}`,
         method: 'GET',
         successCallback: (response) => {
           this.sortSessions(response)
@@ -122,7 +125,7 @@ export const useSessionsStore = defineStore('sessions', {
         this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
     },
-    fetchPendingObservations () {
+    fetchPendingRequestGroups () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
@@ -133,11 +136,11 @@ export const useSessionsStore = defineStore('sessions', {
         'Authorization': `Token ${token}`
       }
       fetchApiCall({
-        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}`,
+        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}created_after=${fifteenDaysAgo}&created_before=${tomorrow}`,
         method: 'GET',
         header: headers,
         successCallback: (response) => {
-          this.requestedObservations = response.results
+          this.pendingRequestGroups = response.results
         }
       })
     }

@@ -1,12 +1,12 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useSessionsStore } from '../../stores/sessions'
+import { useObsPortalDataStore } from '../../stores/sessions'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
-const sessionsStore = useSessionsStore()
+const obsPortalDataStore = useObsPortalDataStore()
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
 
@@ -16,14 +16,15 @@ const loading = ref(true)
 const filteredSessions = computed(() => {
   const now = new Date()
   const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
-  const sessions = sessionsStore.fulfilledRequests || []
+  // Object.values returns an array of all the values of the object
+  const sessions = Object.values(obsPortalDataStore.completedObservations)
   const filtered = sessions
     .filter(session => new Date(session.start) < cutoffTime)
     .sort((a, b) => new Date(b.start) - new Date(a.start))
   return filtered
 })
 
-const getThumbnails = async (requestId) => {
+const getThumbnails = async (observationId) => {
   const token = userDataStore.authToken
   const headers = {
     'Content-Type': 'application/json',
@@ -32,17 +33,17 @@ const getThumbnails = async (requestId) => {
   }
 
   await fetchApiCall({
-    url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${requestId}&size=large`,
+    url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${observationId}&size=small`,
     method: 'GET',
     header: headers,
     successCallback: (data) => {
       if (data.results.length > 0) {
-        thumbnailsMap.value[requestId] = data.results.map(result => result.url)
+        thumbnailsMap.value[observationId] = data.results.map(result => result.url)
       }
       loading.value = false
     },
     failCallback: (error) => {
-      console.error('Error fetching thumbnails for session:', requestId, error)
+      console.error('Error fetching thumbnails for session:', observationId, error)
       loading.value = false
     }
   })

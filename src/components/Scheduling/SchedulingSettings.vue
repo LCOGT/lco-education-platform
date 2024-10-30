@@ -38,17 +38,19 @@ const settings = reactive({
 })
 
 const getFilterList = async () => {
-  const token = userDataStore.authToken
   await fetchApiCall({
-    url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
+    url: configurationStore.observationPortalUrl + 'instruments',
     method: 'GET',
-    headers: {
-      'Authorization': `Token ${token}`
-    },
     successCallback: (data) => {
-      filterList.value = data.optical_elements
-        .filter(filter => filter.schedulable)
-        .map(filter => ({ name: filter.name, code: filter.code }))
+      Object.values(data).forEach(instrument => {
+        // Checks if the instrument has a "class" of "0m4" and contains filters in optical_elements
+        if (instrument.class === '0m4' && instrument.optical_elements.filters) {
+          const schedulableFilters = instrument.optical_elements.filters
+            .filter(filter => filter.schedulable)
+            .map(filter => ({ name: filter.name, code: filter.code }))
+          filterList.value.push(...schedulableFilters)
+        }
+      })
     },
     failCallback: (error) => { console.error('API failed with error', error) }
   })
@@ -114,6 +116,7 @@ const addExposure = () => {
     settings.exposureTime = ''
     settings.count = ''
     emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
+    console.log('Exposures updated:', targetList.value[activeTargetIndex.value].exposures)
   }
 }
 

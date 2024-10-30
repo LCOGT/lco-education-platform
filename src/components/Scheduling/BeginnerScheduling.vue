@@ -207,7 +207,7 @@ const handleExposuresUpdate = (exposures) => {
       </div>
     </div>
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
-  <h3>Scheduling Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
+  <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
   <div class="columns is-column-gap-3">
     <div v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="column">
       <div class="card target-highlight is-clickable">
@@ -226,7 +226,7 @@ const handleExposuresUpdate = (exposures) => {
 </div>
 <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
   <h2>
-    Scheduling observation of
+    Requesting an observation of
     <span v-if="objectSelection.targets"> a </span>
     <span class="selection blue">{{ objectSelection.object }}
       <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>

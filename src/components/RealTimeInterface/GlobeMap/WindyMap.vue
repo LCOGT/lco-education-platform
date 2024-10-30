@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue'
-import { useSessionsStore } from '../../../stores/sessions'
+import { useObsPortalDataStore } from '../../../stores/sessions'
 import sites from '../../../utils/sites.JSON'
 
-const sessionsStore = useSessionsStore()
+const obsPortalDataStore = useObsPortalDataStore()
 
-const selectedSession = sessionsStore.currentSession
+const selectedSession = obsPortalDataStore.currentSession
 
 const siteInfo = computed(() => {
   if (selectedSession && selectedSession.site) {

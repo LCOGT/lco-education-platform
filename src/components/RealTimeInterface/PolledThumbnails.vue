@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue'
-import { useSessionsStore } from '../../stores/sessions'
+import { useObsPortalDataStore } from '../../stores/sessions'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useUserDataStore } from '../../stores/userData'
 
-const sessionsStore = useSessionsStore()
-const currentSession = sessionsStore.currentSession
+const obsPortalDataStore = useObsPortalDataStore()
+const currentSession = obsPortalDataStore.currentSession
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
 

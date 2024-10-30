@@ -1,50 +1,50 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
-import { useSessionsStore } from '../../stores/sessions'
+import { useObsPortalDataStore } from '../../stores/sessions'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
-const sessionsStore = useSessionsStore()
+const obsPortalDataStore = useObsPortalDataStore()
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
 
-const observations = ref([])
+const requestGroups = ref([])
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
   // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
-  const sessions = sessionsStore.upcomingRealTimeSessions || []
+  const sessions = obsPortalDataStore.upcomingRealTimeSessions || []
   return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
     .slice()
     .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
 
 const selectSession = (sessionId) => {
-  sessionsStore.currentSessionId = sessionId
+  obsPortalDataStore.currentSessionId = sessionId
   router.push(`/realtime/${sessionId}`)
 }
 
 async function deleteSession (sessionId) {
-  sessionsStore.currentSessionId = sessionId
+  obsPortalDataStore.currentSessionId = sessionId
   const token = userDataStore.authToken
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
     method: 'DELETE',
     header: { Authorization: `Token ${token}` },
-    successCallback: sessionsStore.upcomingRealTimeSessions = sessionsStore.upcomingRealTimeSessions.filter(session => session.id !== sessionId),
+    successCallback: obsPortalDataStore.upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions.filter(session => session.id !== sessionId),
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
 }
 
 onMounted(() => {
-  sessionsStore.fetchSessions()
-  sessionsStore.fetchPendingObservations()
-  observations.value = sessionsStore.requestedObservations
+  obsPortalDataStore.fetchObservations()
+  obsPortalDataStore.fetchPendingRequestGroups()
+  requestGroups.value = obsPortalDataStore.pendingRequestGroups
 })
 
 </script>
@@ -62,11 +62,12 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations">
-        <h3>Pending Observations</h3>
+        <h3>Pending Requests</h3>
         <div class="table-summary">
-            <div v-for="observation in observations" :key="observation.id">
-              <div v-for="request in observation.requests" :key="request.id">
+            <div v-for="requestGroup in requestGroups" :key="requestGroup.id">
+              <div v-for="request in requestGroup.requests" :key="request.id">
                 <div>{{ request.configurations[0].target.name }}</div>
+                <!-- TO DO: Define progress and get progress from api -->
                 <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
               </div>
             </div>
