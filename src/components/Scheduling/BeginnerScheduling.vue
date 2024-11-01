@@ -135,7 +135,7 @@ const populateTargets = (response) => {
 const fetchTargets = async (startDate, endDate) => {
   loading.value = true
   await fetchApiCall({
-    url: `https://whatsup.lco.global/range/?start=${startDate}T22:00:00&end=${endDate}T22:00:00&aperture=0m4&mode=full`,
+    url: `https://whatsup.lco.global/range/?start=${startDate}&end=${endDate}&aperture=0m4&mode=full`,
     method: 'GET',
     successCallback: populateTargets,
     failCallback: (error) => {
@@ -146,8 +146,8 @@ const fetchTargets = async (startDate, endDate) => {
 
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
-  startDate.value = newDateRange[0].toISOString().split('T')[0]
-  endDate.value = newDateRange[1].toISOString().split('T')[0]
+  startDate.value = newDateRange[0].toISOString().split('.')[0]
+  endDate.value = newDateRange[1].toISOString().split('.')[0]
   fetchTargets(startDate.value, endDate.value)
 }
 
