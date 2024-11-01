@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRealTimeSessionsStore } from '../../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../../stores/realTimeSessions'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 

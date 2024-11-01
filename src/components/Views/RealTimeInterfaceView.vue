@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'

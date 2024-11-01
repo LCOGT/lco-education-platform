@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
-import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'

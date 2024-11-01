@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { useRealTimeSessionsStore } from '../stores/sessions'
+import { useRealTimeSessionsStore } from '../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../stores/obsPortalData'
 import { useUserDataStore } from '../stores/userData'
 import { useConfigurationStore } from '../stores/configuration'

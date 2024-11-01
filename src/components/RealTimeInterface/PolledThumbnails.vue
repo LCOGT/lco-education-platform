@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, defineEmits } from 'vue'
-import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
 

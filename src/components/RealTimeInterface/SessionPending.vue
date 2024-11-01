@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import sites from '../../utils/sites.JSON'
 import WindyMap from './GlobeMap/WindyMap.vue'
 

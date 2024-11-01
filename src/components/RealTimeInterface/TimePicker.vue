@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDate } from '../../utils/formatTime.js'
