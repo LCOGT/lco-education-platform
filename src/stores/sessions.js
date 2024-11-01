@@ -78,7 +78,6 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
         } else if (this.currentStatus === 'ACTIVE') {
           nextInterval = 1000
         }
-
         this.fetchInterval = setTimeout(poll, nextInterval)
       }
 

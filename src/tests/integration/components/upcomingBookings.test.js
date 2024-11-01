@@ -22,15 +22,15 @@ const startTime2 = new Date(now + 45 * 60000).toISOString()
 
 describe('UpcomingBookings.vue', () => {
   let wrapper
-  let sessionsStore
+  let obsPortalDataStore
 
   beforeEach(() => {
     vi.resetAllMocks()
-    const { pinia, sessionsStore: store } = createTestStores()
-    sessionsStore = store
+    const { pinia, obsPortalDataStore: store } = createTestStores()
+    obsPortalDataStore = store
 
     // Mock the correct store property, `upcomingRealTimeSessions`
-    sessionsStore.upcomingRealTimeSessions = [
+    obsPortalDataStore.upcomingRealTimeSessions = [
       { id: 'session1', start: startTime },
       { id: 'session2', start: startTime2 }
     ]
@@ -44,7 +44,7 @@ describe('UpcomingBookings.vue', () => {
 
   it('fetches sessions on mount', async () => {
     expect(fetchApiCall).toHaveBeenCalled()
-    expect(sessionsStore.upcomingRealTimeSessions.length).toBe(2)
+    expect(obsPortalDataStore.upcomingRealTimeSessions.length).toBe(2)
 
     await wrapper.vm.$nextTick()
 
@@ -55,7 +55,7 @@ describe('UpcomingBookings.vue', () => {
   it('deletes a session on click', async () => {
     fetchApiCall.mockImplementation(({ url }) => {
       if (url.includes('session1')) {
-        sessionsStore.upcomingRealTimeSessions = sessionsStore.upcomingRealTimeSessions.filter(session => session.id !== 'session1')
+        obsPortalDataStore.upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions.filter(session => session.id !== 'session1')
       }
     })
 
@@ -68,6 +68,6 @@ describe('UpcomingBookings.vue', () => {
         method: 'DELETE'
       })
     )
-    expect(sessionsStore.upcomingRealTimeSessions.length).toBe(1)
+    expect(obsPortalDataStore.upcomingRealTimeSessions.length).toBe(1)
   })
 })

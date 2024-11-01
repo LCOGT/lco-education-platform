@@ -34,12 +34,6 @@ describe('SchedulingView.vue', () => {
       endDate: new Date(new Date().getTime() + 3600 * 1000)
     }
 
-    const mockHeaders = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Token mock-token'
-    }
-
     const mockRequestList = [
       {
         acceptability_threshold: 90,
@@ -111,14 +105,13 @@ describe('SchedulingView.vue', () => {
 
     wrapper.vm.observationData = mockObservationData
 
-    await wrapper.vm.scheduleObservation()
+    await wrapper.vm.sendObservationRequest()
 
     await flushPromises()
 
     expect(fetchApiCall).toHaveBeenCalledWith({
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
-      header: mockHeaders,
       body: {
         name: 'UserObservation',
         proposal: 'LCOSchedulerTest',

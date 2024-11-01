@@ -15,13 +15,13 @@ vi.mock('../../../utils/api.js', () => ({
 // Avoids cross-test pollution and ensures a clean slate for each test
 function createComponent () {
   // Initialize the stores using the shared utility
-  const { pinia, sessionsStore } = createTestStores()
+  const { pinia, obsPortalDataStore } = createTestStores()
 
   // Set up initial state for the sessions store
-  sessionsStore.fulfilledRequests = [
-    { id: 'session1', start: '2024-08-01T12:00:00Z' },
-    { id: 'session2', start: '2024-08-01T12:30:00Z' }
-  ]
+  obsPortalDataStore.completedObservations = {
+    'session1': { id: 'session1', start: '2024-08-01T12:00:00Z' },
+    'session2': { id: 'session2', start: '2024-08-01T12:30:00Z' }
+  }
   // Mount the component with the pinia stores provided
   return mount(MyGallery, {
     global: {

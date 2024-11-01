@@ -19,11 +19,24 @@ describe('SchedulingSettings.vue', () => {
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
       if (successCallback) {
         successCallback({
-          optical_elements: [
-            { name: 'Filter 1', code: 'F1', schedulable: true },
-            { name: 'Filter 2', code: 'F2', schedulable: true },
-            { name: 'Filter 3', code: 'F3', schedulable: false }
-          ]
+          '0M4-SCICAM-QHY600': {
+            'class': '0m4',
+            'optical_elements': {
+              'filters': [
+                { name: 'Filter A', code: 'FA', schedulable: true },
+                { name: 'Filter B', code: 'FB', schedulable: false }
+              ]
+            }
+          },
+          '0M4-SCICAM-FLI': {
+            'class': '0m4',
+            'optical_elements': {
+              'filters': [
+                { name: 'Filter D', code: 'FD', schedulable: true },
+                { name: 'Filter E', code: 'FE', schedulable: true }
+              ]
+            }
+          }
         })
       }
     })
@@ -43,11 +56,8 @@ describe('SchedulingSettings.vue', () => {
   it('calls fetchApiCall to get filter list on mount', async () => {
     expect(fetchApiCall).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'http://mock-api.com/opticalelementgroups/128/',
+        url: 'http://mock-api.com/instruments',
         method: 'GET',
-        headers: expect.objectContaining({
-          Authorization: expect.any(String)
-        }),
         successCallback: expect.any(Function),
         failCallback: expect.any(Function)
       })
@@ -57,8 +67,9 @@ describe('SchedulingSettings.vue', () => {
 
     // filters through the non-schedulable filters
     expect(wrapper.vm.filterList).toEqual([
-      { name: 'Filter 1', code: 'F1' },
-      { name: 'Filter 2', code: 'F2' }
+      { name: 'Filter A', code: 'FA' },
+      { name: 'Filter D', code: 'FD' },
+      { name: 'Filter E', code: 'FE' }
     ])
 
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
@@ -107,30 +118,27 @@ describe('SchedulingSettings.vue', () => {
   })
 
   it('emits exposuresUpdated when exposures are added', async () => {
-    const mockFilterList = {
-      optical_elements: [
-        { name: 'Filter 1', code: 'F1', schedulable: true }
-      ]
-    }
+    // Checks that filterList has been populated correctly
+    expect(wrapper.vm.filterList).toEqual([
+      { name: 'Filter A', code: 'FA' },
+      { name: 'Filter D', code: 'FD' },
+      { name: 'Filter E', code: 'FE' }
+    ])
 
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback(mockFilterList)
-    })
-
-    await flushPromises()
-
-    // Simulate adding an exposure
-    wrapper.vm.settings.filter = 'F2'
+    // Simulates selecting a filter from the dropdown
+    wrapper.vm.settings.filter = 'FA'
+    wrapper.vm.settings.filterName = 'Filter A'
     wrapper.vm.settings.exposureTime = '30'
     wrapper.vm.settings.count = '15'
+
     await wrapper.vm.addExposure()
 
-    // Check if exposuresUpdated was emitted with the correct payload
+    // Check that the event is emitted with the expected payload
     expect(wrapper.emitted().exposuresUpdated).toBeTruthy()
     expect(wrapper.emitted().exposuresUpdated[0][0]).toEqual([
       {
-        filter: 'F2',
-        filterName: 'Filter 2',
+        filter: 'FA',
+        filterName: 'Filter A',
         exposureTime: '30',
         count: '15'
       }
