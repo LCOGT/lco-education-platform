@@ -1,7 +1,6 @@
 <script setup>
 import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { useUserDataStore } from '../../stores/userData.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const props = defineProps({
@@ -22,7 +21,6 @@ const props = defineProps({
 const emits = defineEmits(['exposuresUpdated', 'targetUpdated'])
 
 const configurationStore = useConfigurationStore()
-const userDataStore = useUserDataStore()
 
 const projectName = ref('')
 const targetList = ref([{ name: '', exposures: [], ra: '', dec: '' }])
@@ -116,7 +114,6 @@ const addExposure = () => {
     settings.exposureTime = ''
     settings.count = ''
     emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
-    console.log('Exposures updated:', targetList.value[activeTargetIndex.value].exposures)
   }
 }
 

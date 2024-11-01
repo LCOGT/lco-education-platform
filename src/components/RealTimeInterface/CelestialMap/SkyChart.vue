@@ -1,11 +1,11 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useObsPortalDataStore } from '../../../stores/sessions'
+import { ref, onMounted } from 'vue'
+import { useRealTimeSessionsStore } from '../../../stores/sessions'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const lat = ref(35)
 const lng = ref(-105)
@@ -146,7 +146,7 @@ function initializeCelestial () {
 }
 
 onMounted(() => {
-  const currentSession = obsPortalDataStore.currentSession
+  const currentSession = realTimeSessionsStore.currentSession
   if (currentSession && currentSession.site) {
     const siteInfo = sites[currentSession.site]
     if (siteInfo && Celestial) {

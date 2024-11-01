@@ -1,30 +1,30 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useObsPortalDataStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/sessions'
 import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 
 const configurationStore = useConfigurationStore()
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const timeRemaining = ref(0)
 const loading = ref(true)
 
-const selectedSession = obsPortalDataStore.currentSession
+const selectedSession = realTimeSessionsStore.currentSession
 const site = computed(() => selectedSession.site)
 const telescope = computed(() => selectedSession.telescope)
 
 const statusNotExpired = computed(() => {
-  return obsPortalDataStore.currentStatus === 'ACTIVE' || obsPortalDataStore.currentStatus === 'UNEXPIRED' || obsPortalDataStore.currentStatus === 'INACTIVE'
+  return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
 
 const statusSessionNotActive = computed(() => {
   if (configurationStore.demo == true) {
     return false
   } else {
-    return ((obsPortalDataStore.currentStatus === 'INACTIVE' || obsPortalDataStore.currentStatus === 'UNEXPIRED') && timeRemaining.value >= 0)
+    return ((realTimeSessionsStore.currentStatus === 'INACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining.value >= 0)
   }
 })
 
@@ -43,31 +43,31 @@ function countdown () {
   }, 1000)
 }
 
-watch(() => obsPortalDataStore.currentStatus, (newStatus, oldStatus) => {
+watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
   } else {
-    obsPortalDataStore.resetSessionState()
+    realTimeSessionsStore.resetSessionState()
     timeRemaining.value = 0
-    obsPortalDataStore.updateImageCaptureState(false)
+    realTimeSessionsStore.updateImageCaptureState(false)
   }
 })
 
 onBeforeUnmount(() => {
-  obsPortalDataStore.stopPolling()
+  realTimeSessionsStore.stopPolling()
 })
 
 onMounted(async () => {
   loading.value = true
   // initiate the handshake and retrieve a token prior to polling
-  await obsPortalDataStore.fetchSessionToken()
-  obsPortalDataStore.startPolling()
+  await realTimeSessionsStore.fetchSessionToken()
+  realTimeSessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {
-    // if (timeRemaining.value > 0 && (obsPortalDataStore.currentStatus === 'ACTIVE' || obsPortalDataStore.currentStatus === 'UNEXPIRED' || obsPortalDataStore.currentStatus === 'INACTIVE')) {
+    // if (timeRemaining.value > 0 && (realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')) {
     clearInterval(checkTimeRemaining)
     loading.value = false
-    // } else if (obsPortalDataStore.currentStatus === 'EXPIRED' || timeRemaining.value <= 0) {
+    // } else if (realTimeSessionsStore.currentStatus === 'EXPIRED' || timeRemaining.value <= 0) {
     // clearInterval(checkTimeRemaining)
     // loading.value = false
     // }
@@ -88,13 +88,13 @@ onMounted(async () => {
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionPending/>
         </div>
-       <div v-else-if="(obsPortalDataStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
+       <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
           <h2>Live Observing Session</h2>
           <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionStarted/>
         </div>
-       <div v-else-if="timeRemaining <= 0 && (obsPortalDataStore.currentStatus === 'EXPIRED' || obsPortalDataStore.currentStatus === 'INACTIVE')">
+       <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">
           <p><span class="red-bg px-2 py-2">Session has ended</span></p>
         </div>
       </div>

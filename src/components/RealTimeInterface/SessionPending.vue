@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
-import { useObsPortalDataStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import WindyMap from './GlobeMap/WindyMap.vue'
 
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
-const selectedSession = obsPortalDataStore.currentSession
+const selectedSession = realTimeSessionsStore.currentSession
 
 const lat = computed(() => sites[selectedSession.site]?.lat)
 const lon = computed(() => sites[selectedSession.site]?.lon)

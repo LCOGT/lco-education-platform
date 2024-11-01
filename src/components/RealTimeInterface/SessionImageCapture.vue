@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
-import { useObsPortalDataStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/sessions'
 import { LottieAnimation } from 'lottie-web-vue'
 import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const configurationStore = useConfigurationStore()
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const status = ref(null)
 let pollingInterval = null
@@ -40,7 +40,7 @@ const fetchTelescopeStatus = async () => {
     imagesDone.value = false
     return
   }
-  const token = obsPortalDataStore.getTokenForCurrentSession
+  const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -71,7 +71,7 @@ const goBackToSessionStarted = () => {
 }
 
 const sendStopCommand = async () => {
-  const token = obsPortalDataStore.getTokenForCurrentSession
+  const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

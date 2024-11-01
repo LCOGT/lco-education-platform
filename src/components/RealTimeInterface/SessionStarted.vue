@@ -5,13 +5,13 @@ import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
 import { calcAltAz } from '../../utils/visibility.js'
-import { useObsPortalDataStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/sessions'
 import sites from '../../utils/sites.JSON'
 import { fetchApiCall } from '../../utils/api'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useUserDataStore } from '../../stores/userData'
 
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
 const userDataStore = useUserDataStore()
 
@@ -20,7 +20,7 @@ const isCapturingImages = computed(() => {
     // Change this to true to test the image capture component and false for target select
     return true
   } else {
-    return obsPortalDataStore.isCapturingImagesForCurrentSession
+    return realTimeSessionsStore.isCapturingImagesForCurrentSession
   }
 })
 
@@ -39,7 +39,7 @@ const loading = ref(false)
 const exposureError = ref('')
 const isExposureTimeValid = ref(true)
 
-const currentSession = obsPortalDataStore.currentSession
+const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
 
 function getRaDecFromTargetName () {
@@ -87,7 +87,7 @@ function changeFov (fov) {
 }
 
 const resetValues = () => {
-  obsPortalDataStore.updateImageCaptureState(true)
+  realTimeSessionsStore.updateImageCaptureState(true)
   ra.value = ''
   dec.value = ''
   targetName.value = ''
@@ -103,7 +103,7 @@ const sendGoCommand = async () => {
   exposureError.value = ''
   isExposureTimeValid.value = true
 
-  const token = obsPortalDataStore.getTokenForCurrentSession
+  const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -117,9 +117,9 @@ const sendGoCommand = async () => {
     expTime: exposTime,
     name: targetName.value,
     ra: Number(ra.value) / 15,
-    proposalId: obsPortalDataStore.currentSession.proposal,
-    requestGroupId: obsPortalDataStore.currentSession.request_group_id,
-    requestId: obsPortalDataStore.currentSession.request.id
+    proposalId: realTimeSessionsStore.currentSession.proposal,
+    requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
+    requestId: realTimeSessionsStore.currentSession.request.id
   }
   if (configurationStore.demo == true) {
     loading.value = false
@@ -163,7 +163,7 @@ const getFilterList = async () => {
 
 function updateRenderGallery (value) {
   if (!value) {
-    obsPortalDataStore.updateImageCaptureState(false)
+    realTimeSessionsStore.updateImageCaptureState(false)
   }
 }
 

@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { useObsPortalDataStore } from '../stores/sessions'
+import { useRealTimeSessionsStore } from '../stores/sessions'
+import { useObsPortalDataStore } from '../stores/obsPortalData'
 import { useUserDataStore } from '../stores/userData'
 import { useConfigurationStore } from '../stores/configuration'
 
@@ -8,6 +9,7 @@ export function createTestStores () {
   setActivePinia(pinia)
 
   // Create stores and set the necessary state for the tests
+  const realTimeSessionsStore = useRealTimeSessionsStore()
   const obsPortalDataStore = useObsPortalDataStore()
   const userDataStore = useUserDataStore()
   const configurationStore = useConfigurationStore()
@@ -22,6 +24,7 @@ export function createTestStores () {
 
   return {
     pinia,
+    realTimeSessionsStore,
     obsPortalDataStore,
     userDataStore,
     configurationStore

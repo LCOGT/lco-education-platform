@@ -1,21 +1,20 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useObsPortalDataStore } from '../../stores/sessions'
-import { useUserDataStore } from '../../stores/userData'
+import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
-const obsPortalDataStore = useObsPortalDataStore()
-const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
+const obsPortalDataStore = useObsPortalDataStore()
 
 const thumbnailsMap = ref({})
 const loading = ref(true)
 
 const filteredSessions = computed(() => {
   const now = new Date()
-  const cutoffTime = new Date(now.getTime() - 16 * 60 * 1000)
+  const sixteenMinutes = 16 * 60 * 1000
+  const cutoffTime = new Date(now.getTime() - sixteenMinutes)
   // Object.values returns an array of all the values of the object
   const sessions = Object.values(obsPortalDataStore.completedObservations)
   const filtered = sessions
@@ -25,17 +24,9 @@ const filteredSessions = computed(() => {
 })
 
 const getThumbnails = async (observationId) => {
-  const token = userDataStore.authToken
-  const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `Token ${token}`
-  }
-
   await fetchApiCall({
-    url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${observationId}&size=small`,
+    url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${observationId}&size=large`,
     method: 'GET',
-    header: headers,
     successCallback: (data) => {
       if (data.results.length > 0) {
         thumbnailsMap.value[observationId] = data.results.map(result => result.url)

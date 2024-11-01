@@ -1,16 +1,18 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
-import { useObsPortalDataStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/sessions'
+import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
-const obsPortalDataStore = useObsPortalDataStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
+const obsPortalDataStore = useObsPortalDataStore()
 
 const requestGroups = ref([])
 // change to bookings and add an icon to show completion
@@ -18,19 +20,19 @@ const sortedSessions = computed(() => {
   const now = new Date().getTime()
   // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
-  const sessions = obsPortalDataStore.upcomingRealTimeSessions || []
+  const sessions = Object.values(obsPortalDataStore.upcomingRealTimeSessions)
   return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
     .slice()
     .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
 
 const selectSession = (sessionId) => {
-  obsPortalDataStore.currentSessionId = sessionId
+  realTimeSessionsStore.currentSessionId = sessionId
   router.push(`/realtime/${sessionId}`)
 }
 
 async function deleteSession (sessionId) {
-  obsPortalDataStore.currentSessionId = sessionId
+  realTimeSessionsStore.currentSessionId = sessionId
   const token = userDataStore.authToken
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
@@ -42,7 +44,7 @@ async function deleteSession (sessionId) {
 }
 
 onMounted(() => {
-  obsPortalDataStore.fetchObservations()
+  obsPortalDataStore.fetchCompleteObservationsAndUpcomingRTSessions()
   obsPortalDataStore.fetchPendingRequestGroups()
   requestGroups.value = obsPortalDataStore.pendingRequestGroups
 })

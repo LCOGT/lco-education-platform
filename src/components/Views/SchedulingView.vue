@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
-import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
 
@@ -11,7 +10,7 @@ import { formatToUTC } from '../../utils/formatTime'
 const level = ref('')
 const observationData = ref(null)
 const showScheduled = ref(false)
-const userDataStore = useUserDataStore()
+const operatorValue = ref('')
 const displayButton = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
@@ -97,22 +96,21 @@ const sendObservationRequest = async () => {
       requestList.push(...targets.map(target => createRequest(target, target.exposures, startDate, endDate)))
     }
 
-    const token = userDataStore.authToken
-    const headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Token ${token}`
+    if (observationData.value.target || observationData.value.targets.length === 1) {
+      operatorValue.value = 'SINGLE'
+    } else if (observationData.value.targets.length > 1) {
+      operatorValue.value = 'MANY'
     }
 
     await fetchApiCall({
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
-      header: headers,
       body: {
         'name': 'UserObservation',
         // TO DO: get proposals from user and use the proposal ID here
         'proposal': 'LCOSchedulerTest',
         'ipp_value': 1.05,
+        'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
       },

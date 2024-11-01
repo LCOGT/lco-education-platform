@@ -3,17 +3,11 @@ import { fetchApiCall } from '../utils/api'
 import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
 import { useConfigurationStore } from './configuration'
-import { useUserDataStore } from './userData'
+import { useObsPortalDataStore } from './obsPortalData'
 
-const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-const fifteenDaysAgo = new Date(new Date().getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
-export const useObsPortalDataStore = defineStore('sessions', {
+export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
   state () {
     return {
-      completedObservations: {},
-      upcomingRealTimeSessions: [],
-      pendingRequestGroups: [],
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
@@ -24,7 +18,10 @@ export const useObsPortalDataStore = defineStore('sessions', {
   persist: true,
   getters: {
     currentSession (state) {
-      const currentSession = state.upcomingRealTimeSessions.find(session => session.id === state.currentSessionId)
+      const obsPortalDataStore = useObsPortalDataStore()
+      const upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions
+      const currentSession = upcomingRealTimeSessions[state.currentSessionId]
+      // .find(session => session.id === state.currentSessionId)
       // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
       return toRaw(currentSession)
     },
@@ -40,33 +37,6 @@ export const useObsPortalDataStore = defineStore('sessions', {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = false
       }
-    },
-    sortSessions (response) {
-      const sessionCutoff = new Date(new Date().getTime() - 16 * 60 * 1000).toISOString()
-      for (const result of response.results) {
-        const sessionEnd = new Date(result.end).toISOString()
-        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < sessionCutoff)) {
-          if (!this.completedObservations[result.id]) {
-            this.completedObservations[result.id] = result
-          }
-        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > sessionCutoff) {
-          if (!this.upcomingRealTimeSessions.some(req => req.id === result.id)) {
-            this.upcomingRealTimeSessions.push(result)
-          }
-        }
-      }
-    },
-    async fetchObservations () {
-      const configurationStore = useConfigurationStore()
-      const userDataStore = useUserDataStore()
-      const username = userDataStore.username
-      await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start&created_after=${fifteenDaysAgo}&created_before=${tomorrow}`,
-        method: 'GET',
-        successCallback: (response) => {
-          this.sortSessions(response)
-        }
-      })
     },
     async fetchSessionToken () {
       const configurationStore = useConfigurationStore()
@@ -124,25 +94,6 @@ export const useObsPortalDataStore = defineStore('sessions', {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
-    },
-    fetchPendingRequestGroups () {
-      const configurationStore = useConfigurationStore()
-      const userDataStore = useUserDataStore()
-      const username = userDataStore.username
-      const token = userDataStore.authToken
-      const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Token ${token}`
-      }
-      fetchApiCall({
-        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}created_after=${fifteenDaysAgo}&created_before=${tomorrow}`,
-        method: 'GET',
-        header: headers,
-        successCallback: (response) => {
-          this.pendingRequestGroups = response.results
-        }
-      })
     }
   }
 })
