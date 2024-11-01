@@ -48,7 +48,6 @@ describe('BeginnerScheduling.vue', () => {
     endDate.setDate(startDate.getDate() + 15)
 
     const newDateRange = [startDate, endDate]
-    console.log('newDateRange', newDateRange)
 
     await wrapper.vm.handleDateRangeUpdate(newDateRange)
 
