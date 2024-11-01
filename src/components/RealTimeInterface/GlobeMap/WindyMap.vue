@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue'
-import { useSessionsStore } from '../../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../../stores/realTimeSessions'
 import sites from '../../../utils/sites.JSON'
 
-const sessionsStore = useSessionsStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
-const selectedSession = sessionsStore.currentSession
+const selectedSession = realTimeSessionsStore.currentSession
 
 const siteInfo = computed(() => {
   if (selectedSession && selectedSession.site) {

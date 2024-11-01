@@ -1,11 +1,11 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useSessionsStore } from '../../../stores/sessions'
+import { ref, onMounted } from 'vue'
+import { useRealTimeSessionsStore } from '../../../stores/realTimeSessions'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
-const sessionsStore = useSessionsStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const lat = ref(35)
 const lng = ref(-105)
@@ -146,7 +146,7 @@ function initializeCelestial () {
 }
 
 onMounted(() => {
-  const currentSession = sessionsStore.currentSession
+  const currentSession = realTimeSessionsStore.currentSession
   if (currentSession && currentSession.site) {
     const siteInfo = sites[currentSession.site]
     if (siteInfo && Celestial) {

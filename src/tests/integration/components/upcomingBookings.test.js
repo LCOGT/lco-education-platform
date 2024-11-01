@@ -22,19 +22,18 @@ const startTime2 = new Date(now + 45 * 60000).toISOString()
 
 describe('UpcomingBookings.vue', () => {
   let wrapper
-  let sessionsStore
+  let obsPortalDataStore
 
   beforeEach(() => {
     vi.resetAllMocks()
-    const { pinia, sessionsStore: store } = createTestStores()
-    sessionsStore = store
+    const { pinia, obsPortalDataStore: store } = createTestStores()
+    obsPortalDataStore = store
 
-    sessionsStore.sessions = {
-      results: [
-        { id: 'session1', start: startTime },
-        { id: 'session2', start: startTime2 }
-      ]
-    }
+    // Mock the correct store property, `upcomingRealTimeSessions`
+    obsPortalDataStore.upcomingRealTimeSessions = [
+      { id: 'session1', start: startTime },
+      { id: 'session2', start: startTime2 }
+    ]
 
     wrapper = mount(UpcomingBookings, {
       global: {
@@ -45,7 +44,7 @@ describe('UpcomingBookings.vue', () => {
 
   it('fetches sessions on mount', async () => {
     expect(fetchApiCall).toHaveBeenCalled()
-    expect(sessionsStore.sessions.results.length).toBe(2)
+    expect(obsPortalDataStore.upcomingRealTimeSessions.length).toBe(2)
 
     await wrapper.vm.$nextTick()
 
@@ -56,9 +55,10 @@ describe('UpcomingBookings.vue', () => {
   it('deletes a session on click', async () => {
     fetchApiCall.mockImplementation(({ url }) => {
       if (url.includes('session1')) {
-        sessionsStore.sessions.results = sessionsStore.sessions.results.filter(session => session.id !== 'session1')
+        obsPortalDataStore.upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions.filter(session => session.id !== 'session1')
       }
     })
+
     const deleteButtons = wrapper.findAll('.deleteButton')
     expect(deleteButtons.length).toBe(2)
     await deleteButtons.at(0).trigger('click')
@@ -68,6 +68,6 @@ describe('UpcomingBookings.vue', () => {
         method: 'DELETE'
       })
     )
-    expect(sessionsStore.sessions.results.length).toBe(1)
+    expect(obsPortalDataStore.upcomingRealTimeSessions.length).toBe(1)
   })
 })
