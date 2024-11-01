@@ -42,12 +42,19 @@ describe('BeginnerScheduling.vue', () => {
     })
 
     // Simulate selecting a date range (which triggers fetchTargets)
-    const newDateRange = [new Date(2024, 10, 10), new Date(2024, 10, 15)]
+    const startDate = new Date()
+    const endDate = new Date()
+    // Adds 15 days to the start date
+    endDate.setDate(startDate.getDate() + 15)
+
+    const newDateRange = [startDate, endDate]
+    console.log('newDateRange', newDateRange)
+
     await wrapper.vm.handleDateRangeUpdate(newDateRange)
 
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
     expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'https://whatsup.lco.global/range/?start=2024-11-10T22:00:00&end=2024-11-15T22:00:00&aperture=0m4&mode=full',
+      url: `https://whatsup.lco.global/range/?start=${startDate.toISOString().split('.')[0]}&end=${endDate.toISOString().split('.')[0]}&aperture=0m4&mode=full`,
       method: 'GET',
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
