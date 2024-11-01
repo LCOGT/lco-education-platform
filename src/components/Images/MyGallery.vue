@@ -13,6 +13,7 @@ const loading = ref(true)
 
 const filteredSessions = computed(() => {
   const now = new Date()
+  // choosing 16 minutes because each session is 15 minutes long and this way we can show the last session once it's completed
   const sixteenMinutes = 16 * 60 * 1000
   const cutoffTime = new Date(now.getTime() - sixteenMinutes)
   // Object.values returns an array of all the values of the object

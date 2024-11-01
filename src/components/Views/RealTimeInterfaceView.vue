@@ -64,13 +64,8 @@ onMounted(async () => {
   realTimeSessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {
-    // if (timeRemaining.value > 0 && (realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')) {
     clearInterval(checkTimeRemaining)
     loading.value = false
-    // } else if (realTimeSessionsStore.currentStatus === 'EXPIRED' || timeRemaining.value <= 0) {
-    // clearInterval(checkTimeRemaining)
-    // loading.value = false
-    // }
   }, 100)
 })
 </script>

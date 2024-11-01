@@ -21,7 +21,6 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       const obsPortalDataStore = useObsPortalDataStore()
       const upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions
       const currentSession = upcomingRealTimeSessions[state.currentSessionId]
-      // .find(session => session.id === state.currentSessionId)
       // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
       return toRaw(currentSession)
     },
