@@ -5,12 +5,13 @@ metadata: # kpt-merge: /example
   name: frontend
   annotations:
     internal.kpt.dev/upstream-identifier: '|Service|default|frontend'
+  labels:
+    app.kubernetes.io/component: frontend
 spec:
   type: ClusterIP
   selector:
     app.kubernetes.io/component: frontend
-
-ports:
-  - name: frontend
-    port: 8080
-    targetPort: frontend
+  ports:
+    - name: frontend
+      port: 8080
+      targetPort: frontend

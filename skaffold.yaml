@@ -9,7 +9,7 @@ build:
   artifacts:
     - image: lco-education-platform
       custom:
-        buildCommand: skaffold-builder-buildx --build-arg FONTAWESOME_PACKAGE_TOKEN
+        buildCommand: skaffold-builder-buildx --build-arg FONTAWESOME_PACKAGE_TOKEN=${FONTAWESOME_PACKAGE_TOKEN}
         dependencies:
           dockerfile:
             path: Dockerfile

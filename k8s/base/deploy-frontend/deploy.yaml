@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/deployment-apps-v1.json
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,41 +16,36 @@ spec:
     spec:
       securityContext:
         fsGroup: 1000
-
       volumes:
         - name: dist
           emptyDir:
             sizeLimit: 256Mi
-
       initContainers:
         - name: build-files
           image: lco-education-platform
           command:
-            - npm run build
-
+            - "sh"
+            - "-c"
+            - "cp -r /app/dist/* /app/volume"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
             readOnlyRootFilesystem: true
-
           envFrom:
             - secretRef:
                 name: env
                 optional: false
-
           resources:
             requests:
-              cpu: 50m
-              memory: 16Mi
+              cpu: 1000m
+              memory: 256Mi
             limits:
-              cpu: 50m
-              memory: 16Mi
-
+              cpu: 2000m
+              memory: 512Mi
           volumeMounts:
             - name: dist
-              mountPath: /app/dist
-
+              mountPath: /app/volume
       containers:
         - name: default
           image: ghcr.io/static-web-server/static-web-server:2
@@ -61,22 +55,18 @@ spec:
             - --health
             - --port=8080
             - --host=0.0.0.0
-
           securityContext:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
             readOnlyRootFilesystem: true
-
           volumeMounts:
             - name: dist
               mountPath: /app/dist
-
           ports:
             - name: frontend
               containerPort: 8080
               protocol: TCP
-
           envFrom:
             - secretRef:
                 name: env

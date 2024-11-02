@@ -10,7 +10,7 @@ namespace: lco-education-platform
 secretGenerator:
   - behavior: merge
     envs:
-    - ./secrets.env
+      - ./secrets.env
     name: env
     type: Opaque
 
