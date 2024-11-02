@@ -3,11 +3,11 @@ import { fetchApiCall } from '../utils/api'
 import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
 import { useConfigurationStore } from './configuration'
+import { useObsPortalDataStore } from './obsPortalData'
 
-export const useSessionsStore = defineStore('sessions', {
+export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
   state () {
     return {
-      sessions: [],
       currentSessionId: null,
       currentStatus: '',
       fetchInterval: null,
@@ -18,12 +18,11 @@ export const useSessionsStore = defineStore('sessions', {
   persist: true,
   getters: {
     currentSession (state) {
-      const currentSession = state.sessions.results.find(session => session.id === state.currentSessionId)
+      const obsPortalDataStore = useObsPortalDataStore()
+      const upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions
+      const currentSession = upcomingRealTimeSessions[state.currentSessionId]
       // for some reason, vue3 returns a *proxy* object that we can't send over HTTP, so convert it to JSON first.
       return toRaw(currentSession)
-    },
-    getAllSessions (state) {
-      return state.sessions
     },
     getTokenForCurrentSession (state) {
       return state.sessionTokens[state.currentSessionId] || ''
@@ -36,23 +35,6 @@ export const useSessionsStore = defineStore('sessions', {
     resetSessionState () {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = false
-      }
-    },
-    async fetchSessions () {
-      const configurationStore = useConfigurationStore()
-      await fetchApiCall({
-        url: configurationStore.observationPortalUrl + 'observations/?observation_type=REAL_TIME&limit=1000&ordering=start',
-        method: 'GET',
-        successCallback: (response) => {
-          this.sessions = response
-        }
-      })
-      if (this.sessions.results.length > 0) {
-        for (const session of this.sessions.results) {
-          if (session.date) {
-            session.date = new Date(session.date)
-          }
-        }
       }
     },
     async fetchSessionToken () {
@@ -95,7 +77,6 @@ export const useSessionsStore = defineStore('sessions', {
         } else if (this.currentStatus === 'ACTIVE') {
           nextInterval = 1000
         }
-
         this.fetchInterval = setTimeout(poll, nextInterval)
       }
 

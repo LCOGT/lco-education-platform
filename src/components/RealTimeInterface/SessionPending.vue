@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
-import { useSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import sites from '../../utils/sites.JSON'
 import WindyMap from './GlobeMap/WindyMap.vue'
 
-const sessionsStore = useSessionsStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
-const selectedSession = sessionsStore.currentSession
+const selectedSession = realTimeSessionsStore.currentSession
 
 const lat = computed(() => sites[selectedSession.site]?.lat)
 const lon = computed(() => sites[selectedSession.site]?.lon)

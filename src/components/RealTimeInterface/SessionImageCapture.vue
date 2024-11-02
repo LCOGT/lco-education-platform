@@ -4,13 +4,13 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
-import { useSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { LottieAnimation } from 'lottie-web-vue'
 import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const configurationStore = useConfigurationStore()
-const sessionsStore = useSessionsStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const status = ref(null)
 let pollingInterval = null
@@ -21,6 +21,10 @@ const emits = defineEmits(['updateRenderGallery'])
 
 const imagesCaptured = computed(() => {
   return status.value.status.availability === 'Available' && status.value.status.instrument === 'Idle' && status.value.status.progress === 'Ready' && status.value.status.telescope === 'Tracking' && thumbnailsFetched.value === true
+})
+
+const failedToCaptureImages = computed(() => {
+  return status.value.status === 'Unknown'
 })
 
 const fetchTelescopeStatus = async () => {
@@ -36,7 +40,7 @@ const fetchTelescopeStatus = async () => {
     imagesDone.value = false
     return
   }
-  const token = sessionsStore.getTokenForCurrentSession
+  const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -67,7 +71,7 @@ const goBackToSessionStarted = () => {
 }
 
 const sendStopCommand = async () => {
-  const token = sessionsStore.getTokenForCurrentSession
+  const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -97,7 +101,13 @@ const setCameraState = computed(() => ({
 <template>
     <div class="columns">
         <div class="column is-one-third">
-            <div v-if="status">
+          <div v-if="status">
+            <div v-if="failedToCaptureImages">
+                <div class="notification is-danger">
+                  <p>Unable to fetch telescope status</p>
+                </div>
+            </div>
+            <div v-else>
                 <div v-for="item in status" :key="item" class="image-capture">
                     <div>
                       <span class="icon-text">
@@ -148,6 +158,7 @@ const setCameraState = computed(() => ({
               @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
+        </div>
     </div>
     <button class="button red-bg" @click="sendStopCommand">
     stop

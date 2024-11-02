@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSessionsStore } from '../../stores/sessions'
+import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDate } from '../../utils/formatTime.js'
@@ -9,7 +9,7 @@ import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 
 const router = useRouter()
-const sessionsStore = useSessionsStore()
+const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
 const userDataStore = useUserDataStore()
 
@@ -126,7 +126,7 @@ const refreshTimes = () => {
 const resetSession = () => {
   errorMessage.value = null
   selectedSite.value = null
-  sessionsStore.currentSessionId = null
+  realTimeSessionsStore.currentSessionId = null
 }
 
 const blockRti = async () => {
