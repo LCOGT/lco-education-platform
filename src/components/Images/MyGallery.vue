@@ -55,12 +55,13 @@ const sessionsWithThumbnails = computed(() => {
   return sessions
 })
 
-function openDatalab (observationId, startDate, proposalId = null) {
-  // Links to Observation in Datalab Projects tab
-  let datalabQueryUrl = configurationStore.datalabUrl + 'projects/' + `?observationId=${observationId}`
-  if (startDate) datalabQueryUrl += `&startDate=${startDate}`
-  if (proposalId) datalabQueryUrl += `&proposalId=${proposalId}`
-  window.open(datalabQueryUrl, 'datalabWindow') // Avoids opening a new tab every time
+function openDatalab (observationId, startDate, proposalId) {
+  if (!observationId || !startDate || !proposalId) {
+    console.error('Missing required parameters:', { observationId, startDate, proposalId })
+    return
+  }
+  const datalabQueryUrl = `${configurationStore.datalabUrl}projects/?observationId=${observationId}&startDate=${startDate}&proposalId=${proposalId}`
+  window.open(datalabQueryUrl, 'datalabWindow')
 }
 
 </script>
