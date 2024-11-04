@@ -8,7 +8,8 @@ export const useConfigurationStore = defineStore('configuration', {
       thumbnailArchiveUrl: '',
       rtiBridgeUrl: '',
       targetNameUrl: '',
-      configdbUrl: ''
+      configdbUrl: '',
+      datalabUrl: ''
     }
   },
   persist: true

@@ -55,6 +55,15 @@ const sessionsWithThumbnails = computed(() => {
   return sessions
 })
 
+function openDatalab (observationId, startDate, proposalId) {
+  if (!observationId || !startDate || !proposalId) {
+    console.error('Missing required parameters:', { observationId, startDate, proposalId })
+    return
+  }
+  const datalabQueryUrl = `${configurationStore.datalabUrl}projects/?observationId=${observationId}&startDate=${startDate}&proposalId=${proposalId}`
+  window.open(datalabQueryUrl, 'datalabWindow')
+}
+
 </script>
 
 <template>
@@ -64,6 +73,7 @@ const sessionsWithThumbnails = computed(() => {
   <div class="container">
     <div v-for="obs in sessionsWithThumbnails" :key="obs.id">
       <h3 class="startTime">{{ formatDate(obs.start) }}</h3>
+      <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
       <div class="columns is-multiline">
         <div
           class="column is-one-quarter-desktop is-half-tablet"
