@@ -55,6 +55,14 @@ const sessionsWithThumbnails = computed(() => {
   return sessions
 })
 
+function openDatalab (observationId, startDate, proposalId = null) {
+  // Links to Observation in Datalab Projects tab
+  let datalabQueryUrl = configurationStore.datalabUrl + 'projects/' + `?observationId=${observationId}`
+  if (startDate) datalabQueryUrl += `&startDate=${startDate}`
+  if (proposalId) datalabQueryUrl += `&proposalId=${proposalId}`
+  window.open(datalabQueryUrl, 'datalabWindow') // Avoids opening a new tab every time
+}
+
 </script>
 
 <template>
@@ -64,6 +72,7 @@ const sessionsWithThumbnails = computed(() => {
   <div class="container">
     <div v-for="obs in sessionsWithThumbnails" :key="obs.id">
       <h3 class="startTime">{{ formatDate(obs.start) }}</h3>
+      <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
       <div class="columns is-multiline">
         <div
           class="column is-one-quarter-desktop is-half-tablet"
