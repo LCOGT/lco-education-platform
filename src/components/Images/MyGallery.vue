@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate } from '../../utils/formatTime.js'
@@ -51,7 +51,6 @@ const loadSessionsForPage = async (page) => {
   const startIndex = (page - 1) * pageSize
   const endIndex = startIndex + pageSize
   const sessions = filteredSessions.value.slice(startIndex, endIndex)
-
   // Clear the thumbnails map for the current page
   thumbnailsMap.value = {}
 
@@ -88,6 +87,13 @@ function openDatalab (observationId, startDate, proposalId) {
   window.open(datalabQueryUrl, 'datalabWindow')
 }
 
+// Without the watcher for filteredSessions, the thumbnails would not be fetched when the number of sessions changes
+watch(filteredSessions, (newSessions, oldSessions) => {
+  if (newSessions.length !== oldSessions.length) {
+    loadSessionsForPage(currentPage.value)
+  }
+})
+
 onMounted(() => {
   loadSessionsForPage(currentPage.value)
 })
@@ -101,7 +107,6 @@ onMounted(() => {
   <div class="container">
     <div v-for="obs in sessionsWithThumbnails" :key="obs.id">
       <h3 class="startTime">{{ formatDate(obs.start) }}</h3>
-      <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
       <div class="columns is-multiline">
         <div
           class="column is-one-quarter-desktop is-half-tablet"
@@ -112,6 +117,7 @@ onMounted(() => {
           </figure>
         </div>
       </div>
+      <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
     </div>
     <!-- Pagination Controls -->
     <div class="pagination-controls">
