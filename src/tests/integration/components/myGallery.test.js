@@ -32,7 +32,6 @@ function createComponent () {
 
 describe('MyGallery.vue', () => {
   beforeEach(() => {
-    // Reset all mocks before each test
     vi.resetAllMocks()
   })
 
@@ -53,9 +52,8 @@ describe('MyGallery.vue', () => {
         })
       }
     })
-
-    const wrapper = createComponent()
-    await wrapper.vm.$nextTick()
+    createComponent()
+    await flushPromises()
 
     // Two API calls are made - one for each session ID - to fetch images for both sessions
     expect(fetchApiCall).toHaveBeenCalledTimes(2)
@@ -85,7 +83,7 @@ describe('MyGallery.vue', () => {
     })
 
     const wrapper = createComponent()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
 
     expect(wrapper.find('.loading').exists()).toBe(false)
 
