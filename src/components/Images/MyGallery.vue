@@ -45,7 +45,7 @@ const getThumbnails = async (observationId) => {
   })
 }
 
-const loadSessionsForPage = async (page) => {
+const loadThumbnailsForPage = async (page) => {
   loading.value = true
   // Calculate the start and end index for the current page
   const startIndex = (page - 1) * pageSize
@@ -65,7 +65,7 @@ const loadSessionsForPage = async (page) => {
 
 const changePage = (page) => {
   currentPage.value = page
-  loadSessionsForPage(page)
+  loadThumbnailsForPage(page)
 }
 
 const sessionsWithThumbnails = computed(() => {
@@ -90,12 +90,12 @@ function openDatalab (observationId, startDate, proposalId) {
 // Without the watcher for filteredSessions, the thumbnails would not be fetched when the number of sessions changes
 watch(filteredSessions, (newSessions, oldSessions) => {
   if (newSessions.length !== oldSessions.length) {
-    loadSessionsForPage(currentPage.value)
+    loadThumbnailsForPage(currentPage.value)
   }
 })
 
 onMounted(() => {
-  loadSessionsForPage(currentPage.value)
+  loadThumbnailsForPage(currentPage.value)
 })
 
 </script>
