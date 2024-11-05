@@ -11,7 +11,7 @@ const route = useRoute()
 const router = useRouter()
 
 const userDataStore = useUserDataStore()
-const username = userDataStore.username
+const username = computed(() => userDataStore.username)
 
 const configurationStore = useConfigurationStore()
 const loadedConfig = computed(() => configurationStore.isConfigLoaded)
@@ -54,6 +54,7 @@ watch(
   },
   { immediate: true }
 )
+
 </script>
 
 <template>
@@ -80,8 +81,8 @@ watch(
         <router-link class="navbar-item" to="/observe">Observe</router-link>
         <router-link class="navbar-item" to="/datalab">DataLab</router-link>
         <div class="buttons">
-          <router-link class="navbar-item button red-bg" to="/login" v-if="!username">Login</router-link>
           <span class="navbar-item" v-if="username">{{ username }}</span>
+            <router-link class="navbar-item button red-bg" to="/login" v-else-if="!username">Login</router-link>
         </div>
       </div>
     </div>
