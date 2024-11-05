@@ -32,7 +32,6 @@ function createComponent () {
 
 describe('MyGallery.vue', () => {
   beforeEach(() => {
-    // Reset all mocks before each test
     vi.resetAllMocks()
   })
 
@@ -53,20 +52,19 @@ describe('MyGallery.vue', () => {
         })
       }
     })
-
-    const wrapper = createComponent()
-    await wrapper.vm.$nextTick()
+    createComponent()
+    await flushPromises()
 
     // Two API calls are made - one for each session ID - to fetch images for both sessions
     expect(fetchApiCall).toHaveBeenCalledTimes(2)
     expect(fetchApiCall).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'http://mock-api.com/thumbnails/?observation_id=session1&size=large'
+        url: 'http://mock-api.com/thumbnails/?observation_id=session1&size=small'
       })
     )
     expect(fetchApiCall).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'http://mock-api.com/thumbnails/?observation_id=session2&size=large'
+        url: 'http://mock-api.com/thumbnails/?observation_id=session2&size=small'
       })
     )
   })
@@ -85,7 +83,7 @@ describe('MyGallery.vue', () => {
     })
 
     const wrapper = createComponent()
-    await wrapper.vm.$nextTick()
+    await flushPromises()
 
     expect(wrapper.find('.loading').exists()).toBe(false)
 
