@@ -32,7 +32,7 @@ const totalPages = computed(() => {
 
 const getThumbnails = async (observationId) => {
   await fetchApiCall({
-    url: `${configurationStore.thumbnailArchiveUrl}thumbnails/?observation_id=${observationId}&size=large`,
+    url: `${configurationStore.thumbnailArchiveUrl}thumbnails/?observation_id=${observationId}&size=small`,
     method: 'GET',
     successCallback: (data) => {
       if (data.results.length > 0) {
