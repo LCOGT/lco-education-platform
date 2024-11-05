@@ -59,12 +59,12 @@ describe('MyGallery.vue', () => {
     expect(fetchApiCall).toHaveBeenCalledTimes(2)
     expect(fetchApiCall).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'http://mock-api.com/thumbnails/?observation_id=session1&size=large'
+        url: 'http://mock-api.com/thumbnails/?observation_id=session1&size=small'
       })
     )
     expect(fetchApiCall).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: 'http://mock-api.com/thumbnails/?observation_id=session2&size=large'
+        url: 'http://mock-api.com/thumbnails/?observation_id=session2&size=small'
       })
     )
   })
