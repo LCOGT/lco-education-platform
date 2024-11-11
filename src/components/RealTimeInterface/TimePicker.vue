@@ -22,6 +22,9 @@ const localTimes = ref([])
 
 const timeInterval = 15
 
+const today = new Date()
+const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+
 const emits = defineEmits(['timeSelected'])
 
 // Loads template only after the obs portal has returned available times
@@ -196,15 +199,6 @@ async function getAvailableTimes () {
   })
 }
 
-// Used to block out dates that are not in the availableTimes object from the date picker
-const isDateAllowed = (date) => {
-  // Gets the dates from availableTimes
-  const availableDates = Object.keys(availableTimes.value)
-  const firstDate = new Date(Math.min(...availableDates.map(date => new Date(date))))
-  const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
-  return date >= firstDate && date <= lastDate
-}
-
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -226,6 +220,7 @@ watch(startTime, (newTime, oldTime) => {
 onMounted(() => {
   getAvailableTimes()
 })
+
 </script>
 
 <template>
@@ -238,7 +233,15 @@ onMounted(() => {
       <div class="column is-one-third">
         <p>Select a date and time:</p>
         <div>
-          <v-date-picker v-model="date" class="blue-bg" :allowed-dates="isDateAllowed" @click="refreshTimes" />
+          <VDatePicker
+            v-model="date"
+            mode="date"
+            :min-date="today"
+            :max-date="oneWeekFromNow"
+            is-required
+            @update:model-value="refreshTimes"
+            expanded
+          />
         </div>
       </div>
       <div class="column">
