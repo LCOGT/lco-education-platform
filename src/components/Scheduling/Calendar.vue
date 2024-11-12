@@ -11,8 +11,8 @@ watch(dateRange, (newVal) => {
   emits('updateDateRange', newVal)
 })
 
-onMounted(() => {
-  fetchSemesterData()
+onMounted(async () => {
+  await fetchSemesterData()
 })
 
 </script>
