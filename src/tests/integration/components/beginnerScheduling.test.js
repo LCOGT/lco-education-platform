@@ -13,7 +13,6 @@ describe('BeginnerScheduling.vue', () => {
   let wrapper
 
   beforeEach(() => {
-    console.log('clearing')
     fetchApiCall.mockClear()
     const { pinia } = createTestStores()
 
