@@ -33,8 +33,8 @@ const handleExposuresUpdate = (exposures) => {
 }
 
 const handleDateRangeUpdate = (dateRange) => {
-  startDate.value = dateRange[0].toISOString().split('T')[0]
-  endDate.value = dateRange[1].toISOString().split('T')[0]
+  startDate.value = dateRange.start.toISOString().split('T')[0]
+  endDate.value = dateRange.end.toISOString().split('T')[0]
   emitSelections()
 }
 
