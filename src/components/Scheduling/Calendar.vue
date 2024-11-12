@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch, defineEmits } from 'vue'
+import { ref, watch, defineEmits, onMounted } from 'vue'
+import { fetchSemesterData, currentSemesterEnd } from '../../utils/calendarUtils'
 
 const emits = defineEmits(['updateDateRange'])
 
@@ -8,6 +9,10 @@ const today = new Date()
 
 watch(dateRange, (newVal) => {
   emits('updateDateRange', newVal)
+})
+
+onMounted(() => {
+  fetchSemesterData()
 })
 
 </script>
@@ -20,6 +25,7 @@ watch(dateRange, (newVal) => {
         mode="date"
         is-range
         :min-date="today"
+        :max-date="new Date(currentSemesterEnd)"
         placeholder="Select Dates"
         is-required
         />
