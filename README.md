@@ -36,6 +36,15 @@ Create a cluster and container registry.
 ctlptl apply -f local-cluster.yaml -f local-registry.yaml
 ```
 
+Make sure you update the skaffold.env.changeme and k8s/base/secrets.env.changeme to include the fontawesome package token
+
+```
+mv skaffold.env.changeme skaffold.env
+mv k8s/base/secrets.env.changeme k8s/base/secrets.env
+```
+
+Then edit these and insert the token.
+
 Finally, to build and deploy the service to the cluster we just created:
 ```
 skaffold -m app dev --port-forward
