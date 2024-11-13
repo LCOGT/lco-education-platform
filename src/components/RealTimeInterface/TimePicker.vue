@@ -21,9 +21,9 @@ const availableTimes = ref({})
 const localTimes = ref([])
 
 const timeInterval = 15
-
-const today = new Date()
-const oneWeekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+const today = ref(new Date())
+const oneYearFromNow = ref(new Date())
+oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
 
 const emits = defineEmits(['timeSelected'])
 
@@ -199,6 +199,31 @@ async function getAvailableTimes () {
   })
 }
 
+// Used to block out dates that are not in the availableTimes object from the date picker
+const isDateAllowed = (date) => {
+  // Gets the dates from availableTimes
+  const availableDates = Object.keys(availableTimes.value)
+  const firstDate = new Date(Math.min(...availableDates.map(date => new Date(date))))
+  const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
+  return date >= firstDate && date <= lastDate
+}
+
+const disabledDates = computed(() => {
+  if (Object.keys(availableTimes.value).length === 0) {
+    return []
+  }
+
+  // Calculate the number of days between today and one year from now
+  const daysCount = Math.floor((oneYearFromNow.value - today.value) / (1000 * 60 * 60 * 24))
+
+  // Generates an array of dates from today to one year from now to filter out the disabled dates
+  return Array.from({ length: daysCount + 1 }, (_, index) => {
+    const date = new Date(today.value)
+    date.setDate(today.value.getDate() + index)
+    return date
+  }).filter(date => !isDateAllowed(date))
+})
+
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -237,7 +262,8 @@ onMounted(() => {
             v-model="date"
             mode="date"
             :min-date="today"
-            :max-date="oneWeekFromNow"
+            :disabled-dates="disabledDates"
+            :max-date="oneYearFromNow"
             is-required
             @update:model-value="refreshTimes"
             expanded
