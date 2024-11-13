@@ -10,9 +10,13 @@ labels:
       app.kubernetes.io/name: lco-education-platform
     includeSelectors: true
 
-secretGenerator:
-  - name: env
-    type: Opaque
-
 configMapGenerator:
-  - name: env
+  - name: app-config
+    files:
+     - config.json
+
+secretGenerator:
+ - name: env
+   envs:
+    - ./secrets.env
+   type: Opaque

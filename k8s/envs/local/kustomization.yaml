@@ -6,16 +6,3 @@ resources:
   - ./ns
 
 namespace: lco-education-platform
-
-secretGenerator:
-  - behavior: merge
-    envs:
-      - ./secrets.env
-    name: env
-    type: Opaque
-
-configMapGenerator:
-  - behavior: merge
-    envs:
-      - ./settings.env
-    name: env
