@@ -26,3 +26,4 @@ pnpm-debug.log*
 
 k8s/envs/local/secrets.env
 skaffold.env
+local-kubeconfig

@@ -27,7 +27,6 @@ This project includes kubernetes manifests that allow it to be deployed to a kub
 To run this project in a local kind cluster:
 
 Drop into the nix environment that contains all of the relevant tools.
-
 ```
 nix develop --impure
 ```
@@ -38,7 +37,6 @@ ctlptl apply -f local-cluster.yaml -f local-registry.yaml
 ```
 
 Finally, to build and deploy the service to the cluster we just created:
-
 ```
 skaffold -m app dev --port-forward
 ```
