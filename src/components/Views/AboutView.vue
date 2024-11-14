@@ -2,7 +2,6 @@
 import { defineEmits } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import LogIn from '../LogIn/LogIn.vue'
 
 const emit = defineEmits(['observeClicked'])
 const router = useRouter()

@@ -59,7 +59,7 @@ watch(
 
 <template>
   <template v-if="loadedConfig">
-  <nav class="navbar" role="navigation" aria-label="main navigation">
+  <nav v-if="username" class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <router-link class="navbar-item" to="/">
         <img src="@/assets/ptr_logo.png" alt="Photon Ranch logo"/>
@@ -92,7 +92,7 @@ watch(
     <AboutView @observeClicked="handleObserveClick"/>
   </div>
   <div v-else>
-    <section class="hero">
+    <section v-if="username" class="hero">
       <div class="container">
         <div class="columns is-vcentered">
           <div class="column is-one-quarter">
