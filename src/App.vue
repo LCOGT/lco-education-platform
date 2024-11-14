@@ -21,6 +21,13 @@ function handleObserveClick () {
   router.push('/dashboard')
 }
 
+function logout () {
+  userDataStore.username = ''
+  userDataStore.authToken = ''
+  userDataStore.profile = {}
+  router.push('/login')
+}
+
 onMounted(async () => {
   try {
     const response = await fetch('/config/config.json')
@@ -81,8 +88,13 @@ watch(
         <router-link class="navbar-item" to="/observe">Observe</router-link>
         <router-link class="navbar-item" to="/datalab">DataLab</router-link>
         <div class="buttons">
-          <span class="navbar-item" v-if="username">{{ username }}</span>
-            <router-link class="navbar-item button red-bg" to="/login" v-else-if="!username">Login</router-link>
+          <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link">{{ username }}</a>
+            <div class="navbar-dropdown">
+            <a class="navbar-item" @click="logout">Log Out</a>
+          </div>
+        </div>
+          <router-link class="navbar-item button red-bg" to="/login" v-if="!username">Login</router-link>
         </div>
       </div>
     </div>
