@@ -146,8 +146,8 @@ const fetchTargets = async (startDate, endDate) => {
 
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
-  startDate.value = newDateRange[0].toISOString().split('.')[0]
-  endDate.value = newDateRange[1].toISOString().split('.')[0]
+  startDate.value = newDateRange.start.toISOString().split('.')[0]
+  endDate.value = newDateRange.end.toISOString().split('.')[0]
   fetchTargets(startDate.value, endDate.value)
 }
 

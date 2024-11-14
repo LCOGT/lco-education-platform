@@ -46,14 +46,16 @@ describe('BeginnerScheduling.vue', () => {
     const endDate = new Date()
     // Adds 15 days to the start date
     endDate.setDate(startDate.getDate() + 15)
-
-    const newDateRange = [startDate, endDate]
-
+    const newDateRange = {
+      start: startDate,
+      end: endDate
+    }
     await wrapper.vm.handleDateRangeUpdate(newDateRange)
 
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    // Because the Calendar component is a child of BeginnerScheduling, this test also makes the api call to fetch semester data (which is not tested here)
+    expect(fetchApiCall).toHaveBeenCalledTimes(2)
     expect(fetchApiCall).toHaveBeenCalledWith({
-      url: `https://whatsup.lco.global/range/?start=${startDate.toISOString().split('.')[0]}&end=${endDate.toISOString().split('.')[0]}&aperture=0m4&mode=full`,
+      url: `https://whatsup.lco.global/range/?start=${newDateRange.start.toISOString().split('.')[0]}&end=${newDateRange.end.toISOString().split('.')[0]}&aperture=0m4&mode=full`,
       method: 'GET',
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
