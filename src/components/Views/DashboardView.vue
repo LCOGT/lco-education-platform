@@ -12,10 +12,10 @@ function closeHomeView () {
 </script>
 
 <template>
+    <div v-if="homeIsVisible">
+        <HomeView @close="closeHomeView"/>
+    </div>
     <div class="container">
-        <div v-if="homeIsVisible">
-            <HomeView @close="closeHomeView"/>
-        </div>
         <div class="columns">
             <div class="column is-three-fifths">
                 <MyGallery />
