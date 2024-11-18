@@ -25,7 +25,7 @@ onMounted(async () => {
         mode="date"
         is-range
         :min-date="today"
-        :max-date="new Date(currentSemesterEnd)"
+        :max-date="currentSemesterEnd"
         placeholder="Select Dates"
         is-required
         />
