@@ -1,0 +1,23 @@
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: app
+build:
+  tagPolicy:
+    gitCommit:
+      variant: Tags
+  artifacts:
+    - image: lco-education-platform
+      custom:
+        buildCommand: skaffold-builder-buildx --build-arg FONTAWESOME_PACKAGE_TOKEN=${FONTAWESOME_PACKAGE_TOKEN}
+        dependencies:
+          dockerfile:
+            path: Dockerfile
+manifests:
+  kustomize:
+    paths:
+      - k8s/envs/local/
+deploy:
+  kubectl: {}
+  logs:
+    prefix: podAndContainer
