@@ -189,11 +189,9 @@ const bookDate = () => {
 }
 
 async function getAvailableTimes () {
-  const token = userDataStore.authToken
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + 'realtime/availability/',
     method: 'GET',
-    header: { Authorization: `Token ${token}` },
     successCallback: (responseData) => { availableTimes.value = processTelescopeAvailability(responseData) },
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
