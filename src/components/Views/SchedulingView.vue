@@ -107,7 +107,6 @@ const sendObservationRequest = async () => {
       method: 'POST',
       body: {
         'name': 'UserObservation',
-        // TO DO: get proposals from user and use the proposal ID here
         'proposal': observationData.value.proposal,
         'ipp_value': 1.05,
         'operator': operatorValue.value,

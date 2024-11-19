@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, defineEmits } from 'vue'
+import { ref, defineEmits } from 'vue'
 import { useUserDataStore } from '../../stores/userData'
 
 const emit = defineEmits(['selectionsComplete'])
@@ -10,17 +10,17 @@ const activeProposals = proposals.filter(proposal => proposal.current === true)
 
 const selectedProposal = ref()
 
-watch(selectedProposal, (newValue) => {
-  emit('selectionsComplete', newValue)
-})
-
 </script>
 
 <template>
   <template v-if="proposals.length">
     <div>
       <label for="proposalSelect">Select a proposal:</label>
-      <select id="proposalSelect" v-model="selectedProposal">
+      <select
+      id="proposalSelect"
+      v-model="selectedProposal"
+      @change="emit('selectionsComplete', selectedProposal)"
+      >
         <option v-for="proposal in activeProposals" :key="proposal.id" :value="proposal.id">
           {{ proposal.id }}
         </option>
