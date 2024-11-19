@@ -2,6 +2,7 @@
 import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { fetchApiCall } from '../../utils/api.js'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   showProjectField: {
@@ -145,10 +146,22 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="container">
+    <div class="columns">
+      <div class="column is-one-third">
       <div v-if="showProjectField" class="input-wrapper">
-        <label for="project-name">Project Name:</label>
-        <input id="project-name" v-model="projectName" class="scheduling-inputs" placeholder="Enter project name" />
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+              <label for="project-name" class="label">Name</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input id="project-name" v-model="projectName" class="scheduling-inputs input" type="text" placeholder="Enter a name for your request" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Render saved targets and exposures -->
       <div v-if="targetList.length > 1">
@@ -158,50 +171,111 @@ onMounted(() => {
           </div>
         </div>
       </div>
+
+      <!-- Target input -->
+      <div v-if="showTitleField" class="input-wrapper">
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+              <label for="target-list" class="label">Target</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input
+                  id="target-list"
+                  v-model="targetList[activeTargetIndex].name"
+                  @blur="getRaDecFromTargetName"
+                  :disabled="!targetEnabled"
+                  :readonly="isTargetConfirmed"
+                  class="scheduling-inputs input"
+                  placeholder="Enter target"
+                />
+                </div>
+              </div>
+            </div>
+        </div>
+        <p v-if="targetError" class="error-text">{{ targetError }}</p>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">RA</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input type="text" v-model="targetList[activeTargetIndex].ra" class="scheduling-inputs input" readonly disabled/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field is-horizontal">
+          <div class="field-label is-normal">
+            <label class="label">Dec</label>
+          </div>
+          <div class="field-body">
+            <div class="field">
+              <div class="control">
+                <input type="text" v-model="targetList[activeTargetIndex].dec" class="scheduling-inputs input" readonly disabled/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+    </div>
+    <div class="column is-one-third">
       <!-- Render saved exposures for the active target -->
       <div v-if="targetList[activeTargetIndex].exposures.length > 0">
-        <div>
+        <div class="highlight-box">
+          <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
           {{ targetList[activeTargetIndex].name || props.target }}: {{ formatExposures(targetList[activeTargetIndex].exposures) }}
         </div>
       </div>
-      <!-- Target input -->
-      <div v-if="showTitleField" class="input-wrapper">
-        <label for="target-list">Target:</label>
-        <input
-          id="target-list"
-          v-model="targetList[activeTargetIndex].name"
-          @blur="getRaDecFromTargetName"
-          :disabled="!targetEnabled"
-          :readonly="isTargetConfirmed"
-          class="scheduling-inputs"
-          placeholder="Enter target"
-        />
-        <p v-if="targetError" class="error-text">{{ targetError }}</p>
-        <label>RA:</label>
-        <input type="text" v-model="targetList[activeTargetIndex].ra" class="scheduling-inputs" readonly disabled/>
-        <label>Dec:</label>
-        <input type="text" v-model="targetList[activeTargetIndex].dec" class="scheduling-inputs" readonly disabled/>
-      </div>
+
       <!-- Exposure settings -->
-      <div class="exposure-settings" :class="{ disabled: !exposureEnabled }">
-        <div class="select is-fullwidth">
-          <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField) || !exposureEnabled">
-            <option disabled value="">Choose a filter</option>
-              <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
-                {{ filter.name }}
-              </option>
-          </select>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Filter</label>
         </div>
-        <div class="field is-horizontal">
-          <label>Exposure Time</label>
-          <input type="text" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Exp time" />
-          <label>Count</label>
-          <input type="text" v-model="settings.count" :disabled="!exposureEnabled" placeholder="Count" />
+        <div class="field-body">
+          <div class="field is-narrow">
+            <div class="control" :class="{ disabled: !exposureEnabled }">
+              <div class="select is-fullwidth">
+                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField) || !exposureEnabled">
+                  <option disabled value="">Choose a filter</option>
+                    <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
+                      {{ filter.name }}
+                    </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Exposure</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-narrow">
+            <p class="control is-expanded">
+              <input id="exposureTime" type="number" class="input" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Seconds">
+            </p>
+            <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
+          </div>
+          <div class="times">
+            <FontAwesomeIcon icon="fa-solid fa-xmark" />
+          </div>
+          <div class="field is-narrow">
+            <p class="control is-expanded">
+              <input id="exposureCount" type="number" class="input" v-model="settings.count" :disabled="!exposureEnabled" value="1">
+            </p>
+          </div>
         </div>
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
       <!-- Add another target button -->
-      <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+    </div>
     </div>
 </template>
