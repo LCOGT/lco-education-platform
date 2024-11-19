@@ -33,12 +33,14 @@ const selectSession = (sessionId) => {
 
 async function deleteSession (sessionId) {
   realTimeSessionsStore.currentSessionId = sessionId
-  const token = userDataStore.authToken
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + `realtime/${sessionId}/`,
     method: 'DELETE',
-    header: { Authorization: `Token ${token}` },
-    successCallback: obsPortalDataStore.upcomingRealTimeSessions = obsPortalDataStore.upcomingRealTimeSessions.filter(session => session.id !== sessionId),
+    successCallback: () => {
+      const updatedSessions = { ...obsPortalDataStore.upcomingRealTimeSessions }
+      delete updatedSessions[sessionId]
+      obsPortalDataStore.upcomingRealTimeSessions = updatedSessions
+    },
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
 }
