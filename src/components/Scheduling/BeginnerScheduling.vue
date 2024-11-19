@@ -97,7 +97,6 @@ const loadMoreTargets = () => {
 }
 
 const emitSelections = () => {
-  // if (targetSelection.value && exposureSettings.value.length > 0) {
   emits('selectionsComplete', {
     target: targetSelection.value,
     settings: exposureSettings.value,
@@ -105,7 +104,6 @@ const emitSelections = () => {
     endDate: endDate.value,
     proposal: selectedProposal.value
   })
-  // }
 }
 
 const handleTargetSelection = (target) => {
