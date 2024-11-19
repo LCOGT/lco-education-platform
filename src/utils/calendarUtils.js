@@ -4,6 +4,12 @@ import { useConfigurationStore } from '../stores/configuration.js'
 let currentSemesterStart = null
 let currentSemesterEnd = null
 
+function parseISOString (s) {
+  if (s === null) return null
+  const b = s.split(/\D+/)
+  return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]))
+}
+
 const getStartAndEndDatesOfCurrentSemester = (semesters) => {
   const today = new Date()
   const currentSemester = semesters.find(semester => {
@@ -30,4 +36,4 @@ const fetchSemesterData = async () => {
   })
 }
 
-export { currentSemesterStart, currentSemesterEnd, fetchSemesterData }
+export { currentSemesterStart, currentSemesterEnd, fetchSemesterData, parseISOString }

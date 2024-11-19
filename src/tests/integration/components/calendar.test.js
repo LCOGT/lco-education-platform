@@ -4,10 +4,21 @@ import Calendar from '../../../components/Scheduling/Calendar.vue'
 import { fetchSemesterData, currentSemesterEnd } from '../../../utils/calendarUtils'
 import flushPromises from 'flush-promises'
 
-vi.mock('../../../utils/calendarUtils', () => ({
-  fetchSemesterData: vi.fn(),
-  currentSemesterEnd: '2024-08-01T12:00:00Z'
-}))
+// Partially mock the calendarUtils module
+// The terminal suggested using 'importOriginal' to do a partial mock.
+// This is necessary because we want to mock some exports (like 'fetchSemesterData' and 'currentSemesterEnd')
+// while keeping other exports (like 'parseISOString') unchanged and available.
+// 'importOriginal' represents the original module with all its exports.
+// Using 'actual' will hold all original exports, then spread them to preserve the original functionality.
+vi.mock('../../../utils/calendarUtils', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    // Include all original exports
+    ...actual,
+    fetchSemesterData: vi.fn(),
+    currentSemesterEnd: '2024-08-01T12:00:00Z'
+  }
+})
 
 describe('Calendar.vue', () => {
   let wrapper
