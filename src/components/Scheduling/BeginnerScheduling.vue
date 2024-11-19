@@ -3,6 +3,7 @@ import { ref, defineEmits } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
+import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
@@ -19,6 +20,7 @@ const loading = ref(false)
 const selectedTargets = ref([])
 const startDate = ref('')
 const endDate = ref('')
+const selectedProposal = ref()
 
 const categories = ref([
   {
@@ -81,7 +83,8 @@ const emitSelections = () => {
     target: targetSelection.value,
     settings: exposureSettings.value,
     startDate: startDate.value,
-    endDate: endDate.value
+    endDate: endDate.value,
+    proposal: selectedProposal.value
   })
   // }
 }
@@ -187,9 +190,10 @@ const handleExposuresUpdate = (exposures) => {
   </template>
   <div class="container">
     <div v-if="!dateRange">
-    <Calendar @updateDateRange="handleDateRangeUpdate"/>
+    <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
+    <Calendar v-if="selectedProposal" @updateDateRange="handleDateRangeUpdate"/>
   </div>
-    <div v-if="!objectSelected && dateRange && !loading" class="content">
+    <div v-if="!objectSelected && dateRange && !loading && selectedProposal" class="content">
       <h2>Schedule an Observation</h2>
       <p>What do you want to take pictures of?</p>
       <div v-for="category in categories" :key="category.location" class="content">

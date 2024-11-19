@@ -31,7 +31,8 @@ describe('SchedulingView.vue', () => {
       ],
       startDate: new Date(),
       // 1 hour later
-      endDate: new Date(new Date().getTime() + 3600 * 1000)
+      endDate: new Date(new Date().getTime() + 3600 * 1000),
+      proposal: 'Test Proposal'
     }
 
     const mockRequestList = [
@@ -114,7 +115,7 @@ describe('SchedulingView.vue', () => {
       method: 'POST',
       body: {
         name: 'UserObservation',
-        proposal: 'LCOSchedulerTest',
+        proposal: 'Test Proposal',
         ipp_value: 1.05,
         operator: 'SINGLE',
         observation_type: 'NORMAL',

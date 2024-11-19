@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
+import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
 
 const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
+const selectedProposal = ref()
 
 // Handle each target update and store it in the array
 const handleTargetUpdate = (target) => {
@@ -40,11 +42,12 @@ const handleDateRangeUpdate = (dateRange) => {
 
 const emits = defineEmits(['selectionsComplete'])
 const emitSelections = () => {
-  if (targetsData.value.length > 0 && startDate.value && endDate.value) {
+  if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
     emits('selectionsComplete', {
       targets: targetsData.value,
       startDate: startDate.value,
-      endDate: endDate.value
+      endDate: endDate.value,
+      proposal: selectedProposal.value
     })
   }
 }
@@ -59,7 +62,7 @@ const emitSelections = () => {
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
   />
-
+  <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <Calendar @updateDateRange="handleDateRangeUpdate" />
 </template>
 

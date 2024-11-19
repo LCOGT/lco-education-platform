@@ -7,6 +7,7 @@ import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
+import ProposalDropdown from '../Global/ProposalDropdown.vue'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -19,6 +20,7 @@ const errorMessage = ref(null)
 const selectedSite = ref(null)
 const availableTimes = ref({})
 const localTimes = ref([])
+const selectedProposal = ref()
 
 const timeInterval = 15
 const today = ref(new Date())
@@ -171,7 +173,7 @@ const blockRti = async () => {
   }
 
   const requestBody = {
-    proposal: 'LCORealtimeTest',
+    proposal: selectedProposal.value,
     name: 'Test Real Time',
     site: selectedSite.value.site,
     enclosure,
@@ -254,8 +256,9 @@ onMounted(() => {
   </template>
   <template v-if="hasAvailableTimes">
     <h2>Book your live observing session</h2>
+    <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }" />
     <div class="columns">
-      <div class="column is-one-third">
+      <div v-if="selectedProposal" class="column is-one-third">
         <p>Select a date and time:</p>
         <div>
           <VDatePicker
