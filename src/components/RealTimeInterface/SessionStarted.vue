@@ -147,8 +147,6 @@ const sendGoCommand = async () => {
 // This should change from configdbUrl/opticalelementgroups/128/ to
 // https://observe.lco.global/api/instruments and map the instruments based on what telescope is being used
 const getFilterList = async () => {
-  const token = userDataStore.authToken
-
   await fetchApiCall({
     url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
     method: 'GET',
