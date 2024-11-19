@@ -21,6 +21,8 @@ const selectedTargets = ref([])
 const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref()
+const displayedTargets = ref([])
+const totalLoaded = ref(3)
 
 const categories = ref([
   {
@@ -75,6 +77,23 @@ const handleObjectSelection = (option) => {
     ra: target.ra,
     dec: target.dec
   }))
+  displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+  totalLoaded.value = 3
+}
+
+const shuffleTargets = () => {
+  const allTargets = selectedTargets.value
+  // Shuffles the full list of targets and take the first 3
+  const shuffled = allTargets.sort(() => Math.random() - 0.5).slice(0, 3)
+  displayedTargets.value = shuffled
+}
+
+const loadMoreTargets = () => {
+  const allTargets = selectedTargets.value
+  // Calculates the new total of targets to load and stops at 15 or the total number of targets, whichever is smaller
+  const newTotalLoaded = Math.min(totalLoaded.value + 3, allTargets.length, 15)
+  displayedTargets.value = allTargets.slice(0, newTotalLoaded)
+  totalLoaded.value = newTotalLoaded
 }
 
 const emitSelections = () => {
@@ -213,7 +232,7 @@ const handleExposuresUpdate = (exposures) => {
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
   <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
   <div class="columns is-column-gap-3">
-    <div v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="column">
+    <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
       <div class="card target-highlight is-clickable">
         <header class="card-header">
           <p class="card-header-title">{{ target.name }}</p>
@@ -227,6 +246,8 @@ const handleExposuresUpdate = (exposures) => {
     </div>
   </div>
   <button class="button" @click="resetSelections">Different targets</button>
+  <button class="button" @click="shuffleTargets">Shuffle Targets</button>
+  <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
 </div>
 <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
   <h2>
