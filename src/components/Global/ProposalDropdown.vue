@@ -22,7 +22,7 @@ const selectedProposal = ref()
       @change="emit('selectionsComplete', selectedProposal)"
       >
         <option v-for="proposal in activeProposals" :key="proposal.id" :value="proposal.id">
-          {{ proposal.id }}
+          {{ proposal.title }}
         </option>
       </select>
     </div>
