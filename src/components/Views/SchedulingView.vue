@@ -135,6 +135,7 @@ const enableButton = computed(() => {
 </script>
 
 <template>
+  <section class="section  highlight">
   <div class="container">
     <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
       <h2>Submit a Request</h2>
@@ -155,7 +156,8 @@ const enableButton = computed(() => {
     <div v-if="showScheduled">
       <ScheduledObservations />
     </div>
-  </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>

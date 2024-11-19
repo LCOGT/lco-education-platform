@@ -51,8 +51,7 @@ const emitSelections = () => {
 </script>
 
 <template>
-  <h2>Photon Ranch</h2>
-  <h4>Requesting an Observation</h4>
+  <h2>Request an Observation</h2>
 
   <SchedulingSettings
     :show-project-field="true"
@@ -65,16 +64,7 @@ const emitSelections = () => {
 </template>
 
 <style scoped>
-h2 {
-  margin-top: 1em;
-}
-.input-wrapper {
-  margin: 1em;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
+
 .p-text {
   margin-right: 1em;
   font-size: 1.2em;
