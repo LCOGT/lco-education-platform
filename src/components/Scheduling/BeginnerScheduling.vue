@@ -23,6 +23,7 @@ const endDate = ref('')
 const selectedProposal = ref()
 const displayedTargets = ref([])
 const totalLoaded = ref(3)
+const allCategoryTargets = ref({})
 
 const categories = ref([
   {
@@ -67,7 +68,10 @@ const handleObjectSelection = (option) => {
 
   const filteredTargets = selectedTargets.value.filter(
     target => target.avmdesc.match(categoryRegex)
-  ).slice(0, 3)
+  )
+
+  // Store all targets for this category in allCategoryTargets
+  allCategoryTargets.value[option.object] = filteredTargets
 
   // Populate the targets for the selected object
   objectSelection.value.targets = filteredTargets.map(target => ({
@@ -82,17 +86,33 @@ const handleObjectSelection = (option) => {
 }
 
 const shuffleTargets = () => {
-  const allTargets = selectedTargets.value
-  // Shuffles the full list of targets and take the first 3
-  const shuffled = allTargets.sort(() => Math.random() - 0.5).slice(0, 3)
-  displayedTargets.value = shuffled
+  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  if (currentCategoryTargets.length === 0) return
+
+  // Shuffle the full list of targets for this category and take the first 3
+  const shuffled = [...currentCategoryTargets].sort(() => Math.random() - 0.5).slice(0, 3)
+  displayedTargets.value = shuffled.map(target => ({
+    name: target.name,
+    desc: target.desc,
+    filters: target.filters,
+    ra: target.ra,
+    dec: target.dec
+  }))
 }
 
 const loadMoreTargets = () => {
-  const allTargets = selectedTargets.value
-  // Calculates the new total of targets to load and stops at 15 or the total number of targets, whichever is smaller
-  const newTotalLoaded = Math.min(totalLoaded.value + 3, allTargets.length, 15)
-  displayedTargets.value = allTargets.slice(0, newTotalLoaded)
+  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  if (currentCategoryTargets.length === 0) return
+
+  // Calculate the new total to load, up to a maximum of 15 or the total number of targets
+  const newTotalLoaded = Math.min(totalLoaded.value + 3, currentCategoryTargets.length, 15)
+  displayedTargets.value = currentCategoryTargets.slice(0, newTotalLoaded).map(target => ({
+    name: target.name,
+    desc: target.desc,
+    filters: target.filters,
+    ra: target.ra,
+    dec: target.dec
+  }))
   totalLoaded.value = newTotalLoaded
 }
 
