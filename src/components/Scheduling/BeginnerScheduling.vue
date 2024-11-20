@@ -21,6 +21,9 @@ const selectedTargets = ref([])
 const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref()
+const displayedTargets = ref([])
+const totalLoaded = ref(3)
+const allCategoryTargets = ref({})
 
 const categories = ref([
   {
@@ -65,7 +68,10 @@ const handleObjectSelection = (option) => {
 
   const filteredTargets = selectedTargets.value.filter(
     target => target.avmdesc.match(categoryRegex)
-  ).slice(0, 3)
+  )
+
+  // Store all targets for this category in allCategoryTargets
+  allCategoryTargets.value[option.object] = filteredTargets
 
   // Populate the targets for the selected object
   objectSelection.value.targets = filteredTargets.map(target => ({
@@ -75,10 +81,43 @@ const handleObjectSelection = (option) => {
     ra: target.ra,
     dec: target.dec
   }))
+  displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+  totalLoaded.value = 3
+}
+
+const shuffleTargets = () => {
+  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  if (currentCategoryTargets.length === 0) return
+
+  // Shuffle the full list of targets for this category and take the first 3
+  const shuffled = [...currentCategoryTargets].sort(() => Math.random() - 0.5).slice(0, 3)
+  displayedTargets.value = shuffled.map(target => ({
+    name: target.name,
+    desc: target.desc,
+    filters: target.filters,
+    ra: target.ra,
+    dec: target.dec
+  }))
+}
+
+const loadMoreTargets = () => {
+  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  if (currentCategoryTargets.length === 0) return
+
+  // Calculate the new total to load, up to a maximum of 15 or the total number of targets
+  const maxNumberOfTargets = 15
+  const newTotalLoaded = Math.min(totalLoaded.value + 3, currentCategoryTargets.length, maxNumberOfTargets)
+  displayedTargets.value = currentCategoryTargets.slice(0, newTotalLoaded).map(target => ({
+    name: target.name,
+    desc: target.desc,
+    filters: target.filters,
+    ra: target.ra,
+    dec: target.dec
+  }))
+  totalLoaded.value = newTotalLoaded
 }
 
 const emitSelections = () => {
-  // if (targetSelection.value && exposureSettings.value.length > 0) {
   emits('selectionsComplete', {
     target: targetSelection.value,
     settings: exposureSettings.value,
@@ -86,7 +125,6 @@ const emitSelections = () => {
     endDate: endDate.value,
     proposal: selectedProposal.value
   })
-  // }
 }
 
 const handleTargetSelection = (target) => {
@@ -213,7 +251,7 @@ const handleExposuresUpdate = (exposures) => {
     <div v-if="objectSelected && !targetSelected && objectSelection.targets">
   <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
   <div class="columns is-column-gap-3">
-    <div v-for="target in objectSelection.targets" :key="target.name" @click="handleTargetSelection(target)" class="column">
+    <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
       <div class="card target-highlight is-clickable">
         <header class="card-header">
           <p class="card-header-title">{{ target.name }}</p>
@@ -227,6 +265,8 @@ const handleExposuresUpdate = (exposures) => {
     </div>
   </div>
   <button class="button" @click="resetSelections">Different targets</button>
+  <button class="button" @click="shuffleTargets">Shuffle Targets</button>
+  <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
 </div>
 <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
   <h2>
