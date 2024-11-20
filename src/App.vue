@@ -108,7 +108,7 @@ watch(
       <div class="container">
         <div class="columns is-vcentered">
           <div class="column is-one-quarter">
-            <h1>Observe  <FontAwesomeIcon icon="fa-solid fa-chevron-right" class="blue small" /></h1>
+            <h1 class="site-name">Observe<FontAwesomeIcon icon="fa-solid fa-chevron-right" class="blue small" /></h1>
           </div>
           <div class="column">
             <div class="tabs is-left">
