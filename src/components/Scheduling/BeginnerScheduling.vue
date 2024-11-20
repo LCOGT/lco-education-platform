@@ -24,6 +24,36 @@ const selectedProposal = ref()
 const displayedTargets = ref([])
 const totalLoaded = ref(3)
 const allCategoryTargets = ref({})
+const currentStep = ref(1)
+
+const nextStep = () => {
+  currentStep.value += 1
+}
+
+const previousStep = () => {
+  if (loading.value === true) {
+    loading.value = false
+  }
+  if (currentStep.value > 1) currentStep.value -= 1
+  // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
+  if (currentStep.value === 4) {
+    if (!objectSelection.value || !objectSelection.value.targets) {
+      // Re-populate targets if missing
+      const categoryRegex = objectCategories.find(cat => cat.label === objectSelection.value.object)?.value
+      if (categoryRegex) {
+        const filteredTargets = selectedTargets.value.filter(target => target.avmdesc.match(categoryRegex))
+        objectSelection.value.targets = filteredTargets.map(target => ({
+          name: target.name,
+          desc: target.desc,
+          filters: target.filters,
+          ra: target.ra,
+          dec: target.dec
+        }))
+        displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+      }
+    }
+  }
+}
 
 const categories = ref([
   {
@@ -83,6 +113,7 @@ const handleObjectSelection = (option) => {
   }))
   displayedTargets.value = objectSelection.value.targets.slice(0, 3)
   totalLoaded.value = 3
+  nextStep()
 }
 
 const shuffleTargets = () => {
@@ -137,6 +168,7 @@ const handleTargetSelection = (target) => {
   }))
   exposureSettings.value = [...defaultSettings.value]
   emitSelections()
+  nextStep()
 }
 
 const populateTargets = (response) => {
@@ -171,6 +203,7 @@ const populateTargets = (response) => {
     })
   }
   loading.value = false
+  nextStep()
 }
 
 const fetchTargets = async (startDate, endDate) => {
@@ -199,6 +232,7 @@ const resetSelections = () => {
   targetSelected.value = false
   beginner.value = ''
   emits('showButton', false)
+  previousStep()
 }
 
 const letMeChoose = () => {
@@ -222,16 +256,134 @@ const handleExposuresUpdate = (exposures) => {
 
 </script>
 
-<template>
+<!-- <template>
   <template v-if="loading">
-    <v-progress-circular indeterminate color="white" class="loading"/>
+    <v-progress-circular indeterminate color="white" class="loading" />
   </template>
   <div class="container">
-    <div v-if="!dateRange">
-    <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
-    <Calendar v-if="selectedProposal" @updateDateRange="handleDateRangeUpdate"/>
+    <div v-if="!dateRange || currentStep === 1">
+      <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+    </div>
+    <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
+  <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
+    <h2>Schedule an Observation</h2>
+    <p>What do you want to take pictures of?</p>
+    <div v-for="category in categories" :key="category.location" class="content">
+      <h4>{{ category.location }}</h4>
+      <div class="buttons">
+        <button
+          v-for="option in category.options"
+          :key="option.object"
+          @click="handleObjectSelection(option)"
+          class="button"
+        >
+          {{ option.object }}
+        </button>
+      </div>
+    </div>
   </div>
-    <div v-if="!objectSelected && dateRange && !loading && selectedProposal" class="content">
+  <div v-if="objectSelection.targets && currentStep === 4">
+    <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
+    <div class="columns is-column-gap-3">
+      <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column"
+      >
+        <div class="card target-highlight is-clickable">
+          <header class="card-header">
+            <p class="card-header-title">{{ target.name }}</p>
+          </header>
+          <div class="card-content">
+            <div class="content">{{ target.desc }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="button" @click="resetSelections">Different targets</button>
+    <button class="button" @click="shuffleTargets">Shuffle Targets</button>
+    <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
+  </div>
+  <div v-if="currentStep === 5">
+    <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
+      <h2>
+        Requesting an observation of
+        <span v-if="objectSelection.targets"> a </span>
+        <span class="selection blue">
+          {{ objectSelection.object }}
+          <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>
+        </span>
+      </h2>
+      <p>How do you want to set up your observation?</p>
+      <div class="field is-grouped">
+        <p class="control">
+          <button class="button" @click="letMeChoose">Let Me Choose</button>
+        </p>
+        <p class="control">
+          <button class="button" @click="useDefaults">I'm OK with Defaults</button>
+        </p>
+      </div>
+      <button class="button" @click="resetSelections">Different targets</button>
+  </div>
+  <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+    <h4>Photon Ranch will schedule this for you</h4>
+    <div class="columns">
+      <div class="column is-half">
+        <span class="icon-text">
+          <span class="icon is-large">
+            <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
+          </span>
+          <span>Any 0.35m telescope</span>
+        </span>
+        <p></p>
+        <span class="icon-text">
+          <span class="icon is-large">
+            <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
+          </span>
+          <span>Between {{ startDate }} and {{ endDate }}</span>
+        </span>
+      </div>
+      <div class="column">
+        <span class="icon-text">
+          <span class="icon is-large">
+            <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
+            </span>
+            <span class="icon-text-list">
+              <ul>
+                <li>{{ exposureSettings.length }} color images</li>
+                <li v-for="(setting, index) in exposureSettings" :key="index">
+                  {{ setting.exposureTime }}s with {{ setting.filter }} filter
+                </li>
+              </ul>
+            </span>
+          </span>
+        </div>
+  </div>
+    </div>
+    <div
+      v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"
+      class="grey-bg content px-2 py-2"
+    >
+      <SchedulingSettings
+        :show-project-field="false"
+        :show-title-field="false"
+        :target="targetSelection?.name"
+        @exposuresUpdated="handleExposuresUpdate"
+      />
+    </div>
+  </div>
+  </div>
+  <div v-if="currentStep > 1" class="navigation-buttons">
+      <button @click="previousStep" class="button">Back</button>
+  </div>
+</template> -->
+<template>
+  <template v-if="loading">
+    <v-progress-circular indeterminate color="white" class="loading" />
+  </template>
+  <div class="container">
+    <div v-if="!dateRange || currentStep === 1">
+      <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+    </div>
+    <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
+    <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
       <h2>Schedule an Observation</h2>
       <p>What do you want to take pictures of?</p>
       <div v-for="category in categories" :key="category.location" class="content">
@@ -248,90 +400,94 @@ const handleExposuresUpdate = (exposures) => {
         </div>
       </div>
     </div>
-    <div v-if="objectSelected && !targetSelected && objectSelection.targets">
-  <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
-  <div class="columns is-column-gap-3">
-    <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
-      <div class="card target-highlight is-clickable">
-        <header class="card-header">
-          <p class="card-header-title">{{ target.name }}</p>
-        </header>
-        <div class="card-content">
-          <div class="content">
-            {{ target.desc }}
+    <div v-if="objectSelection.targets && currentStep === 4">
+      <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
+      <div class="columns is-column-gap-3">
+        <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
+          <div class="card target-highlight is-clickable">
+            <header class="card-header">
+              <p class="card-header-title">{{ target.name }}</p>
+            </header>
+            <div class="card-content">
+              <div class="content">{{ target.desc }}</div>
+            </div>
           </div>
         </div>
       </div>
+      <button class="button" @click="resetSelections">Different targets</button>
+      <button class="button" @click="shuffleTargets">Shuffle Targets</button>
+      <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
     </div>
-  </div>
-  <button class="button" @click="resetSelections">Different targets</button>
-  <button class="button" @click="shuffleTargets">Shuffle Targets</button>
-  <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
-</div>
-<div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
-  <h2>
-    Requesting an observation of
-    <span v-if="objectSelection.targets"> a </span>
-    <span class="selection blue">{{ objectSelection.object }}
-      <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>
-    </span>
-  </h2>
-  <p>How do you want to set up your observation?</p>
-  <div class="field is-grouped">
-    <p class="control">
-      <button class="button" @click="letMeChoose">Let Me Choose</button>
-    </p>
-    <p class="control">
-      <button class="button" @click="useDefaults">I'm OK with Defaults</button>
-    </p>
-  </div>
-  <button class="button" @click="resetSelections">Different targets</button>
-</div>
-<div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
-  <h4>Photon Ranch will schedule this for you</h4>
-  <div class="columns">
-    <div class="column is-half">
-      <span class="icon-text">
-        <span class="icon is-large">
-          <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
-        </span>
-        <span>Any 0.35m telescope</span>
-      </span>
-      <p></p>
-      <span class="icon-text">
-        <span class="icon is-large">
-          <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
-        </span>
-        <span>Between {{ startDate }} and {{ endDate }}</span>
-      </span>
+    <div v-if="currentStep === 5">
+      <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
+        <h2>
+          Requesting an observation of
+          <span v-if="objectSelection.targets"> a </span>
+          <span class="selection blue">
+            {{ objectSelection.object }}
+            <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>
+          </span>
+        </h2>
+        <p>How do you want to set up your observation?</p>
+        <div class="field is-grouped">
+          <p class="control">
+            <button class="button" @click="letMeChoose">Let Me Choose</button>
+          </p>
+          <p class="control">
+            <button class="button" @click="useDefaults">I'm OK with Defaults</button>
+          </p>
+        </div>
+        <button class="button" @click="resetSelections">Different targets</button>
+      </div>
+      <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+        <h4>Photon Ranch will schedule this for you</h4>
+        <div class="columns">
+          <div class="column is-half">
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
+              </span>
+              <span>Any 0.35m telescope</span>
+            </span>
+            <p></p>
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
+              </span>
+              <span>Between {{ startDate }} and {{ endDate }}</span>
+            </span>
+          </div>
+          <div class="column">
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
+              </span>
+              <span class="icon-text-list">
+                <ul>
+                  <li>{{ exposureSettings.length }} color images</li>
+                  <li v-for="(setting, index) in exposureSettings" :key="index">
+                    {{ setting.exposureTime }}s with {{ setting.filter }} filter
+                  </li>
+                </ul>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+        <SchedulingSettings
+          :show-project-field="false"
+          :show-title-field="false"
+          :target="targetSelection?.name"
+          @exposuresUpdated="handleExposuresUpdate"
+        />
+      </div>
     </div>
-    <div class="column">
-      <span class="icon-text">
-        <span class="icon is-large">
-          <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
-        </span>
-        <span class="icon-text-list">
-          <ul>
-            <li>{{ exposureSettings.length }} color images</li>
-            <li v-for="(setting, index) in exposureSettings" :key="index">
-              {{ setting.exposureTime }}s with {{ setting.filter }} filter
-            </li>
-          </ul>
-        </span>
-      </span>
-    </div>
-  </div>
-</div>
-    <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))"  class="grey-bg content px-2 py-2">
-      <SchedulingSettings
-      :show-project-field="false"
-      :show-title-field="false"
-      :target="targetSelection?.name"
-      @exposuresUpdated="handleExposuresUpdate" />
+    <div v-if="currentStep > 1" class="navigation-buttons">
+      <button @click="previousStep" class="button">Back</button>
     </div>
   </div>
 </template>
-
 <style scoped>
 .loading {
   position: relative;
