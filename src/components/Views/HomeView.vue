@@ -10,6 +10,7 @@ function hideView () {
 </script>
 <template>
 <section class="hero highlight">
+    <button class="delete" aria-label="delete" @click="hideView"></button>
     <div class="container">
         <div class="hero-body">
             <div class="columns">
@@ -33,7 +34,6 @@ function hideView () {
                     </div>
                     </router-link>
                 </div>
-            <button class="close-button" @click="hideView">x</button>
             </div>
         </div>
     </div>

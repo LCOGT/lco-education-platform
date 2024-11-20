@@ -81,6 +81,14 @@ nav {
     }
 }
 
+h1.site-name {
+    overflow: visible;
+}
+
+.delete {
+    left:100%;
+}
+
 .red {
     color: $red;
 }
