@@ -105,7 +105,8 @@ const loadMoreTargets = () => {
   if (currentCategoryTargets.length === 0) return
 
   // Calculate the new total to load, up to a maximum of 15 or the total number of targets
-  const newTotalLoaded = Math.min(totalLoaded.value + 3, currentCategoryTargets.length, 15)
+  const maxNumberOfTargets = 15
+  const newTotalLoaded = Math.min(totalLoaded.value + 3, currentCategoryTargets.length, maxNumberOfTargets)
   displayedTargets.value = currentCategoryTargets.slice(0, newTotalLoaded).map(target => ({
     name: target.name,
     desc: target.desc,
