@@ -32,6 +32,7 @@ const nextStep = () => {
 
 const previousStep = () => {
   loading.value = false
+  // Prevents `Submit my request` button from showing when going back
   emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets

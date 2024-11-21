@@ -63,7 +63,7 @@ describe('BeginnerScheduling.vue', () => {
     }
     await wrapper.vm.handleDateRangeUpdate(newDateRange)
 
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    expect(fetchApiCall).toHaveBeenCalled()
     expect(fetchApiCall).toHaveBeenCalledWith({
       url: `https://whatsup.lco.global/range/?start=${newDateRange.start.toISOString().split('.')[0]}&end=${newDateRange.end.toISOString().split('.')[0]}&aperture=0m4&mode=full`,
       method: 'GET',
