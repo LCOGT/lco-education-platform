@@ -1,5 +1,4 @@
 <script setup>
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
 import { formatDate } from '../../utils/formatTime.js'
@@ -16,9 +15,6 @@ const recentCompletedObservations = recentObservations.filter(observation => obs
 const selectObservation = (observationId) => {
   router.push(`/observation/${observationId}`)
 }
-onMounted(() => {
-  console.log('Recent completed observations:', recentCompletedObservations)
-})
 </script>
 
 <template>

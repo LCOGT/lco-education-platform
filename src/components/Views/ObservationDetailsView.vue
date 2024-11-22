@@ -10,7 +10,6 @@ const obsPortalDataStore = useObsPortalDataStore()
 const observationId = route.params.id
 
 const observationDetails = computed(() => {
-  console.log('observation details:', obsPortalDataStore.completedObservations[observationId])
   return obsPortalDataStore.completedObservations[observationId] || null
 })
 </script>
