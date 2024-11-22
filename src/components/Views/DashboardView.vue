@@ -1,7 +1,9 @@
 <script setup>
 import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
-import HomeView from '../Views/HomeView.vue'
+import RecentPastScheduledObs from '../Dashboard/RecentPastScheduledObs.vue'
+import HomeView from './HomeView.vue'
+import ObservationDetailsView from './ObservationDetailsView.vue'
 import { ref } from 'vue'
 
 const homeIsVisible = ref(true)
@@ -22,6 +24,7 @@ function closeHomeView () {
             </div>
             <div class="column">
                 <UpcomingBookings />
+                <RecentPastScheduledObs />
             </div>
         </div>
     </div>
