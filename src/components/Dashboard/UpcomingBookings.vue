@@ -3,14 +3,12 @@ import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
-import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
-const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
 
