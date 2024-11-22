@@ -1,7 +1,8 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
-import { formatDate } from '../../utils/formatTime.js'
+import { onMounted } from 'vue'
+import ObservationList from './ObservationList.vue'
 
 const router = useRouter()
 const obsPortalDataStore = useObsPortalDataStore()
@@ -11,25 +12,30 @@ const completedObservations = obsPortalDataStore.completedObservations
 const twoWeeksAgo = new Date() - 14 * 24 * 60 * 60 * 1000
 const recentObservations = Object.values(completedObservations).filter(observation => new Date(observation.end) > twoWeeksAgo)
 const recentCompletedObservations = recentObservations.filter(observation => observation.state === 'COMPLETED')
+const recentRealTimeObservations = recentObservations.filter(observation => observation.state === 'PENDING')
+const recentRealTimeObservationsWithConfigurations = recentRealTimeObservations.filter(observation => observation.request.configurations.length > 0)
 
-const selectObservation = (observationId) => {
+const selectCompletedObservation = (observationId) => {
   router.push(`/observation/${observationId}`)
 }
-</script>
 
+const selectRealTimeObservation = (observationId) => {
+  router.push(`/realtime/${observationId}`)
+}
+
+onMounted(() => {
+  console.log('recent real time obs', recentRealTimeObservations)
+})
+</script>
 <template>
-    <template v-if="recentCompletedObservations">
-        <div class="bookings">
-            <h3>Recent Past Completed Requests</h3>
-            <div class="table-summary">
-                <div v-for="observation in recentCompletedObservations" :key="observation.id">
-                    <div><a @click.prevent="selectObservation(observation.id)">
-                        <div v-for="configuration in observation.request.configurations" :key="configuration.id">
-                            <p> {{ configuration.target.name.toUpperCase() }} - {{ formatDate(observation.end) }} </p>
-                        </div>
-                    </a></div>
-                </div>
-            </div>
-        </div>
-    </template>
-</template>
+    <ObservationList
+      :observations="recentCompletedObservations"
+      title="Recent Past Completed Requests"
+      :onSelect="selectCompletedObservation"
+    />
+    <ObservationList
+      :observations="recentRealTimeObservationsWithConfigurations"
+      title="Recent Past Real-Time Requests"
+      :onSelect="selectRealTimeObservation"
+    />
+  </template>
