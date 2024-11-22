@@ -64,7 +64,7 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations">
-        <h3>Pending Requests</h3>
+        <h3><span v-if="!requestGroups.length">No </span>Pending Requests</h3>
         <div class="table-summary">
             <div v-for="requestGroup in requestGroups" :key="requestGroup.id">
               <div v-for="request in requestGroup.requests" :key="request.id">
