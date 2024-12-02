@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - fix/skaffold-build
   release:
     types:
       - published
@@ -14,5 +15,5 @@ jobs:
   cd:
     uses: LCOGT/reusable-workflows/.github/workflows/continuous-deployment.yaml@main
     with:
-      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN=$FONTAWESOME_PACKAGE_TOKEN'
+      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN=$FONTAWESOME_PACKAGE_TOKEN,FOO=BAR'
     secrets: inherit
