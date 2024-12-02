@@ -7,9 +7,12 @@ on:
     types:
       - published
 
+env:
+  FONTAWESOME_PACKAGE_TOKEN: {{ secrets.FONTAWESOME_PACKAGE_TOKEN }}
+
 jobs:
   cd:
     uses: LCOGT/reusable-workflows/.github/workflows/continuous-deployment.yaml@main
     with:
-      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }},'
+      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN=$FONTAWESOME_PACKAGE_TOKEN'
     secrets: inherit
