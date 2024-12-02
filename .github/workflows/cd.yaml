@@ -15,5 +15,5 @@ jobs:
   cd:
     uses: LCOGT/reusable-workflows/.github/workflows/continuous-deployment.yaml@main
     with:
-      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN=$FONTAWESOME_PACKAGE_TOKEN,FOO=BAR'
+      secretsExposedToSkaffold: 'FONTAWESOME_PACKAGE_TOKEN,FOO'
     secrets: inherit
