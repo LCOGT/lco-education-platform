@@ -1,30 +1,34 @@
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
+import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 
-const route = useRoute()
+const thumbnailsUrl = ref([])
 const obsPortalDataStore = useObsPortalDataStore()
 
-const observationId = route.params.id
-
 const observationDetails = computed(() => {
-  return obsPortalDataStore.completedObservations[observationId] || null
+  return obsPortalDataStore.selectedConfiguration
 })
+
+onMounted(async () => {
+  if (observationDetails.value?.basename) {
+    thumbnailsUrl.value = await getThumbnails('frame_basename', observationDetails.value.basename)
+  }
+})
+
 </script>
 
 <template>
   <template v-if="observationDetails">
     <h3>Observation Details</h3>
-    <div v-for="configuration in observationDetails.request.configurations" :key="configuration.id">
-      <p>Target: {{ configuration.target.name }}</p>
-      <p>Time: {{ formatDate(observationDetails.end)}} at {{ formatTime(observationDetails.end) }}</p>
-      <p>Location: {{ observationDetails.site }}</p>
+    <div>
+      <p>Target: {{ observationDetails.OBJECT }}</p>
+      <p>Time: {{ formatDate(observationDetails.observation_day)}} at {{ formatTime(observationDetails.observation_date) }}</p>
+      <p>Location: {{ observationDetails.SITEID }}</p>
       <p>Exposure settings:</p>
-      <div v-for="instrument in configuration.instrument_configs" :key="instrument">
-        <p> {{ instrument.exposure_count }} x {{ instrument.exposure_time }} seconds in {{ instrument.optical_elements.filter }} filter</p>
+        <p> {{ observationDetails.EXPTIME }} seconds in {{ observationDetails.FILTER }} filter</p>
       </div>
-      </div>
+      <img :src="thumbnailsUrl" alt="Observation thumbnail" />
   </template>
 </template>
