@@ -54,7 +54,7 @@ const routes = [
     component: LogIn
   },
   {
-    path: '/observation/:id',
+    path: '/observationdetails/:id',
     name: 'ObservationDetails',
     component: ObservationDetailsView
   }
