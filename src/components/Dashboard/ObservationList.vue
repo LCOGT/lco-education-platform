@@ -15,6 +15,7 @@ const props = defineProps({
     required: true
   }
 })
+
 </script>
 
 <template>
@@ -22,13 +23,9 @@ const props = defineProps({
     <h3>{{ title }}</h3>
     <div class="table-summary">
       <div v-for="observation in observations" :key="observation.id">
-        <div>
-          <a @click.prevent="onSelect(observation.id)">
-            <div v-for="configuration in observation.request.configurations" :key="configuration.id">
-              <p>{{ configuration.target.name.toUpperCase() }} - {{ formatDate(observation.end) }}</p>
+            <div v-for="configuration in observation" :key="configuration.id">
+              <a @click.prevent="onSelect(configuration)"><p>{{ configuration.OBJECT.toUpperCase() }} - {{ formatDate(configuration.observation_date) }}</p></a>
             </div>
-          </a>
-        </div>
       </div>
     </div>
   </div>
