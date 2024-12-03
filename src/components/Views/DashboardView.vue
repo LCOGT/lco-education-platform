@@ -3,7 +3,6 @@ import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 import RecentPastScheduledObs from '../Dashboard/RecentPastScheduledObs.vue'
 import HomeView from './HomeView.vue'
-import ObservationDetailsView from './ObservationDetailsView.vue'
 import { ref } from 'vue'
 
 const homeIsVisible = ref(true)
