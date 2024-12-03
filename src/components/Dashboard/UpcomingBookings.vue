@@ -52,7 +52,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="bookings">
+    <div class="bookings upcoming-real-time">
       <h3 v-if="sortedSessions.length">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
@@ -63,7 +63,7 @@ onMounted(() => {
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
-    <div class="observations">
+    <div class="observations upcoming-obs">
         <h3><span v-if="!requestGroups.length">No </span>Pending Requests</h3>
         <div class="table-summary">
             <div v-for="requestGroup in requestGroups" :key="requestGroup.id">
@@ -77,7 +77,14 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>
     </div>
 </template>
-
+<style>
+  .upcoming-real-time {
+    order: 2;
+  }
+  .upcoming-obs {
+    order: 4;
+  }
+</style>
 <style scoped>
 .progress.is-primary{
     --bulma-progress-value-background-color: #A6CE39;
