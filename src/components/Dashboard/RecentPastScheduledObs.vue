@@ -66,11 +66,3 @@ onMounted(() => {
       class="completed-obs"
     />
   </template>
-<style>
-.real-time-obs {
-  order: 1;
-}
-.completed-obs {
-  order: 3;
-}
-</style>

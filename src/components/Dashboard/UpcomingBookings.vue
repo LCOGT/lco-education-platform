@@ -77,14 +77,6 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>
     </div>
 </template>
-<style>
-  .upcoming-real-time {
-    order: 2;
-  }
-  .upcoming-obs {
-    order: 4;
-  }
-</style>
 <style scoped>
 .progress.is-primary{
     --bulma-progress-value-background-color: #A6CE39;
