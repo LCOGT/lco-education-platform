@@ -9,13 +9,7 @@ build:
   artifacts:
     - image: lco-education-platform
       custom:
-        buildCommand: |
-          if [ "$FOO" == "BAR" ]; then
-            echo "Environment variable passed through"
-          else
-            echo "Environment variable not passed"
-          fi
-          skaffold-builder-buildx --build-arg FONTAWESOME_PACKAGE_TOKEN=${FONTAWESOME_PACKAGE_TOKEN}
+        buildCommand: skaffold-builder-buildx --build-arg FONTAWESOME_PACKAGE_TOKEN=${FONTAWESOME_PACKAGE_TOKEN}
         dependencies:
           dockerfile:
             path: Dockerfile
