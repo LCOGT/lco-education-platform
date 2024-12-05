@@ -14,9 +14,3 @@ configMapGenerator:
   - name: app-config
     files:
      - config.json
-
-secretGenerator:
- - name: env
-   envs:
-    - ./secrets.env
-   type: Opaque
