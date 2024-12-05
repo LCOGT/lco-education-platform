@@ -3,7 +3,7 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate } from '../../utils/formatTime.js'
-import { fetchApiCall } from '../../utils/api.js'
+import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
@@ -30,21 +30,6 @@ const totalPages = computed(() => {
   return Math.ceil(filteredSessions.value.length / pageSize)
 })
 
-const getThumbnails = async (observationId) => {
-  await fetchApiCall({
-    url: `${configurationStore.thumbnailArchiveUrl}thumbnails/?observation_id=${observationId}&size=small`,
-    method: 'GET',
-    successCallback: (data) => {
-      if (data.results.length > 0) {
-        thumbnailsMap.value[observationId] = data.results.map(result => result.url)
-      }
-    },
-    failCallback: (error) => {
-      console.error('Error fetching thumbnails for session:', observationId, error)
-    }
-  })
-}
-
 const loadThumbnailsForPage = async (page) => {
   loading.value = true
   // Calculate the start and end index for the current page
@@ -57,9 +42,11 @@ const loadThumbnailsForPage = async (page) => {
   for (const session of sessions) {
     // Initialize the thumbnails array for the session
     thumbnailsMap.value[session.id] = []
-    await getThumbnails(session.id)
+    const thumbnails = await getThumbnails('observation_id', session.id)
+    if (thumbnails.length > 0) {
+      thumbnailsMap.value[session.id] = thumbnails
+    }
   }
-
   loading.value = false
 }
 
