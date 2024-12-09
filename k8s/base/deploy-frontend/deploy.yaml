@@ -24,7 +24,7 @@ spec:
           configMap:
             name: app-config
       initContainers:
-        - name: build-files
+        - name: copy-static-files
           image: lco-education-platform
           command:
             - "sh"
@@ -35,10 +35,6 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
             readOnlyRootFilesystem: true
-          envFrom:
-            - secretRef:
-                name: env
-                optional: false
           resources:
             requests:
               cpu: 1000m
@@ -73,7 +69,3 @@ spec:
             - name: frontend
               containerPort: 8080
               protocol: TCP
-          envFrom:
-            - secretRef:
-                name: env
-                optional: false
