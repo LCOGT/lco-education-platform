@@ -11,22 +11,23 @@ const obsPortalDataStore = useObsPortalDataStore()
 const completedObservations = obsPortalDataStore.completedObservations
 const configurationStore = useConfigurationStore()
 const recentRTI = ref([])
-const recentCompleted = ref([])
+const recentScheduledObservations = ref([])
 
 // Filter out scheduled observations that are older than two weeks
 const twoWeeksAgo = new Date() - 14 * 24 * 60 * 60 * 1000
 const recentObservations = Object.values(completedObservations).filter(observation => new Date(observation.end) > twoWeeksAgo)
 const recentCompletedObservations = recentObservations.filter(observation => observation.state === 'COMPLETED')
-const recentRealTimeObservations = recentObservations.filter(observation => observation.state === 'PENDING')
+// Talk to Matt or Mark about switching observation state for real time observations
+const recentRealTimeObservations = recentObservations.filter(observation => observation.state === 'PENDING' && observation.observation_type === 'REAL_TIME')
 
-const getArchiveData = async (observationId, obsType) => {
+const getThumbnailsForObservation = async (observationId, obsType) => {
   await fetchApiCall({
     url: `${configurationStore.thumbnailArchiveUrl}frames/?observation_id=${observationId}&size=small`,
     method: 'GET',
     successCallback: (data) => {
       if (data.results.length > 0) {
         if (obsType === 'scheduled') {
-          recentCompleted.value.push(data.results)
+          recentScheduledObservations.value.push(data.results)
         } else if (obsType === 'realtime') {
           recentRTI.value.push(data.results)
         }
@@ -45,10 +46,10 @@ const selectObservationDetails = (configuration) => {
 
 onMounted(() => {
   for (const completedObservation of recentCompletedObservations) {
-    getArchiveData(completedObservation.id, 'scheduled')
+    getThumbnailsForObservation(completedObservation.id, 'scheduled')
   }
   for (const realTimeObservation of recentRealTimeObservations) {
-    getArchiveData(realTimeObservation.id, 'realtime')
+    getThumbnailsForObservation(realTimeObservation.id, 'realtime')
   }
 })
 </script>
@@ -60,7 +61,7 @@ onMounted(() => {
       class="real-time-obs"
     />
     <ObservationList
-      :observations="recentCompleted"
+      :observations="recentScheduledObservations"
       title="Recent Past Completed Requests"
       :onSelect="selectObservationDetails"
       class="completed-obs"

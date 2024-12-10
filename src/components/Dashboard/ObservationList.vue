@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate } from '../../utils/formatTime.js'
+import { formatDateMMDDYY } from '../../utils/formatTime.js'
 
 const props = defineProps({
   observations: {
@@ -24,7 +24,7 @@ const props = defineProps({
     <div class="table-summary">
       <div v-for="observation in observations" :key="observation.id">
             <div v-for="configuration in observation" :key="configuration.id">
-              <a @click.prevent="onSelect(configuration)"><p>{{ configuration.OBJECT.toUpperCase() }} - {{ formatDate(configuration.observation_date) }}</p></a>
+              <a @click.prevent="onSelect(configuration)"><p>{{ configuration.OBJECT.toUpperCase() }} - {{ formatDateMMDDYY(configuration.observation_date, ) }}</p></a>
             </div>
       </div>
     </div>
