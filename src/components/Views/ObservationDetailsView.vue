@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { formatDate, formatTime } from '../../utils/formatTime.js'
+import { formatDateTime } from '../../utils/formatTime.js'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
 import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 
@@ -24,7 +24,7 @@ onMounted(async () => {
     <h3>Observation Details</h3>
     <div>
       <p>Target: {{ observationDetails.OBJECT }}</p>
-      <p>Time: {{ formatDate(observationDetails.observation_day)}} at {{ formatTime(observationDetails.observation_date) }}</p>
+      <p>Time: {{ formatDateTime(observationDetails.observation_day, { year: 'numeric', month: 'long', day: 'numeric' })}} at {{ formatDateTime(observationDetails.observation_date, { hour: 'numeric', minute: 'numeric' }) }}</p>
       <p>Location: {{ observationDetails.SITEID }}</p>
       <p>Exposure settings:</p>
         <p> {{ observationDetails.EXPTIME }} seconds in {{ observationDetails.FILTER }} filter</p>
