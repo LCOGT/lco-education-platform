@@ -1,6 +1,6 @@
-function formatDate (dateString) {
+function formatDate (dateString, options) {
   const date = new Date(dateString)
-  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  options = { year: 'numeric', month: 'long', day: 'numeric' }
   return date.toLocaleDateString('en-US', options)
 }
 
@@ -50,4 +50,10 @@ function calculateSessionCountdown (session) {
   return Math.floor((countdown - currentTime) / 1000)
 }
 
-export { formatDate, formatTime, formatToUTC, formatCountdown, calculateSessionCountdown }
+function formatDateMMDDYY (dateString) {
+  const date = new Date(dateString)
+  const options = { month: '2-digit', day: '2-digit', year: '2-digit' }
+  return date.toLocaleDateString('en-US', options)
+}
+
+export { formatDate, formatTime, formatToUTC, formatCountdown, calculateSessionCountdown, formatDateMMDDYY }

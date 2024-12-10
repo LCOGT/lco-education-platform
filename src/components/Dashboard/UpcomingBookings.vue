@@ -3,14 +3,12 @@ import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
-import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate, formatTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
-const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
 
@@ -54,7 +52,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="bookings">
+    <div class="bookings upcoming-real-time">
       <h3 v-if="sortedSessions.length">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
@@ -65,8 +63,8 @@ onMounted(() => {
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
-    <div class="observations">
-        <h3>Pending Requests</h3>
+    <div class="observations upcoming-obs">
+        <h3><span v-if="!requestGroups.length">No </span>Pending Requests</h3>
         <div class="table-summary">
             <div v-for="requestGroup in requestGroups" :key="requestGroup.id">
               <div v-for="request in requestGroup.requests" :key="request.id">
@@ -79,7 +77,6 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>
     </div>
 </template>
-
 <style scoped>
 .progress.is-primary{
     --bulma-progress-value-background-color: #A6CE39;

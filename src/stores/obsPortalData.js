@@ -10,7 +10,9 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingRequestGroups: []
+      pendingRequestGroups: [],
+      observationDetails: {},
+      selectedConfiguration: null
     }
   },
   persist: true,
@@ -55,6 +57,9 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
           this.pendingRequestGroups = response.results
         }
       })
+    },
+    setSelectedConfiguration (configuration) {
+      this.selectedConfiguration = configuration
     }
   }
 })
