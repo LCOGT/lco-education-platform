@@ -16,7 +16,7 @@ describe('formatUtils.js', () => {
     })
 
     it('formats a local time string to "Hour:Minute AM/PM" format', () => {
-      const time = 'Wed Aug 21 2024 16:15:00 GMT-0700 (Pacific Daylight Time)'
+      const time = 'Wed Aug 21 2024 16:15:00'
       const expectedTime = '4:15 PM'
       expect(formatDateTime(time, { hour: 'numeric', minute: 'numeric' })).toBe(expectedTime)
     })
