@@ -1,13 +1,11 @@
-function formatDate (dateString, options) {
+// formats a date based on the options provided
+function formatDateTime (dateString, options) {
   const date = new Date(dateString)
-  options = { year: 'numeric', month: 'long', day: 'numeric' }
-  return date.toLocaleDateString('en-US', options)
-}
-
-function formatTime (timeString) {
-  const date = new Date(timeString)
-  const options = { hour: 'numeric', minute: 'numeric' }
-  return date.toLocaleTimeString('en-US', options)
+  if (options && (options.hour || options.minute)) {
+    return date.toLocaleTimeString('en-US', options)
+  } else {
+    return date.toLocaleDateString('en-US', options)
+  }
 }
 
 function formatToUTC (dateTime) {
@@ -50,10 +48,4 @@ function calculateSessionCountdown (session) {
   return Math.floor((countdown - currentTime) / 1000)
 }
 
-function formatDateMMDDYY (dateString) {
-  const date = new Date(dateString)
-  const options = { month: '2-digit', day: '2-digit', year: '2-digit' }
-  return date.toLocaleDateString('en-US', options)
-}
-
-export { formatDate, formatTime, formatToUTC, formatCountdown, calculateSessionCountdown, formatDateMMDDYY }
+export { formatDateTime, formatToUTC, formatCountdown, calculateSessionCountdown }

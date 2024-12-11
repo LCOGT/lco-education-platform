@@ -4,7 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
-import { formatDate, formatTime } from '../../utils/formatTime.js'
+import { formatDateTime } from '../../utils/formatTime.js'
 import { fetchApiCall } from '../../utils/api.js'
 
 const router = useRouter()
@@ -57,7 +57,7 @@ onMounted(() => {
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
         <div v-for="session in sortedSessions" :key="session.id">
-            <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDate(session.start) }}</a></div><div>{{ formatTime(session.start) }}</div>
+            <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDateTime(session.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</a></div><div>{{ formatDateTime(session.start, { hour: 'numeric', minute: 'numeric' }) }}</div>
             <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
         </div>

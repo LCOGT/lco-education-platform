@@ -2,9 +2,8 @@
 import { ref, watch, defineEmits, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
-import { useUserDataStore } from '../../stores/userData'
 import { fetchApiCall } from '../../utils/api'
-import { formatToUTC, formatDate } from '../../utils/formatTime.js'
+import { formatToUTC, formatDateTime } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
@@ -12,7 +11,6 @@ import ProposalDropdown from '../Global/ProposalDropdown.vue'
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
-const userDataStore = useUserDataStore()
 
 const date = ref(null)
 const startTime = ref(null)
@@ -282,8 +280,8 @@ onMounted(() => {
         </div>
         <div v-if="startTime" class="column">
           <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
-            <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
           <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
