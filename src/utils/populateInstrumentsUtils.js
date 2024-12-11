@@ -11,8 +11,9 @@ export const getFilterList = async () => {
   if (!response) {
     return filterList
   }
+  const instrumentClass = '0m4'
   Object.values(response).forEach((instrument) => {
-    if (instrument.class === '0m4' && instrument.optical_elements.filters) {
+    if (instrument.class === instrumentClass && instrument.optical_elements.filters) {
       const schedulableFilters = instrument.optical_elements.filters
         .filter(filter => filter.schedulable)
         .map(filter => ({ name: filter.name, code: filter.code }))
