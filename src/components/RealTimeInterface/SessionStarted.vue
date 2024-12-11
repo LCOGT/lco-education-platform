@@ -8,12 +8,11 @@ import { calcAltAz } from '../../utils/visibility.js'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import sites from '../../utils/sites.JSON'
 import { fetchApiCall } from '../../utils/api'
+import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
-import { useUserDataStore } from '../../stores/userData'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
-const userDataStore = useUserDataStore()
 
 const isCapturingImages = computed(() => {
   if (configurationStore.demo == true) {
@@ -144,21 +143,6 @@ const sendGoCommand = async () => {
   })
 }
 
-// This should change from configdbUrl/opticalelementgroups/128/ to
-// https://observe.lco.global/api/instruments and map the instruments based on what telescope is being used
-const getFilterList = async () => {
-  await fetchApiCall({
-    url: configurationStore.configdbUrl + 'opticalelementgroups/128/',
-    method: 'GET',
-    successCallback: (data) => {
-      filterList.value = data.optical_elements
-        .filter(filter => filter.schedulable)
-        .map(filter => ({ name: filter.name, code: filter.code }))
-    },
-    failCallback: (error) => { console.error('API failed with error', error) }
-  })
-}
-
 function updateRenderGallery (value) {
   if (!value) {
     realTimeSessionsStore.updateImageCaptureState(false)
@@ -174,9 +158,9 @@ watch(exposureTime, (newTime) => {
   exposureError.value = ''
 })
 
-onMounted(() => {
+onMounted(async () => {
   loading.value = false
-  getFilterList()
+  filterList.value = await getFilterList()
 })
 
 </script>
