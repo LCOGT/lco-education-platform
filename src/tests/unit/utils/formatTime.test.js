@@ -15,25 +15,25 @@ describe('formatUtils.js', () => {
     }
 
     it('formats a date string to "Month Day, Year" format', () => {
-      const date = '2024-08-15T00:00:00'
+      const date = '2024-08-15T00:00:00Z'
       const expectedDate = getLocalDateString(date, { year: 'numeric', month: 'long', day: 'numeric' })
       expect(formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' })).toBe(expectedDate)
     })
 
     it('formats a UTC time string to "Hour:Minute AM/PM" format', () => {
-      const time = '2024-08-15T15:30:00'
+      const time = '2024-08-15T15:30:00Z'
       const expectedTime = getLocalTimeString(time, { hour: 'numeric', minute: 'numeric' })
       expect(formatDateTime(time, { hour: 'numeric', minute: 'numeric' })).toBe(expectedTime)
     })
 
     it('formats a local time string to "Hour:Minute AM/PM" format', () => {
-      const time = 'Wed Aug 21 2024 16:15:00'
+      const time = 'Wed Aug 21 2024 16:15:00Z'
       const expectedTime = getLocalTimeString(time, { hour: 'numeric', minute: 'numeric' })
       expect(formatDateTime(time, { hour: 'numeric', minute: 'numeric' })).toBe(expectedTime)
     })
 
     it('formats a date string to "MM/DD/YY" format', () => {
-      const date = '2024-12-25T00:00:00'
+      const date = '2024-12-25T00:00:00Z'
       const expectedDate = getLocalDateString(date, { month: '2-digit', day: '2-digit', year: '2-digit' })
       expect(formatDateTime(date, { month: '2-digit', day: '2-digit', year: '2-digit' })).toBe(expectedDate)
     })
