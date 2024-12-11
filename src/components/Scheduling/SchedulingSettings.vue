@@ -1,7 +1,6 @@
 <script setup>
 import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { fetchApiCall } from '../../utils/api.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
