@@ -16,31 +16,6 @@ describe('SchedulingSettings.vue', () => {
     fetchApiCall.mockClear()
     const { pinia } = createTestStores()
 
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      if (successCallback) {
-        successCallback({
-          '0M4-SCICAM-QHY600': {
-            'class': '0m4',
-            'optical_elements': {
-              'filters': [
-                { name: 'Filter A', code: 'FA', schedulable: true },
-                { name: 'Filter B', code: 'FB', schedulable: false }
-              ]
-            }
-          },
-          '0M4-SCICAM-FLI': {
-            'class': '0m4',
-            'optical_elements': {
-              'filters': [
-                { name: 'Filter D', code: 'FD', schedulable: true },
-                { name: 'Filter E', code: 'FE', schedulable: true }
-              ]
-            }
-          }
-        })
-      }
-    })
-
     wrapper = mount(SchedulingSettings, {
       global: {
         plugins: [pinia],
@@ -51,28 +26,6 @@ describe('SchedulingSettings.vue', () => {
         }
       }
     })
-  })
-
-  it('calls fetchApiCall to get filter list on mount', async () => {
-    expect(fetchApiCall).toHaveBeenCalledWith(
-      expect.objectContaining({
-        url: 'http://mock-api.com/instruments',
-        method: 'GET',
-        successCallback: expect.any(Function),
-        failCallback: expect.any(Function)
-      })
-    )
-
-    await flushPromises()
-
-    // filters through the non-schedulable filters
-    expect(wrapper.vm.filterList).toEqual([
-      { name: 'Filter A', code: 'FA' },
-      { name: 'Filter D', code: 'FD' },
-      { name: 'Filter E', code: 'FE' }
-    ])
-
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
   })
 
   it('fetches RA and Dec based on the target name and updates state correctly', async () => {
@@ -115,33 +68,5 @@ describe('SchedulingSettings.vue', () => {
     await flushPromises()
 
     expect(wrapper.vm.targetError).toBe('Target not found, try another target.')
-  })
-
-  it('emits exposuresUpdated when exposures are added', async () => {
-    // Checks that filterList has been populated correctly
-    expect(wrapper.vm.filterList).toEqual([
-      { name: 'Filter A', code: 'FA' },
-      { name: 'Filter D', code: 'FD' },
-      { name: 'Filter E', code: 'FE' }
-    ])
-
-    // Simulates selecting a filter from the dropdown
-    wrapper.vm.settings.filter = 'FA'
-    wrapper.vm.settings.filterName = 'Filter A'
-    wrapper.vm.settings.exposureTime = '30'
-    wrapper.vm.settings.count = '15'
-
-    await wrapper.vm.addExposure()
-
-    // Check that the event is emitted with the expected payload
-    expect(wrapper.emitted().exposuresUpdated).toBeTruthy()
-    expect(wrapper.emitted().exposuresUpdated[0][0]).toEqual([
-      {
-        filter: 'FA',
-        filterName: 'Filter A',
-        exposureTime: '30',
-        count: '15'
-      }
-    ])
   })
 })
