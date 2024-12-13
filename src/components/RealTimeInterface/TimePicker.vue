@@ -135,6 +135,12 @@ const resetSession = () => {
   realTimeSessionsStore.currentSessionId = null
 }
 
+const showMoreTimes = () => {
+  errorMessage.value = null
+  selectedSite.value = null
+  refreshTimes()
+}
+
 const blockRti = async () => {
   // Gets the start and end times for the session
   const start = formatToUTC(startTime.value)
@@ -297,6 +303,7 @@ onMounted(() => {
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
           <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+          <v-btn variant="tonal" v-if="date" @click="showMoreTimes" class="blue-bg">Show more times</v-btn>
         </div>
         <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
