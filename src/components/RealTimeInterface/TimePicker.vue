@@ -8,6 +8,7 @@ import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
+import sites from '../../utils/sites.JSON'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -224,6 +225,15 @@ const disabledDates = computed(() => {
   }).filter(date => !isDateAllowed(date))
 })
 
+function displaySiteName (site) {
+  console.log(site)
+  if (site) {
+    return sites[site]?.name
+  } else {
+    return 'No site selected'
+  }
+}
+
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -282,7 +292,7 @@ onMounted(() => {
         </div>
         <div v-if="startTime" class="column">
           <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-if="selectedSite && !errorMessage"><span class="green">{{ displaySiteName(selectedSite.site) }}</span> selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
