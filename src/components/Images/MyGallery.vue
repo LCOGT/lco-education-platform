@@ -2,7 +2,7 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
-import { formatDate } from '../../utils/formatTime.js'
+import { formatDateTime } from '../../utils/formatTime.js'
 import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 import Modal from '../Global/Modal.vue'
 import ObservationDetailsView from '../Views/ObservationDetailsView.vue'
@@ -110,7 +110,7 @@ onMounted(() => {
   </template>
   <div class="container">
     <div v-for="obs in sessionsWithThumbnails" :key="obs.id">
-      <h3 class="startTime">{{ formatDate(obs.start) }}</h3>
+      <h3 class="startTime">{{ formatDateTime(obs.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</h3>
       <div class="columns is-multiline">
         <div
           class="column is-one-quarter-desktop is-half-tablet"
