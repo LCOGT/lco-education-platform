@@ -14,17 +14,21 @@ const selectedProposal = ref()
 
 <template>
   <template v-if="proposals.length">
-    <div>
-      <label for="proposalSelect">Select a proposal:</label>
-      <select
-      id="proposalSelect"
-      v-model="selectedProposal"
-      @change="emit('selectionsComplete', selectedProposal)"
-      >
-        <option v-for="proposal in activeProposals" :key="proposal.id" :value="proposal.id">
-          {{ proposal.title }}
-        </option>
-      </select>
+    <div class="field">
+      <label for="proposalSelect">Select the project you would like to use</label>
+        <div class="control">
+        <div class="select">
+          <select
+            id="proposalSelect"
+            v-model="selectedProposal"
+            @change="emit('selectionsComplete', selectedProposal)"
+            >
+            <option v-for="proposal in activeProposals" :key="proposal.id" :value="proposal.id">
+                {{ proposal.title }}
+              </option>
+        </select>
+        </div>
+      </div>
     </div>
   </template>
   <template v-else>

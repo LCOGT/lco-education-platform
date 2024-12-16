@@ -8,6 +8,7 @@ import { formatToUTC, formatDate } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
+import sites from '../../utils/sites.JSON'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -26,6 +27,7 @@ const timeInterval = 15
 const today = ref(new Date())
 const oneYearFromNow = ref(new Date())
 oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
+const bookingInProgess = ref(null)
 
 const emits = defineEmits(['timeSelected'])
 
@@ -134,7 +136,14 @@ const resetSession = () => {
   realTimeSessionsStore.currentSessionId = null
 }
 
+const showMoreTimes = () => {
+  errorMessage.value = null
+  selectedSite.value = null
+  refreshTimes()
+}
+
 const blockRti = async () => {
+  bookingInProgess.value = true
   // Gets the start and end times for the session
   const start = formatToUTC(startTime.value)
   const startDateTime = new Date(start)
@@ -168,20 +177,34 @@ const blockRti = async () => {
     })
   }
   if (!enclosure || !telescope) {
+    bookingInProgess.value = false
     errorMessage.value = 'Failed to find a matching telescope and enclosure for the selected site and time'
     return
   }
 
   const requestBody = {
     proposal: selectedProposal.value,
-    name: 'Test Real Time',
+    name: 'Live Observing',
     site: selectedSite.value.site,
     enclosure,
     telescope,
     start,
     end
   }
-  await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
+  await fetchApiCall({
+    url: configurationStore.observationPortalUrl + 'realtime/',
+    method: 'POST',
+    body: requestBody,
+    successCallback: bookDate,
+    failCallback: (e) => {
+      bookingInProgess.value = false
+      if (e.non_field_errors[0].includes('Not enough realtime')) {
+        errorMessage.value = 'This project does not have any live observing credit. Choose another project.'
+      } else {
+        errorMessage.value = 'Failed to book session. Please select another time'
+      }
+    }
+  })
 }
 
 const bookDate = () => {
@@ -223,6 +246,15 @@ const disabledDates = computed(() => {
     return date
   }).filter(date => !isDateAllowed(date))
 })
+
+function displaySiteName (site) {
+  console.log(site)
+  if (site) {
+    return sites[site]?.name
+  } else {
+    return 'No site selected'
+  }
+}
 
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
@@ -282,11 +314,19 @@ onMounted(() => {
         </div>
         <div v-if="startTime" class="column">
           <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-if="selectedSite && !errorMessage"><span class="green">{{ displaySiteName(selectedSite.site) }}</span> selected for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDate(date) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
-          <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+          <div v-if="!bookingInProgess">
+            <div class="buttons">
+              <button  v-if="date && selectedSite" @click="blockRti" class="button blue-bg">Book</button>
+              <button  v-if="date" @click="showMoreTimes" class="button">Show more times</button>
+            </div>
+          </div>
+          <div v-else>
+            <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
+          </div>
         </div>
         <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
