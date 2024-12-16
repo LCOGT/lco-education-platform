@@ -2,8 +2,8 @@
 
 ## Description
 
-This package provides a bare-bones `v1.Service` that you can build upon
-and use in other packages.
+This package provides a bare-bones [`v1.Service`](https://kubernetes.io/docs/concepts/services-networking/service/)
+that you can build upon and use in other packages.
 
 ## Usage
 

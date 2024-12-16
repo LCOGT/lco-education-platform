@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { fetchApiCall } from '../../utils/api.js'
+import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
@@ -35,25 +35,6 @@ const settings = reactive({
   exposureTime: '',
   count: ''
 })
-
-const getFilterList = async () => {
-  await fetchApiCall({
-    url: configurationStore.observationPortalUrl + 'instruments',
-    method: 'GET',
-    successCallback: (data) => {
-      Object.values(data).forEach(instrument => {
-        // Checks if the instrument has a "class" of "0m4" and contains filters in optical_elements
-        if (instrument.class === '0m4' && instrument.optical_elements.filters) {
-          const schedulableFilters = instrument.optical_elements.filters
-            .filter(filter => filter.schedulable)
-            .map(filter => ({ name: filter.name, code: filter.code }))
-          filterList.value.push(...schedulableFilters)
-        }
-      })
-    },
-    failCallback: (error) => { console.error('API failed with error', error) }
-  })
-}
 
 // State for enabling/disabling fields
 const targetEnabled = computed(() => {
@@ -139,8 +120,8 @@ const formatExposures = (exposures) => {
   return exposures.map(exposure => `${exposure.filterName} - ${exposure.exposureTime}s x ${exposure.count}`).join(', ')
 }
 
-onMounted(() => {
-  getFilterList()
+onMounted(async () => {
+  filterList.value = await getFilterList()
 })
 
 </script>
