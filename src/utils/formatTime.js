@@ -1,8 +1,10 @@
 // formats a date based on the options provided
 function formatDateTime (dateString, options) {
   const date = new Date(dateString)
+  // This condition is necessary because the toLocaleTimeString method does not accept the year, month, or day options
   if (options && (options.hour || options.minute)) {
     return date.toLocaleTimeString('en-US', options)
+    // And this condition is necessary because the toLocaleDateString method does not accept the hour or minute options
   } else {
     return date.toLocaleDateString('en-US', options)
   }
