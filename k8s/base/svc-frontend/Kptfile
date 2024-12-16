@@ -10,7 +10,7 @@ upstream:
     repo: https://github.com/LCOGT/kpt-pkg-catalog
     directory: /service
     ref: main
-  updateStrategy: force-delete-replace
+  updateStrategy: resource-merge
 upstreamLock:
   type: git
   git:
