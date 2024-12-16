@@ -4,6 +4,8 @@ import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDate } from '../../utils/formatTime.js'
 import { getThumbnails } from '../../utils/thumbnailsUtils.js'
+import Modal from '../Global/Modal.vue'
+import ObservationDetailsView from '../Views/ObservationDetailsView.vue'
 
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
@@ -12,6 +14,21 @@ const thumbnailsMap = ref({})
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = 5
+
+const isModalOpen = ref(false)
+const selectedObservation = ref(null)
+
+function openModal (observation) {
+  selectedObservation.value = observation
+  obsPortalDataStore.setSelectedConfiguration(observation)
+  isModalOpen.value = true
+}
+
+function closeModal () {
+  isModalOpen.value = false
+  selectedObservation.value = null
+  obsPortalDataStore.setSelectedConfiguration(null)
+}
 
 const filteredSessions = computed(() => {
   const now = new Date()
@@ -100,10 +117,17 @@ onMounted(() => {
           v-for="(thumbnailUrl, i) in thumbnailsMap[obs.id]"
           :key="obs.id + '-' + i">
           <figure class="image is-square">
-            <img :src="thumbnailUrl" class="thumbnail" />
+            <img :src="thumbnailUrl" class="thumbnail" @click="openModal(obs)" style="cursor: pointer" />
           </figure>
         </div>
       </div>
+      <Modal
+      :isOpen="isModalOpen"
+      :title="'Observation Details'"
+      @close="closeModal"
+    >
+      <ObservationDetailsView v-if="selectedObservation" :observation="selectedObservation" />
+    </Modal>
       <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
     </div>
     <!-- Pagination Controls -->

@@ -41,6 +41,7 @@ const getThumbnailsForObservation = async (observationId, obsType) => {
 
 const selectObservationDetails = (configuration) => {
   obsPortalDataStore.setSelectedConfiguration(configuration)
+  console.log('selected configuration', configuration)
   router.push(`/observationdetails/${configuration.id}`)
 }
 
