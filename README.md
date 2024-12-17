@@ -2,25 +2,25 @@
 
 This application is a part of the Photon Ranch Collection along with DataLab and the Education Platform. 
 Observe@PTR is where users, typically students, will go to request observations on the 40cm network and perform live observing.  
-![Screenshot of Dashboard]/(./Dashboard.png)
+![Screenshot of Dashboard](./Dashboard.png)
 
 ## Project Setup Instructions
 
 ## Getting Started Locally
-### STEP 0: Install Nix
+### STEP 1: Install Nix
 If you don't have Nix installed, you can follow [these steps](https://github.com/LCOGT/public-wiki/wiki/Install-Nix)
-### STEP 1: Enter the Nix Dev Environment
+### STEP 2: Enter the Nix Dev Environment
 ```
 nix develop --impure
 ```
-### STEP 2: Apply Configurations
+### STEP 3: Apply Configurations
 ```
 ctlptl apply -f local-registry.yaml local-cluster.yaml
 ```
 
 **NOTE**: If when trying to apply the configuration you see this error `Nothing found at DockerDesktop setting "vm"` and are using Docker Desktop, using OrbStack should fix that issue. This may also be an M2 problem (Apple Silicon). Or update `ctlptl` (more notes to add here after Friday)
 
-### STEP 3: Start the Skaffold Dev Loop
+### STEP 4: Start the Skaffold Dev Loop
 
 ```
 skaffold -m app dev --port-forward
