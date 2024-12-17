@@ -9,7 +9,7 @@ const getThumbnails = async (param, queryValue) => {
     method: 'GET',
     successCallback: (data) => {
       if (data.results.length > 0) {
-        data.results.forEach(result => thumbnails.push(result.url))
+        data.results.forEach(result => thumbnails.push(result))
       }
     },
     failCallback: (error) => {
