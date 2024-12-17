@@ -13,6 +13,7 @@ const observationDetails = computed(() => {
 
 onMounted(async () => {
   if (observationDetails.value?.basename) {
+    console.log('observation details', observationDetails.value)
     thumbnailsUrl.value = await getThumbnails('frame_basename', observationDetails.value.basename)
   }
 })
@@ -29,6 +30,6 @@ onMounted(async () => {
       <p>Exposure settings:</p>
         <p> {{ observationDetails.EXPTIME }} seconds in {{ observationDetails.FILTER }} filter</p>
       </div>
-      <img :src="thumbnailsUrl" alt="Observation thumbnail" />
+      <img :src="observationDetails.url" alt="Observation thumbnail" />
   </template>
 </template>
