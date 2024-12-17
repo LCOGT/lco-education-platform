@@ -1,61 +1,29 @@
 # lco-education-platform
 
-## Project setup
-```
-npm install
-```
+This application is a part of the Photon Ranch Collection along with DataLab and the Education Platform. 
+Observe@PTR is where users, typically students, will go to request observations on the 40cm network and perform live observing.  
+![Screenshot of Dashboard]/(./Dashboard.png)
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## Project Setup Instructions
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-## Running this project locally via Kubernetes
-
-This project includes kubernetes manifests that allow it to be deployed to a kubernetes cluster.
-
-To run this project in a local kind cluster:
-
-Drop into the nix environment that contains all of the relevant tools.
+## Getting Started Locally
+### STEP 0: Install Nix
+If you don't have Nix installed, you can follow [these steps](https://github.com/LCOGT/public-wiki/wiki/Install-Nix)
+### STEP 1: Enter the Nix Dev Environment
 ```
 nix develop --impure
 ```
-
-Create a cluster and container registry.
+### STEP 2: Apply Configurations
 ```
-ctlptl apply -f local-cluster.yaml -f local-registry.yaml
-```
-
-Make sure you update the skaffold.env.changeme and k8s/base/secrets.env.changeme to include the fontawesome package token
-
-```
-mv skaffold.env.changeme skaffold.env
-mv k8s/base/secrets.env.changeme k8s/base/secrets.env
+ctlptl apply -f local-registry.yaml local-cluster.yaml
 ```
 
-Then edit these and insert the token.
+**NOTE**: If when trying to apply the configuration you see this error `Nothing found at DockerDesktop setting "vm"` and are using Docker Desktop, using OrbStack should fix that issue. This may also be an M2 problem (Apple Silicon). Or update `ctlptl` (more notes to add here after Friday)
 
-Finally, to build and deploy the service to the cluster we just created:
+### STEP 3: Start the Skaffold Dev Loop
+
 ```
 skaffold -m app dev --port-forward
 ```
+After this step, you should be able to navigate to `http://127.0.0.1:8080` and run the application locally.
 
-This starts the skaffold dev loop, which will rebuild the Docker image on code change, and will re-deploy the artifacts automatically.
-
-The service will be available at http://localhost:8080
-
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-=======
-LCO's education platform for students and teachers
