@@ -39,7 +39,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start&created_after=${fifteenDaysAgo}`,
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=1000&ordering=start`,
         method: 'GET',
         successCallback: (response) => {
           this.sortResponseData(response)
