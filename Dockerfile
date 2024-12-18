@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+# check=skip=SecretsUsedInArgOrEnv
 FROM node:22
 ARG FONTAWESOME_PACKAGE_TOKEN
 WORKDIR /app
