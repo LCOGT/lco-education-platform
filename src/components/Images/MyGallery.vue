@@ -17,17 +17,17 @@ const currentPage = ref(1)
 const pageSize = 5
 
 const isModalOpen = ref(false)
-const selectedObservation = ref(null)
+const selectedObservation = ref(false)
 
 function openModal (observation) {
-  selectedObservation.value = observation
+  selectedObservation.value = true
   obsPortalDataStore.setSelectedConfiguration(observation)
   isModalOpen.value = true
 }
 
 function closeModal () {
   isModalOpen.value = false
-  selectedObservation.value = null
+  selectedObservation.value = false
   obsPortalDataStore.setSelectedConfiguration(null)
 }
 
