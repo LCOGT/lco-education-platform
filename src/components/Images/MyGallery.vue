@@ -20,7 +20,6 @@ const isModalOpen = ref(false)
 const selectedObservation = ref(null)
 
 function openModal (observation) {
-  console.log('selected observation', observation)
   selectedObservation.value = observation
   obsPortalDataStore.setSelectedConfiguration(observation)
   isModalOpen.value = true
@@ -63,7 +62,6 @@ const loadThumbnailsForPage = async (page) => {
     thumbnailsMap.value[session.id] = []
     const thumbnails = await getThumbnails('observation_id', session.id)
     if (thumbnails.length > 0) {
-      console.log('thumbnails', thumbnails)
       thumbnailsMap.value[session.id] = thumbnails.map(thumbnail => ({
         url: thumbnail.url,
         frame: thumbnail.frame
@@ -105,19 +103,11 @@ watch(filteredSessions, (newSessions, oldSessions) => {
 })
 
 const handleThumbnailClick = async (frameId) => {
-  console.log('this is frame', frameId)
-
   await fetchApiCall({
-    url: `${configurationStore.thumbnailArchiveUrl}frames/?frame_id=${frameId}&size=small`,
+    url: `${configurationStore.thumbnailArchiveUrl}frames/${frameId}`,
     method: 'GET',
-    successCallback: (data) => {
-      console.log('hello')
-      if (data.results.length > 0) {
-        console.log('here')
-        console.log('data', data)
-        const frameDetails = data.results[0]
-        console.log('Fetched Frame Details:', frameDetails)
-        obsPortalDataStore.setSelectedConfiguration(frameDetails)
+    successCallback: (frameDetails) => {
+      if (frameDetails) {
         openModal(frameDetails)
       }
     },
@@ -155,7 +145,7 @@ onMounted(() => {
       :title="'Observation Details'"
       @close="closeModal"
     >
-      <ObservationDetailsView v-if="selectedObservation" :observation="selectedObservation" />
+      <ObservationDetailsView v-if="selectedObservation" />
     </Modal>
       <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
     </div>
