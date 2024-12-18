@@ -17,17 +17,14 @@ const currentPage = ref(1)
 const pageSize = 5
 
 const isModalOpen = ref(false)
-const selectedObservation = ref(false)
 
 function openModal (observation) {
-  selectedObservation.value = true
   obsPortalDataStore.setSelectedConfiguration(observation)
   isModalOpen.value = true
 }
 
 function closeModal () {
   isModalOpen.value = false
-  selectedObservation.value = false
   obsPortalDataStore.setSelectedConfiguration(null)
 }
 
@@ -145,7 +142,7 @@ onMounted(() => {
       :title="'Observation Details'"
       @close="closeModal"
     >
-      <ObservationDetailsView v-if="selectedObservation" />
+      <ObservationDetailsView v-if="isModalOpen" />
     </Modal>
       <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
     </div>
