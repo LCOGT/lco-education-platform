@@ -18,8 +18,6 @@ nix develop --impure
 ctlptl apply -f local-registry.yaml -f local-cluster.yaml
 ```
 
-**NOTE**: If when trying to apply the configuration you see this error `Nothing found at DockerDesktop setting "vm"` and are using Docker Desktop, using OrbStack should fix that issue. This may also be an M2 problem (Apple Silicon). Or update `ctlptl` (more notes to add here after Friday)
-
 ### STEP 4: Start the Skaffold Dev Loop
 
 ```
