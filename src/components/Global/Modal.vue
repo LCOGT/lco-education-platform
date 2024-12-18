@@ -13,23 +13,20 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
-function closeModal () {
-  emit('close')
-}
 </script>
 <template>
     <div :class="['modal', { 'is-active': isOpen }]">
-      <div class="modal-background" @click="closeModal"></div>
+      <div class="modal-background" @click="() => emit('close')"></div>
       <div class="modal-card">
         <header class="modal-card-head">
           <p class="modal-card-title">{{ title }}</p>
-          <button class="delete" aria-label="close" @click="closeModal"></button>
+          <button class="delete" aria-label="close" @click="() => emit('close')"></button>
         </header>
         <section class="modal-card-body">
           <slot></slot>
         </section>
         <footer class="modal-card-foot">
-          <button class="button" @click="closeModal">Close</button>
+          <button class="button" @click="() => emit('close')">Close</button>
         </footer>
       </div>
     </div>
