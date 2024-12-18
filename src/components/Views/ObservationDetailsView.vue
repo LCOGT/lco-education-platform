@@ -12,7 +12,6 @@ const observationDetails = computed(() => {
 })
 
 onMounted(async () => {
-  console.log('ObservationDetailsView mounted')
   const thumbnailsUrl = await getThumbnails('frame_basename', observationDetails.value?.basename)
   thumbnail.value = thumbnailsUrl[0].url
 })
