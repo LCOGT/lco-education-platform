@@ -15,6 +15,7 @@ onMounted(async () => {
   const thumbnailsUrl = await getThumbnails('frame_basename', observationDetails.value?.basename)
   thumbnail.value = thumbnailsUrl[0].url
 })
+
 watch(observationDetails.value && thumbnail.value)
 
 </script>
