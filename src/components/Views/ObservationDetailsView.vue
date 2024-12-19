@@ -1,10 +1,10 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { formatDateTime } from '../../utils/formatTime.js'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
 import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 
-const thumbnailsUrl = ref([])
+const thumbnail = ref()
 const obsPortalDataStore = useObsPortalDataStore()
 
 const observationDetails = computed(() => {
@@ -12,23 +12,23 @@ const observationDetails = computed(() => {
 })
 
 onMounted(async () => {
-  if (observationDetails.value?.basename) {
-    thumbnailsUrl.value = await getThumbnails('frame_basename', observationDetails.value.basename)
-  }
+  const thumbnailsUrl = await getThumbnails('frame_basename', observationDetails.value?.basename)
+  thumbnail.value = thumbnailsUrl[0].url
 })
+
+watch(observationDetails.value && thumbnail.value)
 
 </script>
 
 <template>
   <template v-if="observationDetails">
-    <h3>Observation Details</h3>
     <div>
-      <p>Target: {{ observationDetails.OBJECT }}</p>
+      <p>Target: {{ observationDetails.target_name }}</p>
       <p>Time: {{ formatDateTime(observationDetails.observation_day, { year: 'numeric', month: 'long', day: 'numeric' })}} at {{ formatDateTime(observationDetails.observation_date, { hour: 'numeric', minute: 'numeric' }) }}</p>
       <p>Location: {{ observationDetails.SITEID }}</p>
       <p>Exposure settings:</p>
         <p> {{ observationDetails.EXPTIME }} seconds in {{ observationDetails.FILTER }} filter</p>
       </div>
-      <img :src="thumbnailsUrl" alt="Observation thumbnail" />
+      <img :src="thumbnail" alt="Observation thumbnail" />
   </template>
 </template>

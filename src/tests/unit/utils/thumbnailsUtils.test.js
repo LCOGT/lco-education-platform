@@ -20,8 +20,24 @@ describe('thumbnailsUtils.js', () => {
     it('fetches thumbnails for a given queryValue', async () => {
       const mockResponse = {
         results: [
-          { url: 'http://mock-api.com/thumbnails/1' },
-          { url: 'http://mock-api.com/thumbnails/2' }
+          {
+            'id': 123,
+            'frame': 789,
+            'size': 'small',
+            'basename': 'mockbasename-1-small_thumbnail',
+            'extension': '.jpg',
+            'key': 'secret1',
+            'url': 'http://mock-api.com/thumbnails/1'
+          },
+          {
+            'id': 456,
+            'frame': 321,
+            'size': 'small',
+            'basename': 'mockbasename-2-small_thumbnail',
+            'extension': '.jpg',
+            'key': 'secret2',
+            'url': 'http://mock-api.com/thumbnails/2'
+          }
         ]
       }
 
@@ -39,7 +55,26 @@ describe('thumbnailsUtils.js', () => {
         failCallback: expect.any(Function)
       })
 
-      expect(thumbnails).toEqual(['http://mock-api.com/thumbnails/1', 'http://mock-api.com/thumbnails/2'])
+      expect(thumbnails).toEqual([
+        {
+          'id': 123,
+          'frame': 789,
+          'size': 'small',
+          'basename': 'mockbasename-1-small_thumbnail',
+          'extension': '.jpg',
+          'key': 'secret1',
+          'url': 'http://mock-api.com/thumbnails/1'
+        },
+        {
+          'id': 456,
+          'frame': 321,
+          'size': 'small',
+          'basename': 'mockbasename-2-small_thumbnail',
+          'extension': '.jpg',
+          'key': 'secret2',
+          'url': 'http://mock-api.com/thumbnails/2'
+        }
+      ])
     })
   })
 })

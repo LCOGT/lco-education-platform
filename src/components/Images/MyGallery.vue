@@ -4,6 +4,9 @@ import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDateTime } from '../../utils/formatTime.js'
 import { getThumbnails } from '../../utils/thumbnailsUtils.js'
+import { fetchApiCall } from '../../utils/api.js'
+import Modal from '../Global/Modal.vue'
+import ObservationDetailsView from '../Views/ObservationDetailsView.vue'
 
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
@@ -12,6 +15,18 @@ const thumbnailsMap = ref({})
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = 5
+
+const isModalOpen = ref(false)
+
+function openModal (observation) {
+  obsPortalDataStore.setSelectedConfiguration(observation)
+  isModalOpen.value = true
+}
+
+function closeModal () {
+  isModalOpen.value = false
+  obsPortalDataStore.setSelectedConfiguration(null)
+}
 
 const filteredSessions = computed(() => {
   const now = new Date()
@@ -44,7 +59,10 @@ const loadThumbnailsForPage = async (page) => {
     thumbnailsMap.value[session.id] = []
     const thumbnails = await getThumbnails('observation_id', session.id)
     if (thumbnails.length > 0) {
-      thumbnailsMap.value[session.id] = thumbnails
+      thumbnailsMap.value[session.id] = thumbnails.map(thumbnail => ({
+        url: thumbnail.url,
+        frame: thumbnail.frame
+      }))
     }
   }
   loading.value = false
@@ -81,6 +99,21 @@ watch(filteredSessions, (newSessions, oldSessions) => {
   }
 })
 
+const handleThumbnailClick = async (frameId) => {
+  await fetchApiCall({
+    url: `${configurationStore.thumbnailArchiveUrl}frames/${frameId}`,
+    method: 'GET',
+    successCallback: (frameDetails) => {
+      if (frameDetails) {
+        openModal(frameDetails)
+      }
+    },
+    failCallback: (error) => {
+      console.error('Error fetching frame details:', error)
+    }
+  })
+}
+
 onMounted(() => {
   loadThumbnailsForPage(currentPage.value)
 })
@@ -97,13 +130,20 @@ onMounted(() => {
       <div class="columns is-multiline">
         <div
           class="column is-one-quarter-desktop is-half-tablet"
-          v-for="(thumbnailUrl, i) in thumbnailsMap[obs.id]"
+          v-for="(thumbnail, i) in thumbnailsMap[obs.id]"
           :key="obs.id + '-' + i">
           <figure class="image is-square">
-            <img :src="thumbnailUrl" class="thumbnail" />
+            <img :src="thumbnail.url" class="thumbnail" @click="handleThumbnailClick(thumbnail.frame)" style="cursor: pointer" />
           </figure>
         </div>
       </div>
+      <Modal
+      :isOpen="isModalOpen"
+      :title="'Observation Details'"
+      @close="closeModal"
+    >
+      <ObservationDetailsView v-if="isModalOpen" />
+    </Modal>
       <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
     </div>
     <!-- Pagination Controls -->
