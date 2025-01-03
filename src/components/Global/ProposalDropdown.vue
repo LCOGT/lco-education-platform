@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, computed, onMounted } from 'vue'
 import { useUserDataStore } from '../../stores/userData'
 
 const emit = defineEmits(['selectionsComplete'])
@@ -10,6 +10,12 @@ const activeProposals = proposals.filter(proposal => proposal.current === true)
 
 const selectedProposal = ref()
 
+onMounted(() => {
+  if (activeProposals.length) {
+    console.log('activeProposals:', activeProposals)
+  }
+})
+
 </script>
 
 <template>
@@ -18,6 +24,7 @@ const selectedProposal = ref()
       <label for="proposalSelect">Select a proposal:</label>
       <select
       id="proposalSelect"
+      class="proposal-select"
       v-model="selectedProposal"
       @change="emit('selectionsComplete', selectedProposal)"
       >
@@ -33,3 +40,11 @@ const selectedProposal = ref()
     </div>
   </template>
 </template>
+
+<style scoped>
+.proposal-select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+</style>
