@@ -20,7 +20,6 @@ export function createTestStores () {
   configurationStore.observationPortalUrl = 'http://mock-api.com/'
   configurationStore.rtiBridgeUrl = 'http://mock-api.com/'
   configurationStore.targetNameUrl = 'http://mock-api.com/'
-  configurationStore.configdbUrl = 'http://mock-api.com/'
 
   return {
     pinia,
