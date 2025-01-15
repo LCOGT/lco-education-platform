@@ -7,7 +7,6 @@ import Scheduling from '../components/Views/SchedulingView.vue'
 import About from '../components/Views/AboutView.vue'
 import BookRTI from '../components/Views/BookRTIView.vue'
 import LogIn from '../components/LogIn/LogIn.vue'
-import ObservationDetailsView from '../components/Views/ObservationDetailsView.vue'
 
 const routes = [
   {
@@ -52,11 +51,6 @@ const routes = [
     path: '/login',
     name: 'LogIn',
     component: LogIn
-  },
-  {
-    path: '/observationdetails/:id',
-    name: 'ObservationDetails',
-    component: ObservationDetailsView
   }
 ]
 

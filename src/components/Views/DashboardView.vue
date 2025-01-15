@@ -1,7 +1,6 @@
 <script setup>
 import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
-import RecentPastScheduledObs from '../Dashboard/RecentPastScheduledObs.vue'
 import HomeView from './HomeView.vue'
 import { ref } from 'vue'
 
@@ -23,7 +22,6 @@ function closeHomeView () {
             </div>
             <div class="column">
                 <UpcomingBookings />
-                <RecentPastScheduledObs />
             </div>
         </div>
     </div>
