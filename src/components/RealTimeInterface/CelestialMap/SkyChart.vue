@@ -1,22 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRealTimeSessionsStore } from '../../../stores/realTimeSessions'
+import { useSkyCoordinatesStore } from '../../../stores/skyCoordinates'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
+import { calcAltAz } from '@/utils/visibility'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
 const realTimeSessionsStore = useRealTimeSessionsStore()
+const skyCoordinatesStore = useSkyCoordinatesStore()
 
-const lat = ref(35)
-const lng = ref(-105)
-const hours_offset = ref(0)
+const lat = ref()
+const lng = ref()
 
 function updateLocation () {
   const time = new Date()
-  time.setHours(time.getHours() + hours_offset.value)
-
+  time.setHours(time.getHours())
+  time.setTime(time.getTime() + time.getTimezoneOffset() * 60000)
   Celestial.date(time)
-  Celestial.location([lat, lng])
+  Celestial.location([lat.value, lng.value])
   Celestial.resize({ width: 0 })
 }
 
@@ -46,6 +48,9 @@ function initializeCelestial () {
       designation: false,
       propername: false,
       data: 'dsos.6.json'
+    },
+    galaxies: {
+      show: true
     },
     planets: {
       show: true,
@@ -88,8 +93,8 @@ function initializeCelestial () {
       namesType: 'desig'
     },
     constellations: {
-      show: false,
-      names: false,
+      show: true,
+      names: true,
       namesType: false,
       nameStyle: {
         fill: '#cccc99',
@@ -97,8 +102,8 @@ function initializeCelestial () {
         baseline: 'middle',
         opacity: 0.8,
         font: [
-          'bold 14px Helvetica, Arial, sans-serif',
-          'bold 12px Helvetica, Arial, sans-serif',
+          'bold 11px Helvetica, Arial, sans-serif',
+          'bold 11px Helvetica, Arial, sans-serif',
           'bold 11px Helvetica, Arial, sans-serif'
         ]
       },
@@ -143,7 +148,136 @@ function initializeCelestial () {
   }
   Celestial.display(config)
   updateLocation()
+  setTimeout(() => {
+    renderCrosshairsAtCenter()
+  }, 1000)
 }
+
+function drawCrosshairs (ctx, x, y) {
+  const crosshairSize = 10 // Length of the crosshair arms in pixels
+  ctx.save() // Save current canvas state
+
+  // Set crosshair style
+  ctx.strokeStyle = 'red'
+  ctx.lineWidth = 2
+
+  // Draw horizontal line
+  ctx.beginPath()
+  ctx.moveTo(x - crosshairSize, y)
+  ctx.lineTo(x + crosshairSize, y)
+  ctx.stroke()
+
+  // Draw vertical line
+  ctx.beginPath()
+  ctx.moveTo(x, y - crosshairSize)
+  ctx.lineTo(x, y + crosshairSize)
+  ctx.stroke()
+
+  ctx.restore()
+}
+
+function attachClickListener () {
+  const celestialMap = document.getElementById('celestial-map')
+  if (!celestialMap) {
+    console.error('Celestial map container not found!')
+    return
+  }
+
+  celestialMap.addEventListener('click', (event) => {
+    const canvas = celestialMap.querySelector('canvas')
+    if (!canvas) {
+      console.error('Canvas not found!')
+      return
+    }
+
+    // Get the bounding rectangle of the canvas
+    const rect = canvas.getBoundingClientRect()
+    const centerX = rect.width / 2
+    const centerY = rect.height / 2
+    const radius = Math.min(centerX, centerY)
+
+    // Calculate the click position relative to the canvas
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+
+    // Check if the click is inside the circular sky map
+    const distanceFromCenter = Math.sqrt(
+      Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
+    )
+    if (distanceFromCenter > radius) {
+      return // Ignore clicks outside the circular sky map
+    }
+
+    // Convert the pixel coordinates to celestial coordinates
+    const coords = Celestial.mapProjection.invert([x, y])
+    if (coords) {
+      const ra = coords[0]
+      const dec = coords[1]
+      const ctx = canvas.getContext('2d')
+      ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2)
+      Celestial.redraw()
+      drawCrosshairs(ctx, x, y)
+      skyCoordinatesStore.setCoordinates(ra, dec)
+      skyCoordinatesStore.setTargetNameEntered('')
+    } else {
+      console.error('Click is outside the celestial map bounds.')
+    }
+  })
+}
+
+function moveCrosshairsToRaDec (ra, dec) {
+  const canvas = document.querySelector('#celestial-map canvas')
+  if (!canvas) {
+    console.error('Canvas not found!')
+    return
+  }
+
+  const ctx = canvas.getContext('2d')
+  // Clears existing crosshairs
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  Celestial.redraw()
+
+  const pixelCoords = Celestial.mapProjection([ra, dec])
+
+  if (pixelCoords) {
+    // Use drawCrosshairs to render the crosshairs
+    drawCrosshairs(ctx, pixelCoords[0], pixelCoords[1])
+    skyCoordinatesStore.setCoordinates(ra, dec)
+  } else {
+    console.error('Coordinates are outside the celestial map bounds.')
+  }
+}
+
+function renderCrosshairsAtCenter () {
+  const canvas = document.querySelector('#celestial-map canvas')
+  if (!canvas) {
+    console.error('Canvas not found!')
+    return
+  }
+
+  const ctx = canvas.getContext('2d')
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+
+  // Convert pixel center to celestial coordinates
+  const centerCoords = Celestial.mapProjection.invert([centerX / 2, centerY / 2])
+  if (centerCoords) {
+    const [ra, dec] = centerCoords
+    skyCoordinatesStore.setCoordinates(ra, dec) // Update store with centered RA/Dec
+    drawCrosshairs(ctx, centerX, centerY) // Draw crosshairs at the canvas center
+  } else {
+    console.error('Failed to compute celestial center coordinates.')
+  }
+}
+
+watch(
+  () => [skyCoordinatesStore.ra, skyCoordinatesStore.dec],
+  ([ra, dec]) => {
+    if (ra !== null && dec !== null) {
+      moveCrosshairsToRaDec(ra, dec)
+    }
+  }
+)
 
 onMounted(() => {
   const currentSession = realTimeSessionsStore.currentSession
@@ -155,8 +289,8 @@ onMounted(() => {
       initializeCelestial()
     }
   }
+  attachClickListener()
 })
-
 </script>
 
 <template>
