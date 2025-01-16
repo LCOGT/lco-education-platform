@@ -10,9 +10,11 @@ import sites from '../../utils/sites.JSON'
 import { fetchApiCall } from '../../utils/api'
 import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
+const skyCoordinatesStore = useSkyCoordinatesStore()
 
 const isCapturingImages = computed(() => {
   if (configurationStore.demo == true) {
@@ -41,6 +43,14 @@ const isExposureTimeValid = ref(true)
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
 
+const raValue = computed(() => {
+  return skyCoordinatesStore.ra
+})
+
+const decValue = computed(() => {
+  return skyCoordinatesStore.dec
+})
+
 function getRaDecFromTargetName () {
   targeterror.value = false
   fetch(configurationStore.targetNameUrl + `${targetName.value}?target_type=sidereal`)
@@ -52,8 +62,9 @@ function getRaDecFromTargetName () {
       } else {
         const lat = siteInfo.lat
         const lon = siteInfo.lon
-        ra.value = parseFloat(data.ra_d).toFixed(3)
-        dec.value = parseFloat(data.dec_d).toFixed(3)
+        ra.value = parseFloat(data.ra_d).toFixed(5)
+        dec.value = parseFloat(data.dec_d).toFixed(5)
+        skyCoordinatesStore.setTargetNameEntered(targetName.value)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
           targeterror.value = true
@@ -71,7 +82,7 @@ function getRaDecFromTargetName () {
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
 function goToLocation () {
-  if (aladinRef.value) {
+  if (aladinRef.value && ra.value && dec.value) {
     aladinRef.value.goToRaDec(ra.value, dec.value)
   } else {
     console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
@@ -114,12 +125,13 @@ const sendGoCommand = async () => {
     dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
-    name: targetName.value,
+    name: targetName.value || `${parseFloat(ra.value).toFixed(4)}_${parseFloat(dec.value).toFixed(4)}`,
     ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
     requestId: realTimeSessionsStore.currentSession.request.id
   }
+  console.log('requestBody', requestBody.name)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
@@ -156,6 +168,25 @@ const incompleteSelection = computed(() => {
 watch(exposureTime, (newTime) => {
   isExposureTimeValid.value = true
   exposureError.value = ''
+})
+
+watch([ra.value, dec.value], ([newRa, newDec]) => {
+  // Only update if no target is entered
+  if (!targetName.value) {
+    skyCoordinatesStore.setCoordinates(newRa, newDec)
+  }
+})
+
+const targetNameEntered = computed(() => {
+  return skyCoordinatesStore.targetNameEntered
+})
+
+watch(targetNameEntered, (newValue, oldValue) => {
+  if (targetNameEntered.value === '') {
+    targeterror.value = false
+    targeterrorMsg.value = ''
+    targetName.value = ''
+  }
 })
 
 onMounted(async () => {
@@ -196,7 +227,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="ra" placeholder="Right Ascension" disabled>
+                <input class="input" type="text" v-model="raValue" placeholder="Right Ascension" disabled>
               </p>
             </div>
           </div>
@@ -208,12 +239,12 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="dec" placeholder="Declination" disabled>
+                <input class="input" type="text" v-model="decValue" placeholder="Declination" disabled>
               </p>
             </div>
           </div>
         </div>
-        <div v-if="ra && dec && !targeterror">
+        <div v-if="raValue && decValue && !targeterror">
           <div class="columns">
                 <div class="column">
                   <p>Mosaic</p>
