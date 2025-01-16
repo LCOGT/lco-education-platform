@@ -154,35 +154,31 @@ function initializeCelestial () {
 }
 
 function drawCrosshairs (ctx, x, y) {
-  const crosshairSize = 10 // Length of the crosshair arms in pixels
-  ctx.save() // Save current canvas state
-
-  // Set crosshair style
+  // Crosshair styling in pixels
+  const crosshairSize = 10
+  ctx.save()
   ctx.strokeStyle = 'red'
   ctx.lineWidth = 2
 
-  // Draw horizontal line
+  // Horizontal line
   ctx.beginPath()
   ctx.moveTo(x - crosshairSize, y)
   ctx.lineTo(x + crosshairSize, y)
   ctx.stroke()
 
-  // Draw vertical line
+  // Vertical line
   ctx.beginPath()
   ctx.moveTo(x, y - crosshairSize)
   ctx.lineTo(x, y + crosshairSize)
   ctx.stroke()
 
+  // Restore the canvas context
   ctx.restore()
 }
 
+// On click event listener for the celestial map
 function attachClickListener () {
   const celestialMap = document.getElementById('celestial-map')
-  if (!celestialMap) {
-    console.error('Celestial map container not found!')
-    return
-  }
-
   celestialMap.addEventListener('click', (event) => {
     const canvas = celestialMap.querySelector('canvas')
     if (!canvas) {
@@ -190,7 +186,7 @@ function attachClickListener () {
       return
     }
 
-    // Get the bounding rectangle of the canvas
+    // Get the bounding rectangle of the canvas so that user can't click outside the canvas
     const rect = canvas.getBoundingClientRect()
     const centerX = rect.width / 2
     const centerY = rect.height / 2
@@ -205,7 +201,8 @@ function attachClickListener () {
       Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
     )
     if (distanceFromCenter > radius) {
-      return // Ignore clicks outside the circular sky map
+      // Ignore clicks outside the circular sky map
+      return
     }
 
     // Convert the pixel coordinates to celestial coordinates
@@ -216,7 +213,7 @@ function attachClickListener () {
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2)
       Celestial.redraw()
-      drawCrosshairs(ctx, x, y)
+      drawCrosshairs(ctx, ra, dec)
       skyCoordinatesStore.setCoordinates(ra, dec)
       skyCoordinatesStore.setTargetNameEntered('')
     } else {
