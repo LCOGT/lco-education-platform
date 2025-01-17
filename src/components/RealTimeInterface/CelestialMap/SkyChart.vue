@@ -237,11 +237,13 @@ function moveCrosshairsToRaDec (ra, dec) {
   const pixelCoords = Celestial.mapProjection([ra, dec])
 
   if (pixelCoords) {
-    // Use drawCrosshairs to render the crosshairs
-    drawCrosshairs(ctx, pixelCoords[0], pixelCoords[1])
+    const [x, y] = pixelCoords
+
+    const isVisible = Celestial.clip([ra, dec])
+    if (isVisible) {
+      drawCrosshairs(ctx, x, y)
+    }
     skyCoordinatesStore.setCoordinates(ra, dec)
-  } else {
-    console.error('Coordinates are outside the celestial map bounds.')
   }
 }
 
@@ -253,15 +255,19 @@ function renderCrosshairsAtCenter () {
   }
 
   const ctx = canvas.getContext('2d')
-  const centerX = canvas.width / 2
-  const centerY = canvas.height / 2
 
-  // Convert pixel center to celestial coordinates
-  const centerCoords = Celestial.mapProjection.invert([centerX / 2, centerY / 2])
+  const { width, height, scale } = Celestial.metrics()
+
+  // The center of the map
+  const centerX = width / 2
+  const centerY = height / 2
+
+  // Convert the center pixel coordinates to celestial coordinates
+  const centerCoords = Celestial.mapProjection.invert([centerX, centerY])
+
   if (centerCoords) {
-    const [ra, dec] = centerCoords
-    skyCoordinatesStore.setCoordinates(ra, dec) // Update store with centered RA/Dec
-    drawCrosshairs(ctx, centerX, centerY) // Draw crosshairs at the canvas center
+    // Draw crosshairs at the center of the sky map
+    drawCrosshairs(ctx, centerX, centerY)
   } else {
     console.error('Failed to compute celestial center coordinates.')
   }
