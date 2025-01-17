@@ -125,13 +125,13 @@ const sendGoCommand = async () => {
     dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
-    name: targetName.value || `${parseFloat(ra.value).toFixed(4)}_${parseFloat(dec.value).toFixed(4)}`,
+    // Name is the target name if entered, else the coordinates in string format
+    name: targetName.value || `${(Number(raValue.value).toFixed(4)).toString()}_${(Number(decValue.value).toFixed(4)).toString()}`,
     ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
     requestId: realTimeSessionsStore.currentSession.request.id
   }
-  console.log('requestBody', requestBody.name)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
