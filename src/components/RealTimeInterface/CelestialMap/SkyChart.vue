@@ -4,7 +4,6 @@ import { useRealTimeSessionsStore } from '../../../stores/realTimeSessions'
 import { useSkyCoordinatesStore } from '../../../stores/skyCoordinates'
 import sites from '../../../utils/sites.JSON'
 import celestial from 'd3-celestial'
-import { calcAltAz } from '@/utils/visibility'
 
 const Celestial = celestial.Celestial ? celestial.Celestial() : celestial
 const realTimeSessionsStore = useRealTimeSessionsStore()
