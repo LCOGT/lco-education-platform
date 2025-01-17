@@ -1,41 +1,51 @@
 {
     "cpt": {
+        "name": "Cape Town",
         "lat": -33.9258,
         "lon": 18.4232
     },
     "elp": {
+        "name": "McDonald Observatory, Texas",
         "lat": 31.8072,
         "lon": -106.3776
     },
     "sba": {
+        "name": "Santa Barbara, California",
         "lat": 34.4208,
         "lon": -119.6982
     },
     "abq": {
+        "name": "??",
         "lat": 35.0844,
         "lon": -106.6504
     },
     "ogg": {
+        "name": "Maui, Hawaii",
         "lat": 21.4389,
         "lon": -158.0001
     },
     "coj": {
+        "name": "Siding Spring, Australia",
         "lat": -37.8136,
         "lon": 144.9631
     },
     "lsc": {
+        "name": "Cerro Tololo, Chile",
         "lat": -29.9027,
         "lon": -71.2519
     },
     "tfn": {
-        "lat": 28.300433,
-        "lon": -16.511544
+        "name": "Tenerife, Canary Islands",
+        "lat": 28.4827,
+        "lon": -16.3416
     },
     "tlv": {
+        "name": "Wise Observatory, Israel",
         "lat": 32.0094,
         "lon": 34.8778
     },
     "sor": {
+        "name": "SOAR",
         "lat": 40.4425,
         "lon": -3.8196
     }
