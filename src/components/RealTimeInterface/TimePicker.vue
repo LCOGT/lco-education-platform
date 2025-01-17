@@ -7,11 +7,10 @@ import { formatToUTC, formatDateTime } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
-
+import sites from '../../utils/sites.JSON'
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
-
 const date = ref(null)
 const startTime = ref(null)
 const errorMessage = ref(null)
@@ -19,26 +18,22 @@ const selectedSite = ref(null)
 const availableTimes = ref({})
 const localTimes = ref([])
 const selectedProposal = ref()
-
 const timeInterval = 15
 const today = ref(new Date())
 const oneYearFromNow = ref(new Date())
 oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
-
+const bookingInProgess = ref(null)
 const emits = defineEmits(['timeSelected'])
-
 // Loads template only after the obs portal has returned available times
 const hasAvailableTimes = computed(() => {
   return Object.keys(availableTimes.value).length > 0
 })
-
 // Rounds times from the obs portal to the nearest 15 minutes (for now) because they are in time ranges
 function roundToNearestMinutes (date, direction = 'up', minutes = timeInterval) {
   const ms = 1000 * 60 * minutes
   const roundedDate = new Date(Math[direction === 'up' ? 'ceil' : 'floor'](date.getTime() / ms) * ms)
   return roundedDate
 }
-
 // Because we get availability in ranges, we need to generate all the 15 minute intervals within those ranges
 function generateTimeIntervals (startDate, endDate) {
   const intervals = []
@@ -49,21 +44,17 @@ function generateTimeIntervals (startDate, endDate) {
   }
   return intervals
 }
-
 // Processes the telescope availability data from the obs portal
 function processTelescopeAvailability (data) {
   const processedData = {}
-
   // Iterates over the data object to extract the telescope availability ranges
   Object.keys(data).forEach(telescope => {
     // Iterates over the ranges for each telescope
     data[telescope].forEach(range => {
       const start = new Date(range[0])
       const end = new Date(range[1])
-
       const roundedStart = roundToNearestMinutes(start, 'up', timeInterval)
       const roundedEnd = roundToNearestMinutes(end, 'down', timeInterval)
-
       // Generates time intervals between the start and end times
       generateTimeIntervals(roundedStart, roundedEnd).forEach(interval => {
         const dateStr = interval.toDateString()
@@ -115,7 +106,6 @@ function processTelescopeAvailability (data) {
   // etc...
   return processedData
 }
-
 // Forcefully refreshes the available times for the selected date
 // This is used when the user selects a date, then a time, then the map appears
 // and they want to change the time but want the same date
@@ -125,29 +115,30 @@ const refreshTimes = () => {
     resetSession()
   }
 }
-
 const resetSession = () => {
   errorMessage.value = null
   selectedSite.value = null
   realTimeSessionsStore.currentSessionId = null
 }
-
+const showMoreTimes = () => {
+  errorMessage.value = null
+  selectedSite.value = null
+  refreshTimes()
+}
 const blockRti = async () => {
+  bookingInProgess.value = true
   // Gets the start and end times for the session
   const start = formatToUTC(startTime.value)
   const startDateTime = new Date(start)
   const endDateTime = new Date(startDateTime.getTime() + timeInterval * 60 * 1000)
   const end = endDateTime.toISOString().split('.')[0] + 'Z'
-
   let enclosure = null
   let telescope = null
-
   // The following code is temporary since the user cannot select telescope and enclosure
   // Finds the matching entry in availableTimes
   const dateStr = date.value.toDateString()
   // Get the available time entries for the selected date
   const timeEntries = availableTimes.value[dateStr]
-
   if (timeEntries) {
     Object.keys(timeEntries).forEach(timeKey => {
       const timeObj = new Date(timeKey)
@@ -166,28 +157,39 @@ const blockRti = async () => {
     })
   }
   if (!enclosure || !telescope) {
+    bookingInProgess.value = false
     errorMessage.value = 'Failed to find a matching telescope and enclosure for the selected site and time'
     return
   }
-
   const requestBody = {
     proposal: selectedProposal.value,
-    name: 'Test Real Time',
+    name: 'Live Observing',
     site: selectedSite.value.site,
     enclosure,
     telescope,
     start,
     end
   }
-  await fetchApiCall({ url: configurationStore.observationPortalUrl + 'realtime/', method: 'POST', body: requestBody, successCallback: bookDate, failCallback: () => { errorMessage.value = 'Failed to book session. Please select another time' } })
+  await fetchApiCall({
+    url: configurationStore.observationPortalUrl + 'realtime/',
+    method: 'POST',
+    body: requestBody,
+    successCallback: bookDate,
+    failCallback: (e) => {
+      bookingInProgess.value = false
+      if (e.non_field_errors[0].includes('Not enough realtime')) {
+        errorMessage.value = 'This project does not have any live observing credit. Choose another project.'
+      } else {
+        errorMessage.value = 'Failed to book session. Please select another time'
+      }
+    }
+  })
 }
-
 const bookDate = () => {
   if (date.value && startTime.value && selectedSite.value) {
     router.push('/dashboard')
   }
 }
-
 async function getAvailableTimes () {
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + 'realtime/availability/',
@@ -196,7 +198,6 @@ async function getAvailableTimes () {
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
 }
-
 // Used to block out dates that are not in the availableTimes object from the date picker
 const isDateAllowed = (date) => {
   // Gets the dates from availableTimes
@@ -205,15 +206,12 @@ const isDateAllowed = (date) => {
   const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
   return date >= firstDate && date <= lastDate
 }
-
 const disabledDates = computed(() => {
   if (Object.keys(availableTimes.value).length === 0) {
     return []
   }
-
   // Calculate the number of days between today and one year from now
   const daysCount = Math.floor((oneYearFromNow.value - today.value) / (1000 * 60 * 60 * 24))
-
   // Generates an array of dates from today to one year from now to filter out the disabled dates
   return Array.from({ length: daysCount + 1 }, (_, index) => {
     const date = new Date(today.value)
@@ -221,7 +219,14 @@ const disabledDates = computed(() => {
     return date
   }).filter(date => !isDateAllowed(date))
 })
-
+function displaySiteName (site) {
+  console.log(site)
+  if (site) {
+    return sites[site]?.name
+  } else {
+    return 'No site selected'
+  }
+}
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -231,7 +236,6 @@ watch(date, (newDate, oldDate) => {
     localTimes.value = Object.keys(availableTimes.value[dateStr] || {}).map(time => new Date(time))
   }
 })
-
 // Resets the session and emits the selected time when startTime changes
 watch(startTime, (newTime, oldTime) => {
   if (newTime !== oldTime) {
@@ -239,13 +243,10 @@ watch(startTime, (newTime, oldTime) => {
     emits('timeSelected', newTime)
   }
 })
-
 onMounted(() => {
   getAvailableTimes()
 })
-
 </script>
-
 <template>
   <template v-if="!hasAvailableTimes">
     <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
@@ -284,14 +285,21 @@ onMounted(() => {
             <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
-          <v-btn variant="tonal" v-if="date && selectedSite" @click="blockRti" class="blue-bg">Book</v-btn>
+          <div v-if="!bookingInProgess">
+            <div class="buttons">
+              <button  v-if="date && selectedSite" @click="blockRti" class="button blue-bg">Book</button>
+              <button  v-if="date" @click="showMoreTimes" class="button">Show more times</button>
+            </div>
+          </div>
+          <div v-else>
+            <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
+          </div>
         </div>
         <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
     </div>
   </template>
 </template>
-
 <style scoped>
 .loading {
   position: fixed;
