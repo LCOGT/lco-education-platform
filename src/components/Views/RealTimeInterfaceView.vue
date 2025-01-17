@@ -83,15 +83,15 @@ onMounted(async () => {
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionPending/>
         </div>
-       <!-- <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content"> -->
+       <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
           <h2>Live Observing Session</h2>
           <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionStarted/>
-        <!-- </div> -->
-       <!-- <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">
+        </div>
+       <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">
           <p><span class="red-bg px-2 py-2">Session has ended</span></p>
-        </div> -->
+        </div>
       </div>
     </section>
   </template>
