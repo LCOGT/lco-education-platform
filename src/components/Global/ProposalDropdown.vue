@@ -1,15 +1,11 @@
 <script setup>
 import { ref, defineEmits } from 'vue'
 import { useUserDataStore } from '../../stores/userData'
-
 const emit = defineEmits(['selectionsComplete'])
-
 const userDataStore = useUserDataStore()
 const proposals = userDataStore.profile.proposals
 const activeProposals = proposals.filter(proposal => proposal.current === true)
-
 const selectedProposal = ref()
-
 </script>
 
 <template>
