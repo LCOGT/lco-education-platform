@@ -8,9 +8,12 @@ import { useConfigurationStore } from '../../stores/configuration'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import sites from '../../utils/sites.JSON'
+import { fetchSemesterData, currentSemesterId } from '../../utils/calendarUtils.js'
+
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
+
 const date = ref(null)
 const startTime = ref(null)
 const errorMessage = ref(null)
@@ -22,12 +25,12 @@ const timeInterval = 15
 const today = ref(new Date())
 const oneYearFromNow = ref(new Date())
 oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
-const bookingInProgess = ref(null)
+const bookingInProgress = ref(null)
+const semesterId = ref('')
+const semesterErrorMessage = ref(null)
+
 const emits = defineEmits(['timeSelected'])
-// Loads template only after the obs portal has returned available times
-const hasAvailableTimes = computed(() => {
-  return Object.keys(availableTimes.value).length > 0
-})
+
 // Rounds times from the obs portal to the nearest 15 minutes (for now) because they are in time ranges
 function roundToNearestMinutes (date, direction = 'up', minutes = timeInterval) {
   const ms = 1000 * 60 * minutes
@@ -126,7 +129,7 @@ const showMoreTimes = () => {
   refreshTimes()
 }
 const blockRti = async () => {
-  bookingInProgess.value = true
+  bookingInProgress.value = true
   // Gets the start and end times for the session
   const start = formatToUTC(startTime.value)
   const startDateTime = new Date(start)
@@ -157,7 +160,7 @@ const blockRti = async () => {
     })
   }
   if (!enclosure || !telescope) {
-    bookingInProgess.value = false
+    bookingInProgress.value = false
     errorMessage.value = 'Failed to find a matching telescope and enclosure for the selected site and time'
     return
   }
@@ -176,7 +179,7 @@ const blockRti = async () => {
     body: requestBody,
     successCallback: bookDate,
     failCallback: (e) => {
-      bookingInProgess.value = false
+      bookingInProgress.value = false
       if (e.non_field_errors[0].includes('Not enough realtime')) {
         errorMessage.value = 'This project does not have any live observing credit. Choose another project.'
       } else {
@@ -219,8 +222,8 @@ const disabledDates = computed(() => {
     return date
   }).filter(date => !isDateAllowed(date))
 })
+
 function displaySiteName (site) {
-  console.log(site)
   if (site) {
     return sites[site]?.name
   } else {
@@ -243,15 +246,41 @@ watch(startTime, (newTime, oldTime) => {
     emits('timeSelected', newTime)
   }
 })
+
+// Checking if the user and proposal has real time allocated for the current semester
+// const checkRealTimeAllocation = async () => {
+//   const response = await fetchApiCall({
+//     url: configurationStore.observationPortalUrl + 'proposals/?semester=2025A&active=True&limit=1000',
+//     method: 'GET'
+//   })
+//   const results = response
+//   console.log(results)
+//   if (results) {
+//     // Checks if the user has any real time allocated for the current semester - sometimes the timeallocation_set can have more than one
+//     // semester associated with the current semester so we need to check all of them
+//     let totalTimeAllocation = 0
+//     results.timeallocation_set.every(semester => {
+//       if ((semester.realtime_allocation - semester.realtime_time_used) <= 0) {
+//         totalTimeAllocation += 1
+//       }
+//       return totalTimeAllocation
+//     })
+//     if (totalTimeAllocation === results.timeallocation_set.length) {
+//       semesterErrorMessage.value = 'You do not have any real time allocated for this semester. Please contact your PI to allocate real time.'
+//     }
+//   }
+// }
+
 onMounted(() => {
   getAvailableTimes()
+  // fetchSemesterData().then(() => {
+  //   // Assigning the current semester id to the ref so that we can use it in checkRealTimeAllocation
+  //   semesterId.value = currentSemesterId
+  // })
+  // checkRealTimeAllocation()
 })
 </script>
-<template>
-  <template v-if="!hasAvailableTimes">
-    <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
-  </template>
-  <template v-if="hasAvailableTimes">
+  <template>
     <h2>Book your live observing session</h2>
     <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }" />
     <div class="columns">
@@ -285,7 +314,7 @@ onMounted(() => {
             <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
-          <div v-if="!bookingInProgess">
+          <div v-if="!bookingInProgress">
             <div class="buttons">
               <button  v-if="date && selectedSite" @click="blockRti" class="button blue-bg">Book</button>
               <button  v-if="date" @click="showMoreTimes" class="button">Show more times</button>
@@ -298,7 +327,6 @@ onMounted(() => {
         <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
     </div>
-  </template>
 </template>
 <style scoped>
 .loading {
