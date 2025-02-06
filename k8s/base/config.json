@@ -3,5 +3,6 @@
     "thumbnailArchiveUrl": "https://archive-api.lco.global/",
     "rtiBridgeUrl": "https://lco-edu-rti-bridge.lco.earth/",
     "targetNameUrl": "https://simbad2k.lco.global/",
+    "datalabUrl": "https://datalab.lco.earth/",
     "demo": false
 }
