@@ -9,7 +9,12 @@ Observe@PTR is where users, typically students, will go to request observations 
 ## Getting Started Locally
 ### STEP 1: Install Nix
 If you don't have Nix installed, you can follow [these steps](https://github.com/LCOGT/public-wiki/wiki/Install-Nix)
+
 ### STEP 2: Enter the Nix Dev Environment
+If you have [direnv](https://direnv.net/) installed, this should happen
+automatically when you `cd` into the project directory.
+
+Otherwise, you should:
 ```
 nix develop --impure
 ```

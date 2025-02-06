@@ -8,6 +8,11 @@
 
     nixpkgs.follows = "devenv-k8s/nixpkgs";
     flake-parts.follows = "devenv-k8s/flake-parts";
+
+    devenv-root = {
+      url = "file+file:///dev/null";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -38,6 +43,13 @@
         # https://devenv.sh/basics/
         # Enter using `nix develop --impure`
         config.devenv.shells.default = {
+
+           # use direnv without --impure
+          devenv.root =
+            let
+              devenvRootFileContent = builtins.readFile inputs.devenv-root.outPath;
+            in
+            pkgs.lib.mkIf (devenvRootFileContent != "") devenvRootFileContent;
 
           # https://devenv.sh/packages/
           packages = [
