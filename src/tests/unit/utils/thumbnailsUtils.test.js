@@ -17,14 +17,14 @@ describe('thumbnailsUtils.js', () => {
   })
 
   describe('getThumbnails', () => {
-    it('fetches thumbnails for a given queryValue', async () => {
+    it('fetches thumbnails for a given queryValue and returns only reduced thumbnails', async () => {
       const mockResponse = {
         results: [
           {
             'id': 123,
             'frame': 789,
             'size': 'small',
-            'basename': 'mockbasename-1-small_thumbnail',
+            'basename': 'mockbasename-e91-1-small_thumbnail',
             'extension': '.jpg',
             'key': 'secret1',
             'url': 'http://mock-api.com/thumbnails/1'
@@ -33,7 +33,7 @@ describe('thumbnailsUtils.js', () => {
             'id': 456,
             'frame': 321,
             'size': 'small',
-            'basename': 'mockbasename-2-small_thumbnail',
+            'basename': 'mockbasename-notreduced-2-small_thumbnail',
             'extension': '.jpg',
             'key': 'secret2',
             'url': 'http://mock-api.com/thumbnails/2'
@@ -60,19 +60,10 @@ describe('thumbnailsUtils.js', () => {
           'id': 123,
           'frame': 789,
           'size': 'small',
-          'basename': 'mockbasename-1-small_thumbnail',
+          'basename': 'mockbasename-e91-1-small_thumbnail',
           'extension': '.jpg',
           'key': 'secret1',
           'url': 'http://mock-api.com/thumbnails/1'
-        },
-        {
-          'id': 456,
-          'frame': 321,
-          'size': 'small',
-          'basename': 'mockbasename-2-small_thumbnail',
-          'extension': '.jpg',
-          'key': 'secret2',
-          'url': 'http://mock-api.com/thumbnails/2'
         }
       ])
     })

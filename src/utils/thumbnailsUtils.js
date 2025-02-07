@@ -9,7 +9,12 @@ const getThumbnails = async (param, queryValue) => {
     method: 'GET',
     successCallback: (data) => {
       if (data.results.length > 0) {
-        data.results.forEach(result => thumbnails.push(result))
+        data.results.forEach(result => {
+          // There is no filter for reduction_level in the thumbnails endpoint
+          if (result.basename.includes('e91')) {
+            thumbnails.push(result)
+          }
+        })
       }
     },
     failCallback: (error) => {
