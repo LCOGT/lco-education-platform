@@ -97,6 +97,9 @@ function setRaDecfromTargetList (event) {
     targetName.value = selectedTarget.value.name
     suggestionTargetSet.value = true
     goToLocation()
+    exposureTime.value = selectedTarget.value.filters[0].exposure
+    exposureCount.value = 1
+    selectedFilter.value = selectedTarget.value.filters[0].name
   }
 }
 
