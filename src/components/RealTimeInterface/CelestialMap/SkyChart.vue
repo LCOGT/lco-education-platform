@@ -43,14 +43,36 @@ function initializeCelestial () {
       data: 'stars.6.json'
     },
     dsos: {
-      show: false,
-      size: 6,
-      designation: false,
-      propername: false,
-      data: 'dsos.6.json'
-    },
-    galaxies: {
-      show: true
+      show: true, // Show Deep Space Objects
+      limit: 20, // Show only DSOs brighter than limit magnitude
+      colors: true, // Show DSOs in symbol colors if true, use style setting below if false
+      style: { fill: '#cccccc', stroke: '#cccccc', width: 2, opacity: 1 }, // Default style for dsos
+      names: true, // Show DSO names
+      namesType: 'name', // Type of DSO ('desig' or language) name show (see list below for languages codes available for dsos)
+      nameStyle: { fill: '#cccccc', font: '14px Helvetica, Arial, serif', align: 'left', baseline: 'top' }, // Style for DSO names
+      nameLimit: 20, // Show only names for DSOs brighter than namelimit
+      size: null, // Optional seperate scale size for DSOs, null = stars.size
+      exponent: 1.4, // Scale exponent for DSO size, larger = more non-linear
+      data: 'messier.json', // Data source for DSOs, opt. number indicates limit magnitude
+      symbols: { // DSO symbol styles, 'stroke'-parameter present = outline
+        gg: { shape: 'circle', fill: '#ff0000' }, // Galaxy cluster
+        g: { shape: 'ellipse', fill: '#ff0000' }, // Generic galaxy
+        s: { shape: 'ellipse', fill: '#ff0000' }, // Spiral galaxy
+        s0: { shape: 'ellipse', fill: '#ff0000' }, // Lenticular galaxy
+        sd: { shape: 'ellipse', fill: '#ff0000' }, // Dwarf galaxy
+        e: { shape: 'ellipse', fill: '#ff0000' }, // Elliptical galaxy
+        i: { shape: 'ellipse', fill: '#ff0000' }, // Irregular galaxy
+        oc: { shape: 'circle', fill: '#ffcc00', stroke: '#ffcc00' }, // Open cluster
+        gc: { shape: 'circle', fill: '#ff9900' }, // Globular cluster
+        en: { shape: 'square', fill: '#ff00cc' }, // Emission nebula
+        bn: { shape: 'square', fill: '#ff00cc', stroke: '#ff00cc', width: 2 }, // Generic bright nebula
+        sfr: { shape: 'square', fill: '#cc00ff', stroke: '#cc00ff', width: 2 }, // Star forming region
+        rn: { shape: 'square', fill: '#00ooff' }, // Reflection nebula
+        pn: { shape: 'diamond', fill: '#00cccc' }, // Planetary nebula
+        snr: { shape: 'diamond', fill: '#ff00cc' }, // Supernova remnant
+        dn: { shape: 'square', fill: '#999999', stroke: '#999999', width: 2 }, // Dark nebula grey
+        pos: { shape: 'marker', fill: '#cccccc', stroke: '#cccccc', width: 1.5 } // Generic marker
+      }
     },
     planets: {
       show: true,
@@ -93,8 +115,8 @@ function initializeCelestial () {
       namesType: 'desig'
     },
     constellations: {
-      show: true,
-      names: true,
+      show: false,
+      names: false,
       namesType: false,
       nameStyle: {
         fill: '#cccc99',

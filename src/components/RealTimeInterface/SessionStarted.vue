@@ -4,9 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
-import { calcAltAz } from '../../utils/visibility.js'
+import { calcAltAz, calculateVisibleTargets } from '../../utils/visibility.js'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import sites from '../../utils/sites.JSON'
+import targets from '../../utils/targets.min.json'
 import { fetchApiCall } from '../../utils/api'
 import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
@@ -19,7 +20,7 @@ const skyCoordinatesStore = useSkyCoordinatesStore()
 const isCapturingImages = computed(() => {
   if (configurationStore.demo == true) {
     // Change this to true to test the image capture component and false for target select
-    return true
+    return false
   } else {
     return realTimeSessionsStore.isCapturingImagesForCurrentSession
   }
@@ -39,6 +40,12 @@ const targeterrorMsg = ref('')
 const loading = ref(false)
 const exposureError = ref('')
 const isExposureTimeValid = ref(true)
+const targetList = ref({})
+const targetsByType = ref([])
+const suggestionOrManual = ref('')
+const suggestionByType = ref('')
+const suggestionTargetSet = ref(false)
+const selectedTarget = ref({})
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -78,6 +85,19 @@ function getRaDecFromTargetName () {
       console.error('Error:', error)
       targeterror.value = true
     })
+}
+
+function setRaDecfromTargetList (event) {
+  const target = event.target
+  const id = target.getAttribute('data-targetid')
+  selectedTarget.value = targets[id]
+  if (selectedTarget.value) {
+    ra.value = parseFloat(selectedTarget.value.ra).toFixed(5)
+    dec.value = parseFloat(selectedTarget.value.dec).toFixed(5)
+    targetName.value = selectedTarget.value.name
+    suggestionTargetSet.value = true
+    goToLocation()
+  }
 }
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
@@ -155,10 +175,35 @@ const sendGoCommand = async () => {
   })
 }
 
+function showSuggestions () {
+  suggestionOrManual.value = 'suggestions'
+}
+
+function showManual () {
+  suggestionOrManual.value = 'manual'
+}
+
+function resetSuggestionOrManual () {
+  suggestionOrManual.value = ''
+  suggestionByType.value = ''
+  targetsByType.value = []
+  suggestionTargetSet.value = false
+}
+
 function updateRenderGallery (value) {
   if (!value) {
     realTimeSessionsStore.updateImageCaptureState(false)
   }
+}
+
+function getVisibleTargets () {
+  targetList.value = calculateVisibleTargets(targets, siteInfo.lat, siteInfo.lon)
+}
+
+function setSuggestionType (type) {
+  suggestionByType.value = type
+  targetsByType.value = targetList.value[type]
+  targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
 }
 
 const incompleteSelection = computed(() => {
@@ -192,9 +237,10 @@ watch(targetNameEntered, (newValue, oldValue) => {
 onMounted(async () => {
   loading.value = false
   filterList.value = await getFilterList()
+  getVisibleTargets()
 })
-
 </script>
+
 <template>
   <div v-if="!isCapturingImages">
     <div class="columns">
@@ -202,8 +248,49 @@ onMounted(async () => {
           <SkyChart />
       </div>
       <div class="column grey-bg">
+        <div v-show="suggestionOrManual === 'manual' || suggestionTargetSet">
         <AladinSkyMap ref="aladinRef" />
-        <div class="content observe-form">
+        </div>
+        <div v-if="suggestionOrManual === ''">
+          <h3>How would you like to select your target?</h3>
+          <p>Would you like us to give you some suggestions for what to observe, or do you already know?</p>
+          <div class="buttons are-medium">
+          <button class="button" @click="showSuggestions">Target Suggestions</button>
+          <button class="button" @click="showManual">I'll enter the details</button>
+        </div>
+        </div>
+        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
+          <h3>What would you like to Observe?</h3>
+          <p>Choose a type of target to see suggestions</p>
+          <div class="buttons are-medium">
+            <button class="button is-fullwidth" @click="setSuggestionType('galaxies')">Galaxy</button>
+            <button class="button is-fullwidth" @click="setSuggestionType('nebulae')">Nebula</button>
+            <button class="button is-fullwidth" @click="setSuggestionType('clusters')">Star Cluster</button>
+          </div>
+        </div>
+        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
+          <div v-if="!suggestionTargetSet">
+            <h3>Target Suggestions</h3>
+            <p>Here are a random selection of 5 <strong>{{ suggestionByType }}</strong> from our list.</p>
+            <table class="table is-fullwidth">
+                <tr v-for="target in targetsByType" :key="target['name']">
+                  <td>
+                    <button class="link" @click="setRaDecfromTargetList" :data-targetid="target.id">
+                      {{ target.name }}
+                    </button>
+                    </td>
+                </tr>
+              </table>
+            </div>
+            <div v-if="suggestionTargetSet">
+                <div>
+                  <h3>{{ selectedTarget.name }}</h3>
+                  <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
+                  <p>{{  selectedTarget.desc }}</p>
+                </div>
+            </div>
+          </div>
+        <div class="content observe-form" v-if="suggestionOrManual === 'manual'">
             <div class="highlight-target-field">
               <div class="field">
                 <label class="label">Target Look Up</label>
@@ -245,33 +332,6 @@ onMounted(async () => {
           </div>
         </div>
         <div v-if="raValue && decValue && !targeterror">
-          <div class="columns">
-                <div class="column">
-                  <p>Mosaic</p>
-                </div>
-                <div class="column is-one-third">
-                    <span class="icon-text mosaic">
-                        <input type="radio" name="mosaic" value="1x1" id="1x1" class="hide" checked />
-                        <label for="1x1">
-                          <span class="icon">
-                            <FontAwesomeIcon icon="fa-solid fa-square" @click="changeFov(1.0)" />
-                          </span>
-                          <span>Single</span>
-                        </label>
-                    </span>
-                </div>
-                <div class="column is-one-third">
-                    <span class="icon-text mosaic">
-                      <input type="radio" name="mosaic" value="2x2" id="2x2" class="hide" />
-                      <label for="2x2">
-                      <span class="icon">
-                        <FontAwesomeIcon icon="fa-solid fa-th-large" @click="changeFov(2.0)"  />
-                      </span>
-                      <span>2 x 2 mosaic</span>
-                      </label>
-                    </span>
-                </div>
-            </div>
             <div class="field is-horizontal">
               <div class="field-label is-normal">
                 <label class="label">Exposure</label>
@@ -314,7 +374,10 @@ onMounted(async () => {
                 </div>
               </div>
         </div>
-        <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
+        <div class="buttons are-medium" v-if="suggestionOrManual != ''">
+          <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
+          <button class="button" @click="resetSuggestionOrManual">Start Again</button>
+        </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
     </div>

@@ -290,12 +290,12 @@ onMounted(() => {
               <button  v-if="date && selectedSite" @click="blockRti" class="button blue-bg">Book</button>
               <button  v-if="date" @click="showMoreTimes" class="button">Show more times</button>
             </div>
+            <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
           </div>
           <div v-else>
             <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
           </div>
         </div>
-        <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
       </div>
     </div>
   </template>

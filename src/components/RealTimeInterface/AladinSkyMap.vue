@@ -73,6 +73,7 @@ watch(
 
 <template>
   <v-container class="pa-0 aladin-container" fluid>
+    <h2>Archive Image from DSS</h2>
         <div ref="aladinContainer" class="aladin-map"></div>
   </v-container>
 </template>

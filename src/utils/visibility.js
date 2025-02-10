@@ -73,3 +73,53 @@ function calculate_lst (lon) {
   const nowdechours = decimalhours(now)
   return lst(gst(nowjd, nowdechours), lon)
 }
+
+export function calculateVisibleTargets (targets, lat, lon) {
+  const now = new Date()
+  let visible_targets = {}
+  const nebulae = []
+  const galaxies = []
+  const supernovae = []
+  const clusters = []
+  const other = []
+  /* RESET THE LENGTH TO targets.length */
+  for (let i = 0; i < targets.length; i++) {
+    const ra = targets[i].ra
+    const dec = targets[i].dec
+    const altaz = calcAltAz(ra, dec, lat, lon)
+    const alt = altaz[1]
+    const az = altaz[0]
+    if (alt > 30) {
+      const target = {
+        'id': i,
+        'name': targets[i].name,
+        'ra': ra,
+        'dec': dec,
+        'alt': alt,
+        'az': az,
+        'filters': targets[i].filters,
+        'avmcode': targets[i].avmcode,
+        'desc': targets[i].desc
+      }
+      if (targets[i].avmcode.startsWith('5')) {
+        galaxies.push(target)
+      } else if (targets[i].avmcode.startsWith('4.1.4')) {
+        supernovae.push(target)
+      } else if (targets[i].avmcode.startsWith('4')) {
+        nebulae.push(target)
+      } else if (targets[i].avmcode.startsWith('3.6')) {
+        clusters.push(target)
+      } else {
+        other.push(target)
+      }
+    }
+  }
+  visible_targets = {
+    'nebulae': nebulae,
+    'galaxies': galaxies,
+    'supernovae': supernovae,
+    'clusters': clusters,
+    'other': other
+  }
+  return visible_targets
+}
