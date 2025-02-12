@@ -12,6 +12,7 @@ const getThumbnails = async (param, queryValue) => {
         data.results.forEach(result => {
           // There is no filter for reduction_level in the thumbnails endpoint
           if (result.basename.includes('e91')) {
+            console.log('result:', result)
             thumbnails.push(result)
           }
         })
