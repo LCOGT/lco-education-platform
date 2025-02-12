@@ -178,12 +178,8 @@ const sendGoCommand = async () => {
   })
 }
 
-function showSuggestions () {
-  suggestionOrManual.value = 'suggestions'
-}
-
-function showManual () {
-  suggestionOrManual.value = 'manual'
+function setSuggestionsOrManual (mode) {
+  suggestionOrManual.value = mode
 }
 
 function resetSuggestionOrManual () {
@@ -258,8 +254,8 @@ onMounted(async () => {
           <h3>How would you like to select your target?</h3>
           <p>Would you like us to give you some suggestions for what to observe, or do you already know?</p>
           <div class="buttons are-medium">
-          <button class="button" @click="showSuggestions">Target Suggestions</button>
-          <button class="button" @click="showManual">I'll enter the details</button>
+          <button class="button" @click="setSuggestionsOrManual('suggestions')">Target Suggestions</button>
+          <button class="button" @click="setSuggestionsOrManual('manual')">I'll enter the details</button>
         </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
