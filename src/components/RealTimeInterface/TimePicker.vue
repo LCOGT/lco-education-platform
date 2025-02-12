@@ -219,10 +219,9 @@ const disabledDates = computed(() => {
     return date
   }).filter(date => !isDateAllowed(date))
 })
-function displaySiteName (site) {
-  console.log(site)
-  if (site) {
-    return sites[site]?.name
+function displaySiteName (selection) {
+  if (selection) {
+    return sites[selection.site]?.name
   } else {
     return 'No site selected'
   }
@@ -281,7 +280,7 @@ onMounted(() => {
         </div>
         <div v-if="startTime" class="column">
           <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-if="selectedSite && !errorMessage">{{ displaySiteName(selectedSite) }} selected for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>

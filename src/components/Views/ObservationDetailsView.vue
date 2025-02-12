@@ -2,7 +2,6 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { formatDateTime } from '../../utils/formatTime.js'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
-import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 
 const thumbnail = ref()
 const obsPortalDataStore = useObsPortalDataStore()
@@ -12,8 +11,8 @@ const observationDetails = computed(() => {
 })
 
 onMounted(async () => {
-  const thumbnailsUrl = await getThumbnails('frame_basename', observationDetails.value?.basename)
-  thumbnail.value = thumbnailsUrl[0].url
+  thumbnail.value = obsPortalDataStore.thumbnails
+  console.log('thumbnail', thumbnail.value)
 })
 
 watch(observationDetails.value && thumbnail.value)
