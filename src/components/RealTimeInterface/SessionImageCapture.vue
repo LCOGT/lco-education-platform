@@ -144,6 +144,13 @@ const setCameraState = computed(() => ({
                 </div>
               </div>
             </div>
+            <button class="button red-bg" @click="sendStopCommand">
+            Cancel Observation
+            </button>
+            <button :disabled="!imagesDone" class="button blue-bg" @click="goBackToSessionStarted">
+              Start Another Observation
+            </button>
+          </div>
           <div class="column">
             <LottieAnimation v-if="!imagesDone"
               ref="anim"
@@ -158,12 +165,5 @@ const setCameraState = computed(() => ({
               @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
-        </div>
     </div>
-    <button class="button red-bg" @click="sendStopCommand">
-    stop
-    </button>
-    <button :disabled="!imagesDone" class="button blue-bg" @click="goBackToSessionStarted">
-      Capture another target
-    </button>
 </template>
