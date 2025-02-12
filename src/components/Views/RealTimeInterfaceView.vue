@@ -12,12 +12,9 @@ const realTimeSessionsStore = useRealTimeSessionsStore()
 const timeRemaining = ref(0)
 const loading = ref(true)
 
-const selectedSession = computed(() => {
-  return realTimeSessionsStore.currentSession
-})
-
-const site = computed(() => selectedSession.value.site)
-const telescope = computed(() => selectedSession.value.telescope)
+const selectedSession = realTimeSessionsStore.currentSession
+const site = computed(() => selectedSession.site)
+const telescope = computed(() => selectedSession.telescope)
 
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
@@ -32,9 +29,7 @@ const statusSessionNotActive = computed(() => {
 })
 
 const updateTimeRemaining = () => {
-  if (configurationStore.demo == true) {
-    timeRemaining.value = 999
-  } else if (statusNotExpired.value) {
+  if (statusNotExpired.value) {
     timeRemaining.value = calculateSessionCountdown(selectedSession)
   }
 }
@@ -88,7 +83,7 @@ onMounted(async () => {
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <SessionPending/>
         </div>
-        <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
+       <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
           <h2>Live Observing Session</h2>
           <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
@@ -96,9 +91,6 @@ onMounted(async () => {
         </div>
        <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">
           <p><span class="red-bg px-2 py-2">Session has ended</span></p>
-        </div>
-        <div v-else>
-          <p><span class="red-bg px-2 py-2">There is a problem with your session</span></p>
         </div>
       </div>
     </section>
