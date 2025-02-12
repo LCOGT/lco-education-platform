@@ -18,16 +18,14 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
   persist: true,
   actions: {
     sortResponseData (response) {
-    // we only want to display observations that are either COMPLETED or REAL_TIME and have ended and since each session lasts 15 minutes, we only want to display sessions that have ended in the last 16 minutes
-      const sixteenMinutes = 16 * 60 * 1000
-      const sessionCutoff = new Date(new Date().getTime() - sixteenMinutes).toISOString()
+      const currentTime = new Date().toISOString()
       for (const result of response.results) {
         const sessionEnd = new Date(result.end).toISOString()
-        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < sessionCutoff)) {
+        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < currentTime)) {
           if (!this.completedObservations[result.id]) {
             this.completedObservations[result.id] = result
           }
-        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > sessionCutoff) {
+        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > currentTime) {
           if (!this.upcomingRealTimeSessions[result.id]) {
             this.upcomingRealTimeSessions[result.id] = result
           }
