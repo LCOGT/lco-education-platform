@@ -3,7 +3,6 @@ import { computed, ref, onMounted, watch } from 'vue'
 import { useObsPortalDataStore } from '../../stores/obsPortalData'
 import { useConfigurationStore } from '../../stores/configuration'
 import { formatDateTime } from '../../utils/formatTime.js'
-import { getThumbnails } from '../../utils/thumbnailsUtils.js'
 import { fetchApiCall } from '../../utils/api.js'
 import Modal from '../Global/Modal.vue'
 import ObservationDetailsView from '../Views/ObservationDetailsView.vue'
@@ -45,33 +44,81 @@ const totalPages = computed(() => {
   return Math.ceil(filteredSessions.value.length / pageSize)
 })
 
-const loadThumbnailsForPage = async (page) => {
-  loading.value = true
-  // Calculate the start and end index for the current page
-  const startIndex = (page - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  const sessions = filteredSessions.value.slice(startIndex, endIndex)
-  // Clear the thumbnails map for the current page
-  thumbnailsMap.value = {}
+// const requestedThumbnails = async (page) => {
+//   loading.value = true
+//   const startIndex = (page - 1) * pageSize
+//   const endIndex = startIndex + pageSize
+//   const sessions = filteredSessions.value.slice(startIndex, endIndex)
+//   // Clear thumbnailsMap only for sessions on this page
+//   sessions.forEach(session => {
+//     thumbnailsMap.value[session.id] = []
+//   })
 
-  for (const session of sessions) {
-    // Initialize the thumbnails array for the session
-    thumbnailsMap.value[session.id] = []
-    const thumbnails = await getThumbnails('observation_id', session.id)
-    if (thumbnails.length > 0) {
-      thumbnailsMap.value[session.id] = thumbnails.map(thumbnail => ({
-        url: thumbnail.url,
-        frame: thumbnail.frame
-      }))
-    }
-  }
+//   for (const session of sessions) {
+//     if (obsPortalDataStore.thumbnailBatchCount <= 5) {
+//       console.log('making a request for thumbnails')
+//       await obsPortalDataStore.sessionHasThumbnails(session.id)
+//       thumbnailsMap.value[session.id] = obsPortalDataStore.thumbnails[session.id]
+//     }
+//   }
+//   loading.value = false
+// }
+
+// const requestedThumbnails = async (page) => {
+//   loading.value = true
+//   const startIndex = (page - 1) * pageSize
+//   const endIndex = startIndex + pageSize
+//   const sessions = filteredSessions.value.slice(startIndex, endIndex)
+//   // Clear thumbnailsMap only for sessions on this page
+//   sessions.forEach(session => {
+//     thumbnailsMap.value[session.id] = []
+//   })
+
+//   for (const session of sessions) {
+//     // Call the store's function – this fetches and caches if not already done.
+//     await obsPortalDataStore.sessionHasThumbnails(session.id)
+//     // Then update the local thumbnailsMap from the store's cache.
+//     thumbnailsMap.value[session.id] = obsPortalDataStore.thumbnails[session.id]
+//   }
+//   loading.value = false
+// }
+
+const requestedThumbnails = async (page) => {
+  loading.value = true
+  const startIndex = (page - 1) * pageSize
+  const sessions = filteredSessions.value.slice(startIndex, startIndex + pageSize)
+  sessions.forEach(session => {
+    thumbnailsMap.value[session.id] = obsPortalDataStore.thumbnails[session.id] || []
+  })
   loading.value = false
 }
 
 const changePage = (page) => {
+  obsPortalDataStore.thumbnailCount = 0
   currentPage.value = page
-  loadThumbnailsForPage(page)
+  requestedThumbnails(page)
 }
+
+// const changePage = async (page) => {
+//   // Reset the batch counter for this new page.
+//   obsPortalDataStore.thumbnailCount = 0
+//   // While the new page requires more sessions (i.e. completedObservations is too few),
+//   // process pending sessions until either there are enough or you’ve done 5 calls.
+//   while (
+//     page * pageSize > Object.keys(obsPortalDataStore.completedObservations).length &&
+//     obsPortalDataStore.pendingRealTimeForThumbs.length > 0 &&
+//     obsPortalDataStore.thumbnailCount < 5
+//   ) {
+//     console.log('testing here')
+//     const nextSession = obsPortalDataStore.pendingRealTimeForThumbs.shift()
+//     if (await obsPortalDataStore.sessionHasThumbnails(nextSession.id)) {
+//       obsPortalDataStore.completedObservations[nextSession.id] = nextSession
+//       obsPortalDataStore.thumbnailCount++
+//     }
+//   }
+//   currentPage.value = page
+//   requestedThumbnails(page)
+// }
 
 const sessionsWithThumbnails = computed(() => {
   const startIndex = (currentPage.value - 1) * pageSize
@@ -95,7 +142,7 @@ function openDatalab (observationId, startDate, proposalId) {
 // Without the watcher for filteredSessions, the thumbnails would not be fetched when the number of sessions changes
 watch(filteredSessions, (newSessions, oldSessions) => {
   if (newSessions.length !== oldSessions.length) {
-    loadThumbnailsForPage(currentPage.value)
+    requestedThumbnails(currentPage.value)
   }
 })
 
@@ -115,7 +162,7 @@ const handleThumbnailClick = async (frameId) => {
 }
 
 onMounted(() => {
-  loadThumbnailsForPage(currentPage.value)
+  requestedThumbnails(currentPage.value)
 })
 
 </script>
