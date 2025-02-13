@@ -153,7 +153,8 @@ const sendGoCommand = async () => {
     ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
-    requestId: realTimeSessionsStore.currentSession.request.id
+    requestId: realTimeSessionsStore.currentSession.request.id,
+    observationId: realTimeSessionsStore.currentSession.id
   }
   if (configurationStore.demo == true) {
     loading.value = false
