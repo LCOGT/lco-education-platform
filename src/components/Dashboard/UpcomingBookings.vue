@@ -81,8 +81,8 @@ onMounted(() => {
             <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDateTime(session.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</a></div><div>{{ formatDateTime(session.start, { hour: 'numeric', minute: 'numeric' }) }}</div>
             <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
-        <button v-if="sortedSessions.length > 5 && currentPage!=1" @click="changePage(currentPage - 1)">Back</button>
-        <button v-if="sortedSessions.length > 5 && currentPage!=totalPages" @click="changePage(currentPage + 1)">Next</button>
+        <button v-if="sortedSessions.length > 5 && currentPage!=1" @click="changePage(currentPage - 1)" class="button">Earlier sessions</button>
+        <button v-if="sortedSessions.length > 5 && currentPage!=totalPages" @click="changePage(currentPage + 1)" class="button">Later sessions</button>
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
