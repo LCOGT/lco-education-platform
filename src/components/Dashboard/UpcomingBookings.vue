@@ -12,6 +12,9 @@ const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
 const obsPortalDataStore = useObsPortalDataStore()
 
+const currentPage = ref(1)
+const sessionsPerPage = 5
+
 const pendingRequestGroups = computed(() => {
   return obsPortalDataStore.pendingRequestGroups
 })
@@ -19,13 +22,26 @@ const pendingRequestGroups = computed(() => {
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
-  // TODO: Show past sessions for a certain amount of time in a separate section
   const twoHoursAgo = now - 120 * 60 * 1000
   const sessions = Object.values(obsPortalDataStore.upcomingRealTimeSessions)
   return sessions.filter(session => new Date(session.start).getTime() >= twoHoursAgo)
     .slice()
     .sort((a, b) => new Date(a.start) - new Date(b.start))
 })
+
+const paginatedSessions = computed(() => {
+  const start = (currentPage.value - 1) * sessionsPerPage
+  const end = start + sessionsPerPage
+  return sortedSessions.value.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(sortedSessions.value.length / sessionsPerPage)
+})
+
+const changePage = (page) => {
+  currentPage.value = page
+}
 
 const selectSession = (sessionId) => {
   realTimeSessionsStore.currentSessionId = sessionId
@@ -41,6 +57,12 @@ async function deleteSession (sessionId) {
       const updatedSessions = { ...obsPortalDataStore.upcomingRealTimeSessions }
       delete updatedSessions[sessionId]
       obsPortalDataStore.upcomingRealTimeSessions = updatedSessions
+
+      // Check if totalPages has changed
+      const newTotalPages = Math.ceil(Object.values(updatedSessions).length / sessionsPerPage)
+      if (currentPage.value > newTotalPages) {
+        currentPage.value = newTotalPages
+      }
     },
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
@@ -58,10 +80,12 @@ onMounted(async () => {
       <h3 v-if="sortedSessions.length">Upcoming Bookings</h3>
       <h3 v-else>No Real-Time Sessions Booked</h3>
         <div class="table-summary">
-        <div v-for="session in sortedSessions" :key="session.id">
+        <div v-for="session in paginatedSessions" :key="session.id">
             <div><a @click.prevent="selectSession(session.id)" class="date">{{ formatDateTime(session.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</a></div><div>{{ formatDateTime(session.start, { hour: 'numeric', minute: 'numeric' }) }}</div>
             <button @click="deleteSession(session.id)" class="deleteButton">x</button>
         </div>
+        <button v-if="sortedSessions.length > 5 && currentPage!=1" @click="changePage(currentPage - 1)" class="button">Earlier sessions</button>
+        <button v-if="sortedSessions.length > 5 && currentPage!=totalPages" @click="changePage(currentPage + 1)" class="button">Later sessions</button>
         </div>
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
