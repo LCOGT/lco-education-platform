@@ -114,8 +114,10 @@ const handleThumbnailClick = async (frameId) => {
   })
 }
 
-onMounted(() => {
-  loadThumbnailsForPage(currentPage.value)
+onMounted(async () => {
+  await obsPortalDataStore.fetchAllCompletedObservations().then(() => {
+    loadThumbnailsForPage(currentPage.value)
+  })
 })
 
 </script>
