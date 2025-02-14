@@ -39,8 +39,8 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     },
     storePendingRequestGroups (requestGroups) {
       for (const requestGroup of requestGroups.results) {
-        if (!this.pendingRequestGroups[requestGroup.id]) {
-          this.pendingRequestGroups[requestGroup.id] = requestGroup
+        if (!this.pendingRequestGroups[requestGroup.request.id]) {
+          this.pendingRequestGroups[requestGroup.request.id] = requestGroup
         }
       }
     },
