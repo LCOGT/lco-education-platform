@@ -10,51 +10,68 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingRequestGroups: [],
+      pendingRequestGroups: {},
       observationDetails: {},
       selectedConfiguration: null
     }
   },
   persist: true,
   actions: {
-    sortResponseData (response) {
-    // we only want to display observations that are either COMPLETED or REAL_TIME and have ended and since each session lasts 15 minutes, we only want to display sessions that have ended in the last 16 minutes
-      const sixteenMinutes = 16 * 60 * 1000
-      const sessionCutoff = new Date(new Date().getTime() - sixteenMinutes).toISOString()
-      for (const result of response.results) {
-        const sessionEnd = new Date(result.end).toISOString()
-        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < sessionCutoff)) {
-          if (!this.completedObservations[result.id]) {
-            this.completedObservations[result.id] = result
-          }
-        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > sessionCutoff) {
-          if (!this.upcomingRealTimeSessions[result.id]) {
-            this.upcomingRealTimeSessions[result.id] = result
-          }
+    storeUpcomingRealTimeSessions (realTimeSessions) {
+      for (const session of realTimeSessions.results) {
+        if (!this.upcomingRealTimeSessions[session.id]) {
+          this.upcomingRealTimeSessions[session.id] = session
         }
       }
     },
-    async fetchCompleteObservationsAndUpcomingRTSessions () {
+    async fetchUpcomingRealTimeSessions () {
+      const configurationStore = useConfigurationStore()
+      const userDataStore = useUserDataStore()
+      const username = userDataStore.username
+      const now = new Date().toISOString()
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&observation_type=REAL_TIME&limit=100&ordering=-start&end_after=${now}`,
+        method: 'GET',
+        successCallback: (response) => {
+          this.storeUpcomingRealTimeSessions(response)
+        }
+      })
+    },
+    storePendingRequestGroups (requestGroups) {
+      for (const requestGroup of requestGroups.results) {
+        if (!this.pendingRequestGroups[requestGroup.id]) {
+          this.pendingRequestGroups[requestGroup.id] = requestGroup
+        }
+      }
+    },
+    async fetchPendingRequestGroups () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=100&ordering=-start`,
+        url: configurationStore.observationPortalUrl + `observations/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
-          this.sortResponseData(response)
+          this.storePendingRequestGroups(response)
         }
       })
     },
-    fetchPendingRequestGroups () {
+    storeCompletedObservations (allRequests) {
+      for (const request of allRequests.results) {
+        if (!this.completedObservations[request.id]) {
+          this.completedObservations[request.id] = request
+        }
+      }
+    },
+    async fetchAllCompletedObservations () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
-      fetchApiCall({
-        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=COMPLETED&limit=100&ordering=-start`,
         method: 'GET',
         successCallback: (response) => {
-          this.pendingRequestGroups = response.results
+          this.storeCompletedObservations(response)
         }
       })
     },
