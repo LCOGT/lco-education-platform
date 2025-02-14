@@ -10,7 +10,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingRequestGroups: {},
+      pendingSchduledObservations: {},
       observationDetails: {},
       selectedConfiguration: null
     }
@@ -37,14 +37,14 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
-    storePendingRequestGroups (requestGroups) {
-      for (const requestGroup of requestGroups.results) {
-        if (!this.pendingRequestGroups[requestGroup.request.id]) {
-          this.pendingRequestGroups[requestGroup.request.id] = requestGroup
+    storePendingScheduledObservations (response) {
+      for (const pendingScheduledObservation of response.results) {
+        if (!this.pendingSchduledObservations[pendingScheduledObservation.request.id]) {
+          this.pendingSchduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
         }
       }
     },
-    async fetchPendingRequestGroups () {
+    async fetchPendingScheduledObservations () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
@@ -52,7 +52,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         url: configurationStore.observationPortalUrl + `observations/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
-          this.storePendingRequestGroups(response)
+          this.storePendingScheduledObservations(response)
         }
       })
     },

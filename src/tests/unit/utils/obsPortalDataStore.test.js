@@ -66,7 +66,7 @@ describe('Observation Portal Data Store', () => {
     })
   })
 
-  it('fetches pending requests (/requestgroups) and updates pendingRequestGroups correctly', async () => {
+  it('fetches pending requests (/requestgroups) and updates pendingSchduledObservations correctly', async () => {
     const mockPendingRequestsResults = {
       results: [
         { id: 1, state: 'PENDING' },
@@ -78,9 +78,9 @@ describe('Observation Portal Data Store', () => {
       successCallback(mockPendingRequestsResults)
     })
 
-    await obsPortalDataStore.fetchPendingRequestGroups()
+    await obsPortalDataStore.fetchPendingScheduledObservations()
 
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
-    expect(obsPortalDataStore.pendingRequestGroups).toEqual(mockPendingRequestsResults.results)
+    expect(obsPortalDataStore.pendingSchduledObservations).toEqual(mockPendingRequestsResults.results)
   })
 })
