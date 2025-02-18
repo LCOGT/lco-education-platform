@@ -10,7 +10,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingSchduledObservations: {},
+      pendingScheduledObservations: {},
       observationDetails: {},
       selectedConfiguration: null
     }
@@ -39,8 +39,8 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     },
     storePendingScheduledObservations (response) {
       for (const pendingScheduledObservation of response.results) {
-        if (!this.pendingSchduledObservations[pendingScheduledObservation.request.id]) {
-          this.pendingSchduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
+        if (!this.pendingScheduledObservations[pendingScheduledObservation.request.id]) {
+          this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
         }
       }
     },

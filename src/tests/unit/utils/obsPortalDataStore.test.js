@@ -69,7 +69,7 @@ describe('Observation Portal Data Store', () => {
     })
     await obsPortalDataStore.fetchPendingScheduledObservations()
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
-    expect(obsPortalDataStore.pendingSchduledObservations).toEqual({
+    expect(obsPortalDataStore.pendingScheduledObservations).toEqual({
       456: mockPendingScheduledObservationsResponse.results[0]
     })
   })
