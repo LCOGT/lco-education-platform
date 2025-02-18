@@ -38,7 +38,25 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       })
     },
     storePendingScheduledObservations (response) {
+      // The format of the response is as follows:
+      // [
+      //     {
+      //       "id": 680316844,
+      //       "request": {
+      //           "id": 3784722,
+      //           "state": "PENDING",
+      //           "configurations": [
+      //             {...configuration details...}
+      //           ]
+      //       },
+      //       and other fields
+      //   }
+      // ]
       for (const pendingScheduledObservation of response.results) {
+        // Because a scheduled request is ephemeral and its id can change, we store the request id which is stable
+        // So the example above would be stored as:
+        // {
+        //   3784722: {... details of the request ...}
         if (!this.pendingScheduledObservations[pendingScheduledObservation.request.id]) {
           this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
         }
