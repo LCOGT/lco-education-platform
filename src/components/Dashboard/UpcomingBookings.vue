@@ -15,8 +15,8 @@ const obsPortalDataStore = useObsPortalDataStore()
 const currentPage = ref(1)
 const sessionsPerPage = 5
 
-const pendingSchduledObservations = computed(() => {
-  return obsPortalDataStore.pendingSchduledObservations
+const pendingScheduledObservations = computed(() => {
+  return obsPortalDataStore.pendingScheduledObservations
 })
 
 // change to bookings and add an icon to show completion
@@ -90,9 +90,9 @@ onMounted(async () => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations upcoming-obs">
-        <h3><span v-if="!pendingSchduledObservations">No </span>Pending Requests</h3>
+        <h3><span v-if="Object.keys(pendingScheduledObservations).length == 0">No </span>Pending Requests</h3>
         <div class="table-summary">
-            <div v-for="scheduledObs in pendingSchduledObservations" :key="scheduledObs.id">
+            <div v-for="scheduledObs in pendingScheduledObservations" :key="scheduledObs.id">
               <div v-for="request in scheduledObs.request.configurations" :key="request.id">
                 {{ request.target.name}}
                 <!-- TO DO: Define progress and get progress from api -->
