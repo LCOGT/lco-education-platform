@@ -57,9 +57,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         // So the example above would be stored as:
         // {
         //   3784722: {... details of the request ...}
-        if (!this.pendingScheduledObservations[pendingScheduledObservation.request.id]) {
-          this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
-        }
+        this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
       }
     },
     async fetchPendingScheduledObservations () {
@@ -67,6 +65,9 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
       await fetchApiCall({
+        // This will only work with NORMAL observations, so TIME_CRITICAL or RAPID_RESPONSE will not show up.
+        //  Also only getting ones submitted by the user, which ignores observations on a shared proposal the user has access too.
+        // In the future, we have to change the query
         url: configurationStore.observationPortalUrl + `observations/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
