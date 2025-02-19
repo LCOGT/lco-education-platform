@@ -88,7 +88,7 @@ onMounted(async () => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations upcoming-obs">
-        <h3><span v-if="Object.keys(pendingScheduledObservations).length == 0">No </span>Scheduled Requests</h3>
+        <h3><span v-if="!pendingScheduledObservations">No </span>Scheduled Requests</h3>
         <div class="table-summary">
             <div v-for="scheduledObs in pendingScheduledObservations" :key="scheduledObs.id">
               <div v-for="configuration in scheduledObs.request.configurations" :key="configuration.id">
