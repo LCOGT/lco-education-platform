@@ -18,6 +18,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
   persist: true,
   actions: {
     storeUpcomingRealTimeSessions (realTimeSessions) {
+      this.upcomingRealTimeSessions = {}
       for (const session of realTimeSessions.results) {
         if (!this.upcomingRealTimeSessions[session.id]) {
           this.upcomingRealTimeSessions[session.id] = session
@@ -52,6 +53,8 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       //       and other fields
       //   }
       // ]
+      this.pendingScheduledObservations = {}
+
       for (const pendingScheduledObservation of response.results) {
         // Because a scheduled request is ephemeral and its id can change, we store the request id which is stable
         // So the example above would be stored as:
