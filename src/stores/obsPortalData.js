@@ -78,10 +78,10 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
-    storeCompletedObservations (allRequests) {
-      for (const request of allRequests.results) {
-        if (!this.completedObservations[request.id]) {
-          this.completedObservations[request.id] = request
+    storeCompletedObservations (allObservations) {
+      for (const observation of allObservations.results) {
+        if (!this.completedObservations[observation.id]) {
+          this.completedObservations[observation.id] = observation
         }
       }
     },
