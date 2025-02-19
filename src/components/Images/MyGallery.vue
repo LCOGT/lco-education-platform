@@ -27,43 +27,25 @@ function closeModal () {
   isModalOpen.value = false
   obsPortalDataStore.setSelectedConfiguration(null)
 }
-
-const filteredSessions = computed(() => {
-  const now = new Date()
-  // Choosing 16 minutes because each session is 15 minutes long and this way we can show the last session once it's completed
-  const sixteenMinutes = 16 * 60 * 1000
-  const cutoffTime = new Date(now.getTime() - sixteenMinutes)
-  // Object.values returns an array of all the values of the object
-  const sessions = Object.values(obsPortalDataStore.completedObservations)
-  const filtered = sessions
-    .filter(session => new Date(session.start) < cutoffTime)
-    .sort((a, b) => new Date(b.start) - new Date(a.start))
-  return filtered
-})
+const observations = computed(() => { return obsPortalDataStore.completedObservations })
+const sortedObservations = computed(() => { return Object.values(observations.value).sort((a, b) => new Date(b.start) - new Date(a.start)) })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredSessions.value.length / pageSize)
+  return Math.ceil(obsPortalDataStore.completedObservationsCount / pageSize)
 })
 
+// Making only 5 requests at a time (pagination) to avoid slow rendering
 const loadThumbnailsForPage = async (page) => {
   loading.value = true
-  // Calculate the start and end index for the current page
-  const startIndex = (page - 1) * pageSize
-  const endIndex = startIndex + pageSize
-  const sessions = filteredSessions.value.slice(startIndex, endIndex)
-  // Clear the thumbnails map for the current page
+  await obsPortalDataStore.fetchCompletedObservations(page)
   thumbnailsMap.value = {}
-
-  for (const session of sessions) {
-    // Initialize the thumbnails array for the session
-    thumbnailsMap.value[session.id] = []
-    const thumbnails = await getThumbnails('observation_id', session.id)
-    if (thumbnails.length > 0) {
-      thumbnailsMap.value[session.id] = thumbnails.map(thumbnail => ({
-        url: thumbnail.url,
-        frame: thumbnail.frame
-      }))
-    }
+  for (const obs of Object.values(sortedObservations.value)) {
+    const thumbnails = await getThumbnails('observation_id', obs.id)
+    // thumbnailsMap.value[obs.id] = thumbnails
+    thumbnailsMap.value[obs.id] = thumbnails.map(thumbnail => ({
+      url: thumbnail.url,
+      frame: thumbnail.frame
+    }))
   }
   loading.value = false
 }
@@ -73,16 +55,6 @@ const changePage = (page) => {
   loadThumbnailsForPage(page)
 }
 
-const sessionsWithThumbnails = computed(() => {
-  const startIndex = (currentPage.value - 1) * pageSize
-  const endIndex = startIndex + pageSize
-
-  // Only include sessions that have urls in thumbnailsMap
-  return filteredSessions.value.slice(startIndex, endIndex).filter(
-    session => thumbnailsMap.value[session.id] && thumbnailsMap.value[session.id].length > 0
-  )
-})
-
 function openDatalab (observationId, startDate, proposalId) {
   if (!observationId || !startDate || !proposalId) {
     console.error('Missing required parameters:', { observationId, startDate, proposalId })
@@ -91,13 +63,6 @@ function openDatalab (observationId, startDate, proposalId) {
   const datalabQueryUrl = `${configurationStore.datalabUrl}projects/?observationId=${observationId}&startDate=${startDate}&proposalId=${proposalId}`
   window.open(datalabQueryUrl, 'datalabWindow')
 }
-
-// Without the watcher for filteredSessions, the thumbnails would not be fetched when the number of sessions changes
-watch(filteredSessions, (newSessions, oldSessions) => {
-  if (newSessions.length !== oldSessions.length) {
-    loadThumbnailsForPage(currentPage.value)
-  }
-})
 
 const handleThumbnailClick = async (frameId) => {
   await fetchApiCall({
@@ -114,10 +79,8 @@ const handleThumbnailClick = async (frameId) => {
   })
 }
 
-onMounted(async () => {
-  await obsPortalDataStore.fetchAllCompletedObservations().then(() => {
-    loadThumbnailsForPage(currentPage.value)
-  })
+onMounted(() => {
+  loadThumbnailsForPage(currentPage.value)
 })
 
 </script>
@@ -126,30 +89,37 @@ onMounted(async () => {
   <template v-if="loading">
     <v-progress-circular indeterminate color="white" class="loading"/>
   </template>
+  <template v-else>
   <div class="container">
-    <div v-for="obs in sessionsWithThumbnails" :key="obs.id">
+    <div v-for="obs in sortedObservations" :key="obs.id">
       <h3 class="startTime">{{ formatDateTime(obs.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</h3>
-      <div class="columns is-multiline">
-        <div
-          class="column is-one-quarter-desktop is-half-tablet"
-          v-for="(thumbnail, i) in thumbnailsMap[obs.id]"
-          :key="obs.id + '-' + i">
-          <figure class="image is-square">
-            <img :src="thumbnail.url" class="thumbnail" @click="handleThumbnailClick(thumbnail.frame)" style="cursor: pointer" />
-          </figure>
-        </div>
+      <div v-if="!thumbnailsMap[obs.id] || thumbnailsMap[obs.id].length === 0">
+        <!-- No thumbnails found -->
+        <p>No thumbnails found for this observation</p>
       </div>
-      <Modal
-      :isOpen="isModalOpen"
-      :title="'Observation Details'"
-      @close="closeModal"
-    >
-      <ObservationDetailsView v-if="isModalOpen" />
-    </Modal>
-      <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
+      <div v-else>
+        <div class="columns is-multiline">
+          <div
+            class="column is-one-quarter-desktop is-half-tablet"
+            v-for="(thumbnail, i) in thumbnailsMap[obs.id]"
+            :key="obs.id + '-' + i">
+            <figure class="image is-square">
+              <img :src="thumbnail.url" class="thumbnail" @click="handleThumbnailClick(thumbnail.frame)" style="cursor: pointer" />
+            </figure>
+          </div>
+        </div>
+        <Modal
+        :isOpen="isModalOpen"
+        :title="'Observation Details'"
+        @close="closeModal"
+      >
+        <ObservationDetailsView v-if="isModalOpen" />
+        </Modal>
+        <v-btn @click="openDatalab(obs.id, obs.start, obs.proposal)">Open in Datalab</v-btn>
+      </div>
     </div>
     <!-- Pagination Controls -->
-    <div class="pagination-controls">
+    <div v-if="totalPages !== 0" class="pagination-controls">
       <button
         v-if="currentPage > 1"
         @click="changePage(currentPage - 1)"
@@ -164,7 +134,11 @@ onMounted(async () => {
         Next
       </button>
     </div>
+    <div v-else-if="totalPages === 0">
+      <p>No completed observations found. Book one</p>
+    </div>
   </div>
+</template>
 </template>
 
 <style scoped>
