@@ -12,7 +12,8 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       upcomingRealTimeSessions: {},
       pendingScheduledObservations: {},
       observationDetails: {},
-      selectedConfiguration: null
+      selectedConfiguration: null,
+      completedObservationsCount: 0
     }
   },
   persist: true,
@@ -78,19 +79,23 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
-    storeCompletedObservations (allObservations) {
-      for (const observation of allObservations.results) {
-        if (!this.completedObservations[observation.id]) {
-          this.completedObservations[observation.id] = observation
-        }
+    storeCompletedObservations (observations) {
+      this.completedObservationsCount = observations.count
+      this.completedObservations = {}
+      for (const observation of observations.results) {
+        this.completedObservations[observation.id] = observation
       }
     },
-    async fetchAllCompletedObservations () {
+    async fetchCompletedObservations (page = 1) {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
+      // We want 5 items per page
+      const limit = 5
+      // For pagination purposes we need offset
+      const offset = (page - 1) * limit
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=COMPLETED&limit=100&ordering=-start`,
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=COMPLETED&limit=${limit}&offset=${offset}&ordering=-start`,
         method: 'GET',
         successCallback: (response) => {
           this.storeCompletedObservations(response)
