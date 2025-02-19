@@ -27,6 +27,7 @@ function closeModal () {
   isModalOpen.value = false
   obsPortalDataStore.setSelectedConfiguration(null)
 }
+// These have to be computed cause they change when the store is updated which is on every page change
 const observations = computed(() => { return obsPortalDataStore.completedObservations })
 const sortedObservations = computed(() => { return Object.values(observations.value).sort((a, b) => new Date(b.start) - new Date(a.start)) })
 

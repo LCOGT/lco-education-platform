@@ -81,7 +81,6 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     },
     storeCompletedObservations (observations) {
       this.completedObservationsCount = observations.count
-      this.completedObservations = {}
       for (const observation of observations.results) {
         this.completedObservations[observation.id] = observation
       }
@@ -98,6 +97,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=COMPLETED&limit=${limit}&offset=${offset}&ordering=-start`,
         method: 'GET',
         successCallback: (response) => {
+          this.completedObservations = {}
           this.storeCompletedObservations(response)
         }
       })
