@@ -105,7 +105,7 @@ describe('Observation Portal Data Store', () => {
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
       successCallback(mockAllCompletedObservationsResponse)
     })
-    await obsPortalDataStore.fetchAllCompletedObservations()
+    await obsPortalDataStore.fetchCompletedObservations()
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
     expect(obsPortalDataStore.completedObservations).toEqual({
       789: mockAllCompletedObservationsResponse.results[0],
