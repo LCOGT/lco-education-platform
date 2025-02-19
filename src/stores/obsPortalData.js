@@ -10,49 +10,90 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingRequestGroups: [],
+      pendingScheduledObservations: {},
       observationDetails: {},
       selectedConfiguration: null
     }
   },
   persist: true,
   actions: {
-    sortResponseData (response) {
-      const currentTime = new Date().toISOString()
-      for (const result of response.results) {
-        const sessionEnd = new Date(result.end).toISOString()
-        if ((result.state === 'COMPLETED') || (result.observation_type === 'REAL_TIME' && sessionEnd < currentTime)) {
-          if (!this.completedObservations[result.id]) {
-            this.completedObservations[result.id] = result
-          }
-        } else if (result.observation_type === 'REAL_TIME' && sessionEnd > currentTime) {
-          if (!this.upcomingRealTimeSessions[result.id]) {
-            this.upcomingRealTimeSessions[result.id] = result
-          }
+    storeUpcomingRealTimeSessions (realTimeSessions) {
+      this.upcomingRealTimeSessions = {}
+      for (const session of realTimeSessions.results) {
+        if (!this.upcomingRealTimeSessions[session.id]) {
+          this.upcomingRealTimeSessions[session.id] = session
         }
       }
     },
-    async fetchCompleteObservationsAndUpcomingRTSessions () {
+    async fetchUpcomingRealTimeSessions () {
+      const configurationStore = useConfigurationStore()
+      const userDataStore = useUserDataStore()
+      const username = userDataStore.username
+      const now = new Date().toISOString()
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&observation_type=REAL_TIME&limit=100&ordering=-start&end_after=${now}`,
+        method: 'GET',
+        successCallback: (response) => {
+          this.storeUpcomingRealTimeSessions(response)
+        }
+      })
+    },
+    storePendingScheduledObservations (response) {
+      // The format of the response is as follows:
+      // [
+      //     {
+      //       "id": 680316844,
+      //       "request": {
+      //           "id": 3784722,
+      //           "state": "PENDING",
+      //           "configurations": [
+      //             {...configuration details...}
+      //           ]
+      //       },
+      //       and other fields
+      //   }
+      // ]
+      this.pendingScheduledObservations = {}
+
+      for (const pendingScheduledObservation of response.results) {
+        // Because a scheduled request is ephemeral and its id can change, we store the request id which is stable
+        // So the example above would be stored as:
+        // {
+        //   3784722: {... details of the request ...}
+        this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
+      }
+    },
+    async fetchPendingScheduledObservations () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=COMPLETED&limit=100&ordering=-start`,
+        // This will only work with NORMAL observations, so TIME_CRITICAL or RAPID_RESPONSE will not show up.
+        //  Also only getting ones submitted by the user, which ignores observations on a shared proposal the user has access too.
+        // In the future, we have to change the query
+        url: configurationStore.observationPortalUrl + `observations/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
-          this.sortResponseData(response)
+          this.storePendingScheduledObservations(response)
         }
       })
     },
-    fetchPendingRequestGroups () {
+    storeCompletedObservations (allObservations) {
+      for (const observation of allObservations.results) {
+        if (!this.completedObservations[observation.id]) {
+          this.completedObservations[observation.id] = observation
+        }
+      }
+    },
+    async fetchAllCompletedObservations () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
-      fetchApiCall({
-        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=COMPLETED&limit=100&ordering=-start`,
         method: 'GET',
         successCallback: (response) => {
-          this.pendingRequestGroups = response.results
+          this.storeCompletedObservations(response)
         }
       })
     },

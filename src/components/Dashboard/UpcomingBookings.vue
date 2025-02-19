@@ -14,7 +14,9 @@ const obsPortalDataStore = useObsPortalDataStore()
 
 const currentPage = ref(1)
 const sessionsPerPage = 5
-const requestGroups = ref([])
+
+const pendingScheduledObservations = obsPortalDataStore.pendingScheduledObservations
+
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
   const now = new Date().getTime()
@@ -64,10 +66,9 @@ async function deleteSession (sessionId) {
   })
 }
 
-onMounted(() => {
-  obsPortalDataStore.fetchCompleteObservationsAndUpcomingRTSessions()
-  obsPortalDataStore.fetchPendingRequestGroups()
-  requestGroups.value = obsPortalDataStore.pendingRequestGroups
+onMounted(async () => {
+  await obsPortalDataStore.fetchUpcomingRealTimeSessions()
+  await obsPortalDataStore.fetchPendingScheduledObservations()
 })
 
 </script>
@@ -87,11 +88,11 @@ onMounted(() => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations upcoming-obs">
-        <h3><span v-if="!requestGroups.length">No </span>Pending Requests</h3>
+        <h3><span v-if="Object.keys(pendingScheduledObservations).length == 0">No </span>Scheduled Requests</h3>
         <div class="table-summary">
-            <div v-for="requestGroup in requestGroups" :key="requestGroup.id">
-              <div v-for="request in requestGroup.requests" :key="request.id">
-                <div>{{ request.configurations[0].target.name }}</div>
+            <div v-for="scheduledObs in pendingScheduledObservations" :key="scheduledObs.id">
+              <div v-for="configuration in scheduledObs.request.configurations" :key="configuration.id">
+                {{ configuration.target.name}}
                 <!-- TO DO: Define progress and get progress from api -->
                 <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
               </div>
