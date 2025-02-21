@@ -30,9 +30,12 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
+      // I know now why this has to be 16 minutes. If it's `end_after=${now}`, the session only appears on the dashboard before now.
+      // Meaning, the session will not show up in the list if it has already started. So users can't join a session that has already started.
+      // sixteenMinutesFromNow is the time 16 minutes from now in ISO format so they can access the session
       const now = new Date().toISOString()
       await fetchApiCall({
-        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&observation_type=REAL_TIME&limit=100&ordering=-start&end_after=${now}`,
+        url: configurationStore.observationPortalUrl + `observations/?user=${username}&state=PENDING&state=IN_PROGRESS&observation_type=REAL_TIME&limit=100&ordering=-start&end_after=${now}`,
         method: 'GET',
         successCallback: (response) => {
           this.storeUpcomingRealTimeSessions(response)
