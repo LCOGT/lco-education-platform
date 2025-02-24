@@ -15,7 +15,8 @@ const thumbnailsMap = ref({})
 const loading = ref(true)
 const currentPage = ref(1)
 const pageSize = 5
-
+const loadMoreClicked = ref({})
+const visibleThumbnails = ref({})
 const isModalOpen = ref(false)
 
 function openModal (observation) {
@@ -40,15 +41,30 @@ const loadThumbnailsForPage = async (page) => {
   loading.value = true
   await obsPortalDataStore.fetchCompletedObservations(page)
   thumbnailsMap.value = {}
+  visibleThumbnails.value = {}
   for (const obs of Object.values(sortedObservations.value)) {
     const thumbnails = await getThumbnails('observation_id', obs.id)
     // thumbnailsMap.value[obs.id] = thumbnails
-    thumbnailsMap.value[obs.id] = thumbnails.map(thumbnail => ({
+    const formattedThumbnails = thumbnails.map(thumbnail => ({
       url: thumbnail.url,
       frame: thumbnail.frame
     }))
+    thumbnailsMap.value[obs.id] = formattedThumbnails
+    visibleThumbnails.value[obs.id] = formattedThumbnails.length > 4 ? 4 : formattedThumbnails.length
+    loadMoreClicked.value[obs.id] = false
   }
   loading.value = false
+}
+
+function loadMore (obsId) {
+  // On first click, always add 5 images regardless of how many remain
+  if (!loadMoreClicked.value[obsId]) {
+    visibleThumbnails.value[obsId] = Math.min(visibleThumbnails.value[obsId] + 4, thumbnailsMap.value[obsId].length)
+    loadMoreClicked.value[obsId] = true
+  } else {
+    // On subsequent click, load all remaining images
+    visibleThumbnails.value[obsId] = thumbnailsMap.value[obsId].length
+  }
 }
 
 const changePage = (page) => {
@@ -102,12 +118,18 @@ onMounted(() => {
         <div class="columns is-multiline">
           <div
             class="column is-one-quarter-desktop is-half-tablet"
-            v-for="(thumbnail, i) in thumbnailsMap[obs.id]"
+            v-for="(thumbnail, i) in thumbnailsMap[obs.id].slice(0, visibleThumbnails[obs.id])"
             :key="obs.id + '-' + i">
             <figure class="image is-square">
               <img :src="thumbnail.url" class="thumbnail" @click="handleThumbnailClick(thumbnail.frame)" style="cursor: pointer" />
             </figure>
           </div>
+          <v-btn
+            v-if="thumbnailsMap[obs.id].length > visibleThumbnails[obs.id]"
+            @click="loadMore(obs.id)"
+          >
+            {{ loadMoreClicked[obs.id] ? 'Load All' : 'Load More' }}
+          </v-btn>
         </div>
         <Modal
         :isOpen="isModalOpen"
