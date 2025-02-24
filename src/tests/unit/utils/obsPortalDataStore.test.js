@@ -107,9 +107,9 @@ describe('Observation Portal Data Store', () => {
     })
     await obsPortalDataStore.fetchCompletedObservations()
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
-    expect(obsPortalDataStore.completedObservations).toEqual({
-      789: mockAllCompletedObservationsResponse.results[0],
-      101112: mockAllCompletedObservationsResponse.results[1]
-    })
+    expect(obsPortalDataStore.completedObservations).toEqual([
+      mockAllCompletedObservationsResponse.results[0],
+      mockAllCompletedObservationsResponse.results[1]
+    ])
   })
 })
