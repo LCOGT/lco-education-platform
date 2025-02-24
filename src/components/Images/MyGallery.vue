@@ -28,7 +28,7 @@ function closeModal () {
   obsPortalDataStore.setSelectedConfiguration(null)
 }
 // These have to be computed cause they change when the store is updated which is on every page change
-const observations = obsPortalDataStore.completedObservations
+const observations = computed(() => { return obsPortalDataStore.completedObservations })
 
 const totalPages = computed(() => {
   return Math.ceil(obsPortalDataStore.completedObservationsCount / pageSize)
@@ -39,7 +39,7 @@ const loadThumbnailsForPage = async (page) => {
   loading.value = true
   await obsPortalDataStore.fetchCompletedObservations(page)
   thumbnailsMap.value = {}
-  for (const obs of Object.values(observations)) {
+  for (const obs of Object.values(observations.value)) {
     const thumbnails = await getThumbnails('observation_id', obs.id)
     // thumbnailsMap.value[obs.id] = thumbnails
     thumbnailsMap.value[obs.id] = thumbnails.map(thumbnail => ({
