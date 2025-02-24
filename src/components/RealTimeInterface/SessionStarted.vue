@@ -146,8 +146,10 @@ const sendGoCommand = async () => {
   const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
-    expFilter: exposFilter,
-    expTime: exposTime,
+    // expFilter: exposFilter,
+    expFilter: ['rp', 'gp', 'ip'],
+    expTime: [5, 5, 5],
+    // expTime: exposTime,
     // Name is the target name if entered, else the coordinates in string format
     name: targetName.value || `${(Number(raValue.value).toFixed(4)).toString()}_${(Number(decValue.value).toFixed(4)).toString()}`,
     ra: Number(ra.value) / 15,
@@ -156,6 +158,7 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
+  console.log('request body', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
