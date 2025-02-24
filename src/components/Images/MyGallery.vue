@@ -29,8 +29,8 @@ function closeModal () {
   obsPortalDataStore.setSelectedConfiguration(null)
 }
 // These have to be computed cause they change when the store is updated which is on every page change
-const observations = computed(() => { return obsPortalDataStore.completedObservations })
-const sortedObservations = computed(() => { return Object.values(observations.value).sort((a, b) => new Date(b.start) - new Date(a.start)) })
+const observations = obsPortalDataStore.completedObservations
+// const sortedObservations = computed(() => { return Object.values(observations.value).sort((a, b) => new Date(b.start) - new Date(a.start)) })
 
 const totalPages = computed(() => {
   return Math.ceil(obsPortalDataStore.completedObservationsCount / pageSize)
@@ -42,7 +42,7 @@ const loadThumbnailsForPage = async (page) => {
   await obsPortalDataStore.fetchCompletedObservations(page)
   thumbnailsMap.value = {}
   visibleThumbnails.value = {}
-  for (const obs of Object.values(sortedObservations.value)) {
+  for (const obs of Object.values(observations)) {
     const thumbnails = await getThumbnails('observation_id', obs.id)
     // thumbnailsMap.value[obs.id] = thumbnails
     const formattedThumbnails = thumbnails.map(thumbnail => ({
@@ -108,7 +108,7 @@ onMounted(() => {
   </template>
   <template v-else>
   <div class="container">
-    <div v-for="obs in sortedObservations" :key="obs.id">
+    <div v-for="obs in observations" :key="obs.id">
       <h3 class="startTime">{{ formatDateTime(obs.start, { year: 'numeric', month: 'long', day: 'numeric' }) }}</h3>
       <div v-if="!thumbnailsMap[obs.id] || thumbnailsMap[obs.id].length === 0">
         <!-- No thumbnails found -->

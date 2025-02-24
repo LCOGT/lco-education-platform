@@ -101,7 +101,9 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         method: 'GET',
         successCallback: (response) => {
           this.completedObservations = {}
-          this.storeCompletedObservations(response)
+          this.completedObservationsCount = response.count
+          this.completedObservations = response.results
+          // this.storeCompletedObservations(response)
         }
       })
     },
