@@ -97,9 +97,9 @@ function setRaDecfromTargetList (event) {
     targetName.value = selectedTarget.value.name
     suggestionTargetSet.value = true
     goToLocation()
-    exposureTime.value = selectedTarget.value.filters[0].exposure
+    exposureTime.value = selectedTarget.value.filters.map(f => f.exposure)
     exposureCount.value = 1
-    selectedFilter.value = selectedTarget.value.filters[0].name
+    selectedFilter.value = selectedTarget.value.filters.map(f => f.name)
   }
 }
 
@@ -142,14 +142,16 @@ const sendGoCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
-  const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
+
+  // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
+  // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
+  // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
+  const exposFilter = suggestionOrManual.value === 'suggestions' ? Object.values(selectedFilter.value) : Array(exposureCount.value).fill(selectedFilter.value)
+  const exposTime = suggestionOrManual.value === 'suggestions' ? Object.values(exposureTime.value) : Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
-    // expFilter: exposFilter,
-    expFilter: ['rp', 'gp', 'ip'],
-    expTime: [5, 5, 5],
-    // expTime: exposTime,
+    expFilter: exposFilter,
+    expTime: exposTime,
     // Name is the target name if entered, else the coordinates in string format
     name: targetName.value || `${(Number(raValue.value).toFixed(4)).toString()}_${(Number(decValue.value).toFixed(4)).toString()}`,
     ra: Number(ra.value) / 15,
@@ -158,7 +160,6 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
-  console.log('request body', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
