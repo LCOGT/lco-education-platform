@@ -291,6 +291,9 @@ onMounted(async () => {
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
+                  <p><strong>Exposure settings:</strong></p>
+                    <!-- eslint-disable-next-line vue/require-v-for-key -->
+                    <div v-for="filter in selectedTarget.filters">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
                 </div>
             </div>
           </div>
