@@ -82,12 +82,6 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
-    storeCompletedObservations (observations) {
-      this.completedObservationsCount = observations.count
-      for (const observation of observations.results) {
-        this.completedObservations[observation.id] = observation
-      }
-    },
     async fetchCompletedObservations (page = 1) {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
@@ -103,7 +97,6 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
           this.completedObservations = {}
           this.completedObservationsCount = response.count
           this.completedObservations = response.results
-          // this.storeCompletedObservations(response)
         }
       })
     },
