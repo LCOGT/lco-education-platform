@@ -206,8 +206,14 @@ function getVisibleTargets () {
 
 function setSuggestionType (type) {
   suggestionByType.value = type
-  targetsByType.value = targetList.value[type]
-  targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  if (Object.keys(targetList.value).length === 0) {
+    getVisibleTargets()
+    targetsByType.value = targetList.value[type]
+    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  } else {
+    targetsByType.value = targetList.value[type]
+    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  }
 }
 
 const incompleteSelection = computed(() => {
