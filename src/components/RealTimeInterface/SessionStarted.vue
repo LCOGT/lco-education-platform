@@ -97,9 +97,9 @@ function setRaDecfromTargetList (event) {
     targetName.value = selectedTarget.value.name
     suggestionTargetSet.value = true
     goToLocation()
-    exposureTime.value = selectedTarget.value.filters.map(f => f.exposure)
     exposureCount.value = 1
-    selectedFilter.value = selectedTarget.value.filters.map(f => f.name)
+    exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
+    selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
   }
 }
 
@@ -146,8 +146,8 @@ const sendGoCommand = async () => {
   // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
   // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
   // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
-  const exposFilter = suggestionOrManual.value === 'suggestions' ? Object.values(selectedFilter.value) : Array(exposureCount.value).fill(selectedFilter.value)
-  const exposTime = suggestionOrManual.value === 'suggestions' ? Object.values(exposureTime.value) : Array(exposureCount.value).fill(Number(exposureTime.value))
+  const exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
+  const exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
     expFilter: exposFilter,
