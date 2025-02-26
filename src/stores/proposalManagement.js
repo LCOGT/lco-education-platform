@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { fetchApiCall } from '../utils/api'
-import { useUserDataStore } from './userData'
 import { useConfigurationStore } from './configuration'
 
 export const useProposalStore = defineStore('proposalManagement', {
@@ -25,7 +24,7 @@ export const useProposalStore = defineStore('proposalManagement', {
       this.proposalsWithRealTimeAllocation = []
 
       const activeProposals = proposals.filter(proposal => proposal.current === true)
-      this.allActiveProposals.push(activeProposals)
+      this.allActiveProposals = activeProposals
       for (const proposal of activeProposals) {
         // Check if the proposal has any realtime allocation with available credit
         const hasRealTimeAllocation = proposal.time_allocations.some(time => {
