@@ -5,12 +5,18 @@ import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDateTime } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
+
+import { useProposalStore } from '../../stores/proposalManagement.js'
+
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import sites from '../../utils/sites.JSON'
+
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
+const proposalStore = useProposalStore()
+
 const date = ref(null)
 const startTime = ref(null)
 const errorMessage = ref(null)
@@ -245,6 +251,11 @@ watch(startTime, (newTime, oldTime) => {
 })
 onMounted(() => {
   getAvailableTimes()
+  proposalStore.fetchProposals().then(() => {
+    if (proposalStore.proposalsWithRealTimeAllocation.length === 1) {
+      selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+    }
+  })
 })
 </script>
 <template>
@@ -253,7 +264,7 @@ onMounted(() => {
   </template>
   <template v-if="hasAvailableTimes">
     <h2>Book your live observing session</h2>
-    <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }" />
+    <ProposalDropdown v-if="!selectedProposal" @selectionsComplete="(proposal) => { selectedProposal.value = proposal }" />
     <div class="columns">
       <div v-if="selectedProposal" class="column is-one-third">
         <p>Select a date and time:</p>
