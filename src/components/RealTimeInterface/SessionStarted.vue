@@ -97,9 +97,9 @@ function setRaDecfromTargetList (event) {
     targetName.value = selectedTarget.value.name
     suggestionTargetSet.value = true
     goToLocation()
-    exposureTime.value = selectedTarget.value.filters[0].exposure
     exposureCount.value = 1
-    selectedFilter.value = selectedTarget.value.filters[0].name
+    exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
+    selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
   }
 }
 
@@ -142,8 +142,12 @@ const sendGoCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  const exposFilter = Array(exposureCount.value).fill(selectedFilter.value)
-  const exposTime = Array(exposureCount.value).fill(Number(exposureTime.value))
+
+  // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
+  // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
+  // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
+  const exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
+  const exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
   const requestBody = {
     dec: Number(dec.value),
     expFilter: exposFilter,
@@ -202,8 +206,14 @@ function getVisibleTargets () {
 
 function setSuggestionType (type) {
   suggestionByType.value = type
-  targetsByType.value = targetList.value[type]
-  targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  if (Object.keys(targetList.value).length === 0) {
+    getVisibleTargets()
+    targetsByType.value = targetList.value[type]
+    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  } else {
+    targetsByType.value = targetList.value[type]
+    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  }
 }
 
 const incompleteSelection = computed(() => {
@@ -287,7 +297,9 @@ onMounted(async () => {
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                </div>
+                    <p><strong>Exposure settings:</strong></p>
+                    <div v-for="(filter, index) in selectedTarget.filters" :key="index">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
+                  </div>
             </div>
           </div>
         <div class="content observe-form" v-if="suggestionOrManual === 'manual'">
