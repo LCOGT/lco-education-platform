@@ -1,15 +1,20 @@
 <script setup>
-import { ref, defineEmits } from 'vue'
-import { useUserDataStore } from '../../stores/userData'
+import { ref, defineEmits, onMounted, computed } from 'vue'
+import { useProposalStore } from '../../stores/proposalManagement.js'
+
 const emit = defineEmits(['selectionsComplete'])
-const userDataStore = useUserDataStore()
-const proposals = userDataStore.profile.proposals
-const activeProposals = proposals.filter(proposal => proposal.current === true)
+const proposalStore = useProposalStore()
 const selectedProposal = ref()
+const moreThanOneProposalWithRealTimeAllocation = computed(() => proposalStore.proposalsWithRealTimeAllocation)
+const allActiveProposals = computed(() => proposalStore.allActiveProposals)
+
+onMounted(() => {
+  console.log('all active proposals', allActiveProposals.value)
+})
 </script>
 
 <template>
-  <template v-if="proposals.length">
+  <template v-if="moreThanOneProposalWithRealTimeAllocation || allActiveProposals.length > 0">
     <div class="field">
       <label for="proposalSelect">Select the project you would like to use</label>
         <div class="control">
@@ -19,15 +24,15 @@ const selectedProposal = ref()
             v-model="selectedProposal"
             @change="emit('selectionsComplete', selectedProposal)"
             >
-            <option v-for="proposal in activeProposals" :key="proposal.id" :value="proposal.id">
+            <option v-for="proposal in allActiveProposals" :key="proposal.id" :value="proposal.id">
                 {{ proposal.title }}
-              </option>
+            </option>
         </select>
         </div>
       </div>
     </div>
   </template>
-  <template v-else>
+  <template v-else-if="!allActiveProposals">
     <div>
       <p>No proposals found. Please create a proposal <a href="https://observe.lco.global/apply">here</a></p>
     </div>
