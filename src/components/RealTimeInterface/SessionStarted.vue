@@ -297,10 +297,9 @@ onMounted(async () => {
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                  <p><strong>Exposure settings:</strong></p>
-                    <!-- eslint-disable-next-line vue/require-v-for-key -->
-                    <div v-for="filter in selectedTarget.filters">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
-                </div>
+                    <p><strong>Exposure settings:</strong></p>
+                    <div v-for="(filter, index) in selectedTarget.filters" :key="index">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
+                  </div>
             </div>
           </div>
         <div class="content observe-form" v-if="suggestionOrManual === 'manual'">
