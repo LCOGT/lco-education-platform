@@ -1,20 +1,53 @@
 @charset "utf-8";
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css2?family=Quattrocento+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Unica+One&display=swap');
+
+:root {
+	--dark-blue: rgb(28, 34, 40);
+	--dark-green: #8bac2f;
+	--tangerine: #f38321;
+	--metal: rgb(21, 25, 29);
+	--light-gray: rgb(230, 230, 230);
+	--light-blue: rgb(20, 182, 246);
+	--cancel: rgb(255, 0, 0);
+	--blue: #00ADEF;
+	--red: #EF4123;
+	--green: #A6CE39;
+	--purple: #9980fa;
+	--yellow: #ffcb05;
+	--off-white: #fcfcfc;
+	--grey-level1: #3b4249;
+	--grey-level2: #262e35;
+	--grey-level3: #192026;
+	--grey-level4: #13181D;
+	--metal: var(--grey-level3);
+	--bulma-tabs-link-active-border-bottom-color : var(--blue);
+	--bulma-tabs-link-active-color: var(--blue);
+	--tan: var(--light-gray);
+	--cancel: var(--red);
+	--light-blue: var(--blue);
+	--warning: var(--yellow);
+	--success: var(--green);
+	--info: var(--purple);
+	--font-stack: "Quattrocento Sans", sans-serif;
+	--font-headers: 'Unica One', sans-serif;
+	--bulma-navbar-height: 64px;
+}
 
 // Set your brand colors
-$blue: #00ADEF;
-$red: #EF4123;
-$green: #A6CE39;
-$off-white: #fcfcfc;
-$grey-level1: #3b4249;
-$grey-level2: #262e35;
-$grey-level3: #192026;
-$grey-level4: #13181D;
+$blue: var(--blue);
+$red: var(--red);
+$green: var(--green);
+$purple: var(--purple);
+$yellow: var(--yellow);
+$off-white: var(--off-white);
+$grey-level1: var(--grey-level1);
+$grey-level2: var(--grey-level2);
+$grey-level3: var(--grey-level3);
+$grey-level4: var(--grey-level4);
 
-// Import a Google Font
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Unica+One&display=swap');
-
-$font-stack: "Noto Sans", sans-serif;
-$font-headers: 'Unica One', sans-serif;
+$font-stack: var(--font-stack);
+$font-headers: var(--font-headers);
 
 #app {
     flex: 1;
@@ -77,8 +110,53 @@ nav {
     background-color: $grey-level4;
 
     .navbar{
-        min-height:2rem;
+        min-height:2.75rem;
     }
+
+    button.observe-site-menu{
+        color: $grey-level3;
+        font-size: 2em;
+        padding: 0 10px;
+        background-color: $red;
+        text-transform: uppercase;
+        font-family: $font-headers;
+        font-weight: normal;
+  
+        span {
+          padding:0;
+        }
+      }
+
+    .learn-site-item {
+        color: $off-white;
+        font-size: 1.25em;
+        background-color: $blue;
+        text-transform: uppercase;
+        font-family: $font-headers;
+      }
+      .observe-site-item {
+        color: $off-white;
+        font-size: 1.25em;
+        background-color: $red;
+        text-transform: uppercase;
+        font-family: $font-headers;
+      }
+      .datalab-site-item {
+        color: $off-white;
+        font-size: 1.25em;
+        background-color: $green;
+        text-transform: uppercase;
+        font-family: $font-headers;
+      }
+      .router-link-active {
+        background-color: $red;
+        color: $grey-level3;
+      }
+      .is-small {
+        .svg-inline--fa {
+          font-size: 0.75em;
+        }
+      }
 }
 
 h1.site-name {
@@ -217,8 +295,8 @@ h1.site-name {
 }
 
 .button {
-    border-color: $blue;
     color: $off-white;
+    font-weight: bold;
 }
 
 .button:hover {
