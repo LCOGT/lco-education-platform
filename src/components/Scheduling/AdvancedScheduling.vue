@@ -55,6 +55,10 @@ const emitSelections = () => {
   }
 }
 
+const hasManyProposals = () => {
+  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
@@ -71,7 +75,7 @@ onMounted(() => {
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
   />
-  <ProposalDropdown :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
+  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <Calendar @updateDateRange="handleDateRangeUpdate" />
 </template>
 
