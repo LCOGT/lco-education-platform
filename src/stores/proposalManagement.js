@@ -11,14 +11,6 @@ export const useProposalStore = defineStore('proposalManagement', {
     }
   },
   persist: true,
-  getters: {
-    getProposalsWithRealTimeAllocation () {
-      return this.proposalsWithRealTimeAllocation
-    },
-    getAllActiveProposals () {
-      return this.allActiveProposals
-    }
-  },
   actions: {
     sortProposals (proposals) {
       this.allActiveProposals = []
