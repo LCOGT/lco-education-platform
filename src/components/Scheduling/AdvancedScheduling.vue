@@ -62,7 +62,7 @@ const emitSelections = () => {
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
   />
-  <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
+  <ProposalDropdown :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <Calendar @updateDateRange="handleDateRangeUpdate" />
 </template>
 

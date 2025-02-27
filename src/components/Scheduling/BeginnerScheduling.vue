@@ -262,7 +262,7 @@ const handleExposuresUpdate = (exposures) => {
   </template>
   <div class="container">
     <div v-if="!dateRange || currentStep === 1">
-      <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+      <ProposalDropdown :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
