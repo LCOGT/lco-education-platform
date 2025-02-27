@@ -1,12 +1,14 @@
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
+import { useProposalStore } from '../../stores/proposalManagement.js'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
+const proposalStore = useProposalStore()
 
 const beginner = ref()
 const dateRange = ref()
@@ -253,6 +255,12 @@ const handleExposuresUpdate = (exposures) => {
   exposureSettings.value = exposures
   emitSelections()
 }
+
+onMounted(() => {
+  if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
+    selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+  }
+})
 
 </script>
 
