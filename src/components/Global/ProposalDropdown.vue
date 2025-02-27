@@ -32,7 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <template v-if="proposals.length > 0">
+  <template v-if="proposals.length > 1">
     <div class="field">
       <label for="proposalSelect">Select the project you would like to use</label>
         <div class="control">
