@@ -32,6 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- Only rendering if there is more than one proposal, otherwise it's automatically selected -->
   <template v-if="proposals.length > 1">
     <div class="field">
       <label for="proposalSelect">Select the project you would like to use</label>
