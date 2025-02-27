@@ -14,13 +14,12 @@ const props = defineProps({
 const proposalStore = useProposalStore()
 const selectedProposal = ref()
 const proposals = ref([])
-const allActiveProposals = computed(() => { return proposalStore.allActiveProposals })
 
 // If the user is requesting a real-time observation, only show proposals with real-time allocations
 // If the user is requesting a normal-time observation, only show proposals with normal time allocations
 const sortProposalDropdownSelection = () => {
   if (props.isItRealTime) {
-    proposals.value = proposalStore.allActiveProposals
+    proposals.value = proposalStore.proposalsWithRealTimeAllocation
   } else if (!props.isItRealTime) {
     proposals.value = proposalStore.proposalsWithNormalTimeAllocation
   }
@@ -33,7 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <template v-if="allActiveProposals">
+  <template v-if="proposals.length > 0">
     <div class="field">
       <label for="proposalSelect">Select the project you would like to use</label>
         <div class="control">
@@ -51,7 +50,7 @@ onMounted(() => {
       </div>
     </div>
   </template>
-  <template v-else-if="!allActiveProposals">
+  <template v-else-if="!proposals.length">
     <div>
       <p>No proposals found. Please create a proposal <a href="https://observe.lco.global/apply">here</a></p>
     </div>
