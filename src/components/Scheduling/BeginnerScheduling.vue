@@ -256,6 +256,10 @@ const handleExposuresUpdate = (exposures) => {
   emitSelections()
 }
 
+const hasManyProposals = () => {
+  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
@@ -270,7 +274,7 @@ onMounted(() => {
   </template>
   <div class="container">
     <div v-if="!dateRange || currentStep === 1">
-      <ProposalDropdown :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
