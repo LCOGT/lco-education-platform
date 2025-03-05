@@ -48,7 +48,7 @@ describe('SchedulingSettings.vue', () => {
     await flushPromises()
 
     // Verify the RA and Dec were updated to degrees
-    expect(wrapper.vm.targetList[wrapper.vm.activeTargetIndex].ra).toBe(0.7123333333333334)
+    expect(wrapper.vm.targetList[wrapper.vm.activeTargetIndex].ra).toBe(10.685)
     expect(wrapper.vm.targetList[wrapper.vm.activeTargetIndex].dec).toBe(41.269)
 
     expect(wrapper.vm.isTargetConfirmed).toBe(true)
