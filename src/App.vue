@@ -79,13 +79,28 @@ watch(
     </div>
     <div class="navbar-menu">
       <div class="navbar-start">
-        <!-- navbar items -->
+        <div class="dropdown is-hoverable">
+          <div class="dropdown-trigger" style="display:flex;align-items:center;">
+            <button class="button observe-site-menu is-normal" aria-haspopup="true" aria-controls="ptr-site-menu">
+              <span>Observe</span>
+              <span class="icon is-small">
+                <FontAwesomeIcon icon="fa-solid fa-chevron-down" />
+              </span>
+            </button>
+          </div>
+          <div id="ptr-site-menu" class="dropdown-menu"  role="menu">
+            <div class="dropdown-content">
+              <a href="#" class="dropdown-item learn-site-item">Learn</a>
+              <a href="#" class="dropdown-item datalab-site-item">Datalab</a>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="navbar-end">
-        <router-link class="navbar-item" to="/about">About</router-link>
-        <router-link class="navbar-item" to="/learn">Learn</router-link>
-        <router-link class="navbar-item" to="/observe">Observe</router-link>
-        <router-link class="navbar-item" to="/datalab">DataLab</router-link>
+        <router-link class="navbar-item" to="/dashboard">Dashboard</router-link>
+        <router-link class="navbar-item" to="/book/realtime">Live Observing</router-link>
+        <router-link class="navbar-item" to="/schedule">Schedule</router-link>
+        <router-link class="navbar-item" to="/images">Images</router-link>
         <div class="buttons">
           <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link">{{ username }}</a>
@@ -103,25 +118,6 @@ watch(
     <AboutView @observeClicked="handleObserveClick"/>
   </div>
   <div v-else>
-    <section v-if="username" class="hero">
-      <div class="container">
-        <div class="columns is-vcentered">
-          <div class="column is-one-quarter">
-            <h1 class="site-name">Observe<FontAwesomeIcon icon="fa-solid fa-chevron-right" class="blue small" /></h1>
-          </div>
-          <div class="column">
-            <div class="tabs is-left">
-              <ul>
-                <li><router-link to="/dashboard" class="is-active">Dashboard</router-link></li>
-                <li><router-link to="/book/realtime">Live Observing</router-link></li>
-                <li><router-link to="/schedule">Schedule</router-link></li>
-                <li><router-link to="/images">Images</router-link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
     <router-view/>
   </div>
 </template>
