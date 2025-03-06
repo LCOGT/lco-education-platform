@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineEmits, computed, defineProps, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 
 const emit = defineEmits(['selectionsComplete'])
@@ -17,7 +17,7 @@ const proposals = ref([])
 
 // If the user is requesting a real-time observation, only show proposals with real-time allocations
 // If the user is requesting a normal-time observation, only show proposals with normal time allocations
-const sortProposalDropdownSelection = () => {
+const setProposalDropdownSelection = () => {
   if (props.isItRealTime) {
     proposals.value = proposalStore.proposalsWithRealTimeAllocation
   } else if (!props.isItRealTime) {
@@ -26,7 +26,7 @@ const sortProposalDropdownSelection = () => {
 }
 
 onMounted(() => {
-  sortProposalDropdownSelection()
+  setProposalDropdownSelection()
 })
 
 </script>

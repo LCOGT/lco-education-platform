@@ -12,7 +12,7 @@ export const useProposalStore = defineStore('proposalManagement', {
   },
   persist: true,
   actions: {
-    sortProposals (proposals) {
+    setProposals (proposals) {
       this.allActiveProposals = []
       this.proposalsWithRealTimeAllocation = []
       this.proposalsWithNormalTimeAllocation = []
@@ -45,7 +45,7 @@ export const useProposalStore = defineStore('proposalManagement', {
         url: `${configurationStore.observationPortalUrl}profile/?include_current_time_allocations`,
         method: 'GET',
         successCallback: (response) => {
-          this.sortProposals(response.proposals)
+          this.setProposals(response.proposals)
         }
       })
     }
