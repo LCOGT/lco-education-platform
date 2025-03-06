@@ -251,11 +251,10 @@ watch(startTime, (newTime, oldTime) => {
 })
 onMounted(async () => {
   getAvailableTimes()
-  await proposalStore.fetchProposals().then(() => {
-    if (proposalStore.proposalsWithRealTimeAllocation.length === 1) {
-      selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
-    }
-  })
+  await proposalStore.fetchProposals()
+  if (proposalStore.proposalsWithRealTimeAllocation.length === 1) {
+    selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+  }
 })
 </script>
 <template>

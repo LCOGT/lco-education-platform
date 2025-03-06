@@ -55,8 +55,8 @@ const createRequest = (target, exposures, startDate, endDate) => ({
       'target': {
         'name': target.name,
         'type': 'ICRS',
-        'ra': Number(target.ra) / 15,
-        'dec': target.dec,
+        'ra': Number(target.ra),
+        'dec': Number(target.dec),
         'proper_motion_ra': null,
         'proper_motion_dec': null,
         'epoch': 2000,
