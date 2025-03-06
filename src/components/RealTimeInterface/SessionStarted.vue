@@ -248,6 +248,7 @@ onMounted(async () => {
   loading.value = false
   filterList.value = await getFilterList()
   getVisibleTargets()
+  skyCoordinatesStore.clearCoordinates()
 })
 </script>
 
@@ -297,28 +298,36 @@ onMounted(async () => {
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                    <p><strong>Exposure settings:</strong></p>
-                    <div v-for="(filter, index) in selectedTarget.filters" :key="index">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
+                    <div class="highlight-small-region">
+                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"  /> <strong>Exposure settings:</strong>
+                      <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
+                        <li>{{ filter.name }} filter for {{ filter.exposure }} seconds</li>
+                      </ul>
+                    </div>
                   </div>
             </div>
           </div>
-        <div class="content observe-form" v-if="suggestionOrManual === 'manual'">
-            <div class="highlight-target-field">
-              <div class="field">
-                <label class="label">Target Look Up</label>
-              </div>
+        <div class="content observe-form mt-2" v-if="suggestionOrManual === 'manual'">
+          <h3>Enter Target Details</h3>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Target</label>
+            </div>
+            <div class="field-body">
               <div class="field has-addons">
-                <div class="control">
-                  <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                  <div class="control">
+                    <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                  </div>
+                  <div class="control">
+                    <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
+                      Find coordinates
+                    </button>
+                  </div>
                 </div>
-                <div class="control">
-                  <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                    Search
-                  </button>
-                </div>
-                <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
               </div>
-          </div>
+            </div>
+            <p class="red-bg has-text-centered" v-if="targeterror">{{ targeterrorMsg }}</p>
+
           <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label class="label">Right Ascension</label>
@@ -326,7 +335,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="raValue" placeholder="Right Ascension" disabled>
+                <input class="input" type="text" v-model="raValue" placeholder="Right Ascension">
               </p>
             </div>
           </div>
@@ -338,12 +347,12 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="decValue" placeholder="Declination" disabled>
+                <input class="input" type="text" v-model="decValue" placeholder="Declination">
               </p>
             </div>
           </div>
         </div>
-        <div v-if="raValue && decValue && !targeterror">
+        <div v-if="raValue && decValue && !targeterror && targetName">
             <div class="field is-horizontal">
               <div class="field-label is-normal">
                 <label class="label">Exposure</label>
