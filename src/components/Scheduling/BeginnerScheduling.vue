@@ -64,17 +64,17 @@ const categories = ref([
       { object: 'Supernova' },
       { object: 'Nebula' }
     ]
-  },
-  {
-    location: 'Our Solar System',
-    options: [
-      { object: 'The Moon', type: 'natural' },
-      { object: 'Jupiter', type: 'planet' },
-      { object: 'Saturn', type: 'planet' },
-      { object: 'Mars', type: 'planet' },
-      { object: 'Ceres', type: 'dwarf' },
-      { object: 'Halley\'s Comet', type: 'short-period' }
-    ]
+  // },
+  // {
+  //   location: 'Our Solar System',
+  //   options: [
+  //     { object: 'The Moon', type: 'natural' },
+  //     { object: 'Jupiter', type: 'planet' },
+  //     { object: 'Saturn', type: 'planet' },
+  //     { object: 'Mars', type: 'planet' },
+  //     { object: 'Ceres', type: 'dwarf' },
+  //     { object: 'Halley\'s Comet', type: 'short-period' }
+  //   ]
   }
 ])
 
