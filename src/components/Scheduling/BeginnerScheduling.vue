@@ -261,12 +261,12 @@ const handleExposuresUpdate = (exposures) => {
     <v-progress-circular indeterminate color="white" class="loading" />
   </template>
   <div class="container">
+    <h2>Schedule an observation</h2>
     <div v-if="!dateRange || currentStep === 1">
       <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
-      <h2>Schedule an Observation</h2>
       <p>What do you want to take pictures of?</p>
       <div v-for="category in categories" :key="category.location" class="content">
         <h4>{{ category.location }}</h4>
@@ -286,7 +286,7 @@ const handleExposuresUpdate = (exposures) => {
       <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
       <div class="columns is-column-gap-3">
         <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
-          <div class="card target-highlight is-clickable">
+          <div class="card highlight-small-region is-clickable">
             <header class="card-header">
               <p class="card-header-title">{{ target.name }}</p>
             </header>

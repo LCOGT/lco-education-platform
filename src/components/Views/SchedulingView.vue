@@ -139,13 +139,13 @@ const enableButton = computed(() => {
     <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
       <h2>Submit a Request</h2>
       <p>What level are you?</p>
-      <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
-      <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
+      <v-btn @click="level = 'beginner'" color="blue" class="level-btns">Beginner</v-btn>
+      <v-btn @click="level = 'advanced'" color="green" class="level-btns">Advanced</v-btn>
     </div>
 
     <div v-else-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
-        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displayButton" :disabled="!enableButton" color="red" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
     <div v-else-if="level === 'advanced' && !showScheduled">
