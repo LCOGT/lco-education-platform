@@ -125,7 +125,9 @@ describe('SchedulingView.vue', () => {
       failCallback: expect.any(Function)
     })
 
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    // The first call is fetching for proposals on mounted
+    // The second is this one we are testing to send the observation request
+    expect(fetchApiCall).toHaveBeenCalledTimes(2)
     expect(wrapper.vm.showScheduled).toBe(true)
   })
 })
