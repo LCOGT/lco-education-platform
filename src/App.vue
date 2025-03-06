@@ -90,8 +90,8 @@ watch(
           </div>
           <div id="ptr-site-menu" class="dropdown-menu"  role="menu">
             <div class="dropdown-content">
-              <a href="#" class="dropdown-item learn-site-item">Learn</a>
-              <a href="#" class="dropdown-item datalab-site-item">Datalab</a>
+              <a href="https://learn.lco.global" class="dropdown-item learn-site-item">Learn</a>
+              <a href="https://datalab.lco.global" class="dropdown-item datalab-site-item">Datalab</a>
             </div>
           </div>
         </div>
