@@ -63,7 +63,7 @@ function getRaDecFromTargetName () {
       if (data.ra && data.dec) {
         const ra = parseFloat(data.ra_d).toFixed(3)
         const dec = parseFloat(data.dec_d).toFixed(3)
-        targetList.value[activeTargetIndex.value].ra = Number(ra) / 15
+        targetList.value[activeTargetIndex.value].ra = Number(ra)
         targetList.value[activeTargetIndex.value].dec = Number(dec)
         targetError.value = ''
         isTargetConfirmed.value = true
