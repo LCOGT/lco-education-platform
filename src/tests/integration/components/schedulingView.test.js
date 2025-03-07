@@ -25,7 +25,7 @@ describe('SchedulingView.vue', () => {
 
   it('calls fetchApiCall to schedule observation', async () => {
     const mockObservationData = {
-      target: { name: 'Test Target', ra: 180.0, dec: -20.0 },
+      target: { name: 'Test Target', ra: 12.0, dec: -20.0 },
       settings: [
         { filter: 'F1', exposureTime: 300, count: 1 }
       ],
@@ -72,7 +72,7 @@ describe('SchedulingView.vue', () => {
             target: {
               name: 'Test Target',
               type: 'ICRS',
-              ra: 180.0,
+              ra: 12.0,
               dec: -20.0,
               proper_motion_ra: null,
               proper_motion_dec: null,
@@ -125,7 +125,9 @@ describe('SchedulingView.vue', () => {
       failCallback: expect.any(Function)
     })
 
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    // The first call is fetching for proposals on mounted
+    // The second is this one we are testing to send the observation request
+    expect(fetchApiCall).toHaveBeenCalledTimes(2)
     expect(wrapper.vm.showScheduled).toBe(true)
   })
 })

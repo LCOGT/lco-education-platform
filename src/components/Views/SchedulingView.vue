@@ -1,11 +1,13 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
+import { useProposalStore } from '../../stores/proposalManagement.js'
 
+const proposalStore = useProposalStore()
 // TO DO (future): Get level depending on course completion
 const level = ref('')
 const observationData = ref(null)
@@ -53,8 +55,8 @@ const createRequest = (target, exposures, startDate, endDate) => ({
       'target': {
         'name': target.name,
         'type': 'ICRS',
-        'ra': target.ra,
-        'dec': target.dec,
+        'ra': Number(target.ra),
+        'dec': Number(target.dec),
         'proper_motion_ra': null,
         'proper_motion_dec': null,
         'epoch': 2000,
@@ -129,6 +131,10 @@ const handleUserSelections = (data) => {
 
 const enableButton = computed(() => {
   return observationData.value && observationData.value.settings.length > 0
+})
+
+onMounted(async () => {
+  await proposalStore.fetchProposals()
 })
 
 </script>
