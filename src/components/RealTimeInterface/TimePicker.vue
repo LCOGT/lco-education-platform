@@ -263,7 +263,7 @@ onMounted(async () => {
   </template>
   <template v-if="hasAvailableTimes">
     <h2>Book your live observing session</h2>
-    <ProposalDropdown v-if="!selectedProposal" :isItRealTime="true" @selectionsComplete="(proposal) => { selectedProposal.value = proposal }" />
+    <ProposalDropdown v-if="!selectedProposal" :isItRealTime="true" @selectionsComplete="(proposal) => { selectedProposal = proposal }" />
     <div class="columns">
       <div v-if="selectedProposal" class="column is-one-third">
         <p>Select a date and time:</p>
