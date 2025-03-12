@@ -29,7 +29,7 @@ const checkAutoLogout = () => {
     logout()
   }
 }
-
+// Check for auto logout every hour
 useIntervalFn(checkAutoLogout, 60 * 60 * 1000)
 
 function logout () {
