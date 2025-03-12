@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
@@ -9,18 +9,27 @@ import { LottieAnimation } from 'lottie-web-vue'
 import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
+const props = defineProps({
+  exposureTime: { type: Number, required: true },
+  exposureCount: { type: Number, required: true }
+})
+
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const status = ref(null)
 let pollingInterval = null
+let progressTimer = null
+const remainingExposures = ref(props.exposureCount)
 const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
+const elapsedTime = ref(0)
+
 const emits = defineEmits(['updateRenderGallery'])
 
 const imagesCaptured = computed(() => {
-  return status.value.status.availability === 'Available' && status.value.status.instrument === 'Idle' && status.value.status.progress === 'Ready' && status.value.status.telescope === 'Tracking' && thumbnailsFetched.value === true
+  return status.value.status.availability === 'Available' && status.value.status.instrument === 'Idle' && status.value.status.progress === 'Ready' && status.value.status.telescope === 'Tracking' && thumbnailsFetched.value === true && remainingExposures.value === 1
 })
 
 const failedToCaptureImages = computed(() => {
@@ -79,12 +88,83 @@ const sendStopCommand = async () => {
   }
   await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
+// Total time is exposureTime plus an extra 5 seconds for thumbnails delay
+const totalTime = computed(() => props.exposureTime + 5)
+// Calculate progress as a percentage (clamped to 100)
+const progressPercent = computed(() => {
+  return Math.min((elapsedTime.value / totalTime.value) * 100, 100)
+})
+
+// const startExposureCycle = () => {
+//   if (!status.value || !status.value.status || status.value.status.availability !== 'Available') {
+//     return
+//   }
+//   elapsedTime.value = 0
+//   imagesDone.value = false
+//   while (remainingExposures.value > 1) {
+//     progressTimer = setInterval(() => {
+//       if (elapsedTime.value < totalTime.value) {
+//         elapsedTime.value++
+//       } else {
+//         clearInterval(progressTimer)
+//         remainingExposures.value -= 1
+//       }
+//     }, 1000)
+//   }
+// }
+
+const startExposureCycle = () => {
+  // Only run if the telescope is available.
+  if (!status.value || !status.value.status || status.value.status.availability !== 'Available') {
+    return
+  }
+  elapsedTime.value = 0
+  imagesDone.value = false
+  if (progressTimer) clearInterval(progressTimer)
+  if (status.value.status.instrument === 'Exposing' || status.value.status.instrument === 'Configuring' || status.value.status.instrument === 'Reading out') {
+    progressTimer = setInterval(() => {
+      if (elapsedTime.value < totalTime.value) {
+        elapsedTime.value++
+      } else {
+        clearInterval(progressTimer)
+        remainingExposures.value = remainingExposures.value - 1
+        if (remainingExposures.value > 0) {
+          setTimeout(() => {
+            startExposureCycle()
+            // Optionally, re-fetch status here if needed:
+            fetchTelescopeStatus()
+          }, 1000) // Short delay before restarting
+        } else {
+          imagesDone.value = true
+        }
+      }
+    }, 1000)
+  }
+}
+
+watch(
+  () => status.value?.status?.instrument,
+  (newStatus) => {
+    if (newStatus === 'Exposing' || newStatus === 'Configuring' || newStatus === 'Reading out') {
+      // When available, start the exposure cycle if not already started
+      startExposureCycle()
+    } else {
+      // If not available, clear the timer so the progress bar stops
+      if (progressTimer) {
+        clearInterval(progressTimer)
+        progressTimer = null
+      }
+    }
+  }
+)
 
 onMounted(() => {
   imagesDone.value = false
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
+  remainingExposures.value = props.exposureCount
+  startExposureCycle()
 })
 
 onUnmounted(() => {
@@ -151,6 +231,10 @@ const setCameraState = computed(() => ({
               Start Another Observation
             </button>
           </div>
+          <span v-if="props.exposureCount-remainingExposures!==props.exposureCount">{{ props.exposureCount-remainingExposures+1 }} of {{ props.exposureCount }}</span>
+          <div class="progress-container">
+          <div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+        </div>
           <div class="column">
             <LottieAnimation v-if="!imagesDone"
               ref="anim"
@@ -167,3 +251,18 @@ const setCameraState = computed(() => ({
           </div>
     </div>
 </template>
+<style scoped>
+.progress-container {
+  width: 100%;
+  height: 20px;
+  background-color: red; /* background indicates remaining time */
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.progress-bar {
+  height: 100%;
+  background-color: green; /* fills in as time passes */
+  transition: width 1s linear;
+}
+</style>
