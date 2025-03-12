@@ -249,9 +249,8 @@ watch(startTime, (newTime, oldTime) => {
     emits('timeSelected', newTime)
   }
 })
-onMounted(async () => {
+onMounted(() => {
   getAvailableTimes()
-  await proposalStore.fetchProposals()
   if (proposalStore.proposalsWithRealTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
   }

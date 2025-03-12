@@ -1,13 +1,11 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
-import { useProposalStore } from '../../stores/proposalManagement.js'
 
-const proposalStore = useProposalStore()
 // TO DO (future): Get level depending on course completion
 const level = ref('')
 const observationData = ref(null)
@@ -131,10 +129,6 @@ const handleUserSelections = (data) => {
 
 const enableButton = computed(() => {
   return observationData.value && observationData.value.settings.length > 0
-})
-
-onMounted(async () => {
-  await proposalStore.fetchProposals()
 })
 
 </script>
