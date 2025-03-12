@@ -25,7 +25,7 @@ describe('SchedulingView.vue', () => {
 
   it('calls fetchApiCall to schedule observation', async () => {
     const mockObservationData = {
-      target: { name: 'Test Target', ra: 180.0, dec: -20.0 },
+      target: { name: 'Test Target', ra: 12.0, dec: -20.0 },
       settings: [
         { filter: 'F1', exposureTime: 300, count: 1 }
       ],
@@ -72,7 +72,7 @@ describe('SchedulingView.vue', () => {
             target: {
               name: 'Test Target',
               type: 'ICRS',
-              ra: 180.0,
+              ra: 12.0,
               dec: -20.0,
               proper_motion_ra: null,
               proper_motion_dec: null,
