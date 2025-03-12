@@ -105,10 +105,7 @@ const setProgressState = computed(() => ({
 }))
 
 const setSiteState = computed(() => {
-  if (status.value.status.availability === 'Closed for maintenance' ||
-      status.value.status.availability === 'Sun up' ||
-      status.value.status.availability === 'Closed for bad weather' ||
-      status.value.status.availability === 'Unavailable for technical reasons') {
+  if (status.value.status.availability !== 'Available') {
     return 'status-error'
   }
   return 'green'
