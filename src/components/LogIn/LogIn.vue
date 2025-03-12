@@ -30,6 +30,7 @@ const storeUser = (user) => {
   userDataStore.profile = user
   router.push('/dashboard')
   proposalStore.fetchProposals()
+  userDataStore.lastLoginTime = Date.now()
 }
 
 const login = async () => {

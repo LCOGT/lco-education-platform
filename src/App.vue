@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AboutView from './components/Views/AboutView.vue'
 import { useUserDataStore } from './stores/userData'
 import { useConfigurationStore } from './stores/configuration'
+import { useIntervalFn } from '@vueuse/core'
 
 const showNavTabs = ref(false)
 const route = useRoute()
@@ -21,10 +22,23 @@ function handleObserveClick () {
   router.push('/dashboard')
 }
 
+const sevenDays = 7 * 24 * 60 * 60 * 1000
+const checkAutoLogout = () => {
+  const lastLoginTime = userDataStore.lastLoginTime
+  if (lastLoginTime && Date.now() - lastLoginTime > sevenDays) {
+    logout()
+  }
+}
+
+useIntervalFn(checkAutoLogout, 60 * 60 * 1000)
+
 function logout () {
-  userDataStore.username = ''
-  userDataStore.authToken = ''
-  userDataStore.profile = {}
+  userDataStore.$patch({
+    username: '',
+    authToken: '',
+    profile: {},
+    lastLoginTime: null
+  })
   router.push('/login')
 }
 
