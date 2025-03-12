@@ -113,38 +113,30 @@ nav {
         min-height:2.75rem;
     }
 
-    button.observe-site-menu{
+    .observe-site-menu{
         color: $grey-level3;
         font-size: 2em;
-        padding: 0 10px;
         background-color: $red;
         text-transform: uppercase;
         font-family: $font-headers;
         font-weight: normal;
-  
-        span {
-          padding:0;
-        }
       }
 
     .learn-site-item {
-        color: $off-white;
+        color: $blue !important;
         font-size: 1.25em;
-        background-color: $blue;
         text-transform: uppercase;
         font-family: $font-headers;
       }
       .observe-site-item {
-        color: $off-white;
+        color: $red !important;
         font-size: 1.25em;
-        background-color: $red;
         text-transform: uppercase;
         font-family: $font-headers;
       }
       .datalab-site-item {
-        color: $off-white;
+        color: $green !important;
         font-size: 1.25em;
-        background-color: $green;
         text-transform: uppercase;
         font-family: $font-headers;
       }
@@ -152,11 +144,7 @@ nav {
         background-color: $red;
         color: $grey-level3;
       }
-      .is-small {
-        .svg-inline--fa {
-          font-size: 0.75em;
-        }
-      }
+
 }
 
 h1.site-name {
