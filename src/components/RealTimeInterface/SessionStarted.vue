@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -97,7 +97,6 @@ function setRaDecfromTargetList (event) {
     targetName.value = selectedTarget.value.name
     suggestionTargetSet.value = true
     goToLocation()
-    exposureCount.value = 1
     exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
     selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
   }
@@ -125,7 +124,6 @@ const resetValues = () => {
   dec.value = ''
   targetName.value = ''
   exposureTime.value = ''
-  exposureCount.value = 1
   selectedFilter.value = ''
   fieldOfView.value = 1.0
   loading.value = false
@@ -249,6 +247,10 @@ onMounted(async () => {
   filterList.value = await getFilterList()
   getVisibleTargets()
 })
+
+onUnmounted(() => {
+  exposureCount.value = 1
+})
 </script>
 
 <template>
@@ -360,7 +362,7 @@ onMounted(async () => {
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
-                    <input id="exposureCount" type="number" class="input" v-model="exposureCount">
+                    <input id="exposureCount" type="number" class="input" v-model="exposureCount" :min="1" :max="3">
                   </p>
                 </div>
               </div>
@@ -393,6 +395,7 @@ onMounted(async () => {
         <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
     </div>
+    <!-- <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/> -->
   </div>
   <div v-else-if="isCapturingImages">
     <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
