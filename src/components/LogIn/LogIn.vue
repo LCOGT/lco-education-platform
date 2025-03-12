@@ -4,9 +4,11 @@ import { useRouter } from 'vue-router'
 import { fetchApiCall } from '../../utils/api'
 import { useUserDataStore } from '../../stores/userData'
 import { useConfigurationStore } from '../../stores/configuration'
+import { useProposalStore } from '../../stores/proposalManagement'
 
 const userDataStore = useUserDataStore()
 const configurationStore = useConfigurationStore()
+const proposalStore = useProposalStore()
 const router = useRouter()
 
 const username = ref('')
@@ -27,6 +29,7 @@ const storeUser = (user) => {
   userDataStore.username = user.username
   userDataStore.profile = user
   router.push('/dashboard')
+  proposalStore.fetchProposals()
 }
 
 const login = async () => {
