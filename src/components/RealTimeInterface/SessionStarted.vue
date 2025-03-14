@@ -129,13 +129,6 @@ function goToLocation () {
   }
 }
 
-function changeFov (fov) {
-  if (aladinRef.value && aladinRef.value.setFov) {
-    aladinRef.value.setFov(fov)
-    fieldOfView.value = fov
-  }
-}
-
 const resetValues = () => {
   realTimeSessionsStore.updateImageCaptureState(true)
   ra.value = ''
