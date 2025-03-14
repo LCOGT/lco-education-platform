@@ -46,6 +46,7 @@ const suggestionOrManual = ref('')
 const suggestionByType = ref('')
 const suggestionTargetSet = ref(false)
 const selectedTarget = ref({})
+const validTarget = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -85,6 +86,22 @@ function getRaDecFromTargetName () {
       console.error('Error:', error)
       targeterror.value = true
     })
+}
+
+function areRaAndDecInSky () {
+  if (ra.value && dec.value) {
+    skyCoordinatesStore.setCoordinates(ra.value, dec.value)
+    ra.value = parseFloat(raValue.value).toFixed(5)
+    dec.value = parseFloat(decValue.value).toFixed(5)
+    const vals = calcAltAz(raValue.value, decValue.value, siteInfo.lat, siteInfo.lon)
+    if (vals[1] < 30.0) {
+      targeterror.value = true
+      targeterrorMsg.value = 'Target not visible. Try a different target.'
+    } else {
+      validTarget.value = true
+    }
+    goToLocation()
+  }
 }
 
 function setRaDecfromTargetList (event) {
@@ -225,13 +242,6 @@ watch(exposureTime, (newTime) => {
   exposureError.value = ''
 })
 
-watch([ra.value, dec.value], ([newRa, newDec]) => {
-  // Only update if no target is entered
-  if (!targetName.value) {
-    skyCoordinatesStore.setCoordinates(newRa, newDec)
-  }
-})
-
 const targetNameEntered = computed(() => {
   return skyCoordinatesStore.targetNameEntered
 })
@@ -248,6 +258,7 @@ onMounted(async () => {
   loading.value = false
   filterList.value = await getFilterList()
   getVisibleTargets()
+  skyCoordinatesStore.clearCoordinates()
 })
 </script>
 
@@ -297,28 +308,36 @@ onMounted(async () => {
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                    <p><strong>Exposure settings:</strong></p>
-                    <div v-for="(filter, index) in selectedTarget.filters" :key="index">{{ filter.name }} filter for {{ filter.exposure }} seconds </div>
+                    <div class="highlight-small-region">
+                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"  /> <strong>Exposure settings:</strong>
+                      <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
+                        <li>{{ filter.name }} filter for {{ filter.exposure }} seconds</li>
+                      </ul>
+                    </div>
                   </div>
             </div>
           </div>
-        <div class="content observe-form" v-if="suggestionOrManual === 'manual'">
-            <div class="highlight-target-field">
-              <div class="field">
-                <label class="label">Target Look Up</label>
-              </div>
+        <div class="content observe-form mt-2" v-if="suggestionOrManual === 'manual'">
+          <h3>Enter Target Details</h3>
+          <div class="field is-horizontal">
+            <div class="field-label is-normal">
+                <label class="label">Target</label>
+            </div>
+            <div class="field-body">
               <div class="field has-addons">
-                <div class="control">
-                  <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                  <div class="control">
+                    <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                  </div>
+                  <div class="control">
+                    <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
+                      Find coordinates
+                    </button>
+                  </div>
                 </div>
-                <div class="control">
-                  <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                    Search
-                  </button>
-                </div>
-                <p class="help is-danger" v-if="targeterror">{{ targeterrorMsg }}</p>
               </div>
-          </div>
+            </div>
+            <p class="red-bg has-text-centered" v-if="targeterror">{{ targeterrorMsg }}</p>
+
           <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label class="label">Right Ascension</label>
@@ -326,7 +345,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="raValue" placeholder="Right Ascension" disabled>
+                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false">
               </p>
             </div>
           </div>
@@ -338,12 +357,15 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="decValue" placeholder="Declination" disabled>
+                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false">
               </p>
             </div>
           </div>
         </div>
-        <div v-if="raValue && decValue && !targeterror">
+        <div class="field">
+      <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
+    </div>
+        <div v-if="ra && dec && !targeterror && validTarget">
             <div class="field is-horizontal">
               <div class="field-label is-normal">
                 <label class="label">Exposure</label>

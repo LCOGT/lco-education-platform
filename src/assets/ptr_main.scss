@@ -203,18 +203,11 @@ h1.site-name {
     text-align: center;
 }
 
-.highlight-target-field  {
-    border-radius: 5px;
-    border-color: $green;
-    border-style: solid;
-    padding: 5px;
-}
-
-.highlight-target-field {
-    .button {
-        background-color: $blue;
-        color: $grey-level4;
-    }
+.highlight-small-region {
+    background-color: $grey-level2;
+    color: $off-white;
+    padding: 0.5em;
+    border-radius: 1em;
 }
 
 .times {
@@ -345,3 +338,8 @@ input[type="radio"]:checked + label
 }
 
 .hide { display: none; }
+
+.status-error {
+    background-color: $red;
+    color: $off-white;
+}
