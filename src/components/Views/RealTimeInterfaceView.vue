@@ -5,16 +5,18 @@ import SessionPending from '../RealTimeInterface/SessionPending.vue'
 import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
+import sites from '../../utils/sites.JSON'
 
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const timeRemaining = ref(0)
 const loading = ref(true)
+const telname = { '0m4a': 'Delta Rho', '0m4b': 'Delta Rho', '1m0a': '1 meter', '2m0a': '2 meter' }
 
 const selectedSession = realTimeSessionsStore.currentSession
-const site = computed(() => selectedSession.site)
-const telescope = computed(() => selectedSession.telescope)
+const site = computed(() => sites[selectedSession.site]?.name)
+const telescope = computed(() => telname[selectedSession.telescope])
 
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
@@ -79,14 +81,16 @@ onMounted(async () => {
       <div class="container">
        <div v-if="statusSessionNotActive" class="content">
           <h2>Session Not Started</h2>
-          <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
+          <p>You are controlling the <strong>{{ telescope }}</strong> telescope in <strong>{{ site }}</strong></p>
           <SessionPending/>
         </div>
        <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
           <h2>Live Observing Session</h2>
-          <p>You are controlling the {{ telescope }} telescope in {{ site }}</p>
-          <p><span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span></p>
+          <p>
+            <span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span>
+          </p>
+          <p>You are controlling the <strong>{{ telescope }}</strong> telescope in <strong>{{ site }}</strong></p>
           <SessionStarted/>
         </div>
        <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">

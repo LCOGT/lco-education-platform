@@ -15,6 +15,10 @@ const username = computed(() => userDataStore.username)
 
 const configurationStore = useConfigurationStore()
 const loadedConfig = computed(() => configurationStore.isConfigLoaded)
+const isMobileMenuOpen = ref(false)
+const isActive = ref('')
+const navBurger = ref('navbar-burger')
+const navMenu = ref('navbar-menu')
 
 function handleObserveClick () {
   showNavTabs.value = true
@@ -26,6 +30,15 @@ function logout () {
   userDataStore.authToken = ''
   userDataStore.profile = {}
   router.push('/login')
+}
+
+function toggleMobileMenu () {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+  if (isActive.value === 'is-active') {
+    isActive.value = ''
+  } else {
+    isActive.value = 'is-active'
+  }
 }
 
 onMounted(async () => {
@@ -70,31 +83,32 @@ watch(
       <router-link class="navbar-item" to="/">
         <img src="@/assets/ptr_logo.png" alt="Photon Ranch logo"/>
       </router-link>
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <a role="button" aria-label="menu" aria-expanded="false" :class="[isActive, navBurger]" @click="toggleMobileMenu">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div class="navbar-menu">
+    <div :class="[isActive, navMenu]">
       <div class="navbar-start">
-        <div class="dropdown is-hoverable">
-          <div class="dropdown-trigger" style="display:flex;align-items:center;">
-            <button class="button observe-site-menu is-normal" aria-haspopup="true" aria-controls="ptr-site-menu">
-              <span>Observe</span>
+        <div class="navbar-item has-dropdown is-hoverable">
+            <a class="navbar-link observe-site-menu is-normal">
+              Observe
+            </a>
+            <div class="navbar-dropdown">
+              <a href="https://learn.lco.global" class="navbar-item learn-site-item" >
+              <span>Learn</span>
               <span class="icon is-small">
-                <FontAwesomeIcon icon="fa-solid fa-chevron-down" />
-              </span>
-            </button>
-          </div>
-          <div id="ptr-site-menu" class="dropdown-menu"  role="menu">
-            <div class="dropdown-content">
-              <a href="#" class="dropdown-item learn-site-item">Learn</a>
-              <a href="#" class="dropdown-item datalab-site-item">Datalab</a>
+                <FontAwesomeIcon icon="fa-solid fa-chevron-right" />
+              </span></a>
+              <a href="https://photonranch.lco.global" class="navbar-item datalab-site-item">
+              <span>DataLab</span>
+              <span class="icon is-small">
+                <FontAwesomeIcon icon="fa-solid fa-chevron-right" />
+              </span></a>
             </div>
           </div>
-        </div>
       </div>
       <div class="navbar-end">
         <router-link class="navbar-item" to="/dashboard">Dashboard</router-link>
