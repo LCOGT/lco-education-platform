@@ -46,6 +46,7 @@ const suggestionOrManual = ref('')
 const suggestionByType = ref('')
 const suggestionTargetSet = ref(false)
 const selectedTarget = ref({})
+const validTarget = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -85,6 +86,22 @@ function getRaDecFromTargetName () {
       console.error('Error:', error)
       targeterror.value = true
     })
+}
+
+function areRaAndDecInSky () {
+  if (ra.value && dec.value) {
+    skyCoordinatesStore.setCoordinates(ra.value, dec.value)
+    ra.value = parseFloat(raValue.value).toFixed(5)
+    dec.value = parseFloat(decValue.value).toFixed(5)
+    const vals = calcAltAz(raValue.value, decValue.value, siteInfo.lat, siteInfo.lon)
+    if (vals[1] < 30.0) {
+      targeterror.value = true
+      targeterrorMsg.value = 'Target not visible. Try a different target.'
+    } else {
+      validTarget.value = true
+    }
+    goToLocation()
+  }
 }
 
 function setRaDecfromTargetList (event) {
@@ -225,13 +242,6 @@ watch(exposureTime, (newTime) => {
   exposureError.value = ''
 })
 
-watch([ra.value, dec.value], ([newRa, newDec]) => {
-  // Only update if no target is entered
-  if (!targetName.value) {
-    skyCoordinatesStore.setCoordinates(newRa, newDec)
-  }
-})
-
 const targetNameEntered = computed(() => {
   return skyCoordinatesStore.targetNameEntered
 })
@@ -335,7 +345,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="raValue" placeholder="Right Ascension">
+                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false">
               </p>
             </div>
           </div>
@@ -347,12 +357,15 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="text" v-model="decValue" placeholder="Declination">
+                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false">
               </p>
             </div>
           </div>
         </div>
-        <div v-if="raValue && decValue && !targeterror && targetName">
+        <div class="field">
+      <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
+    </div>
+        <div v-if="ra && dec && !targeterror && validTarget">
             <div class="field is-horizontal">
               <div class="field-label is-normal">
                 <label class="label">Exposure</label>
