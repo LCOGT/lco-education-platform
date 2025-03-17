@@ -1,12 +1,14 @@
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, defineEmits, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
+import { useProposalStore } from '../../stores/proposalManagement.js'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
+const proposalStore = useProposalStore()
 
 const beginner = ref()
 const dateRange = ref()
@@ -254,6 +256,16 @@ const handleExposuresUpdate = (exposures) => {
   emitSelections()
 }
 
+const hasManyProposals = () => {
+  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
+}
+
+onMounted(() => {
+  if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
+    selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+  }
+})
+
 </script>
 
 <template>
@@ -262,7 +274,7 @@ const handleExposuresUpdate = (exposures) => {
   </template>
   <div class="container">
     <div v-if="!dateRange || currentStep === 1">
-      <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">

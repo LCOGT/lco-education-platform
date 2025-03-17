@@ -3,6 +3,7 @@ import { useRealTimeSessionsStore } from '../stores/realTimeSessions'
 import { useObsPortalDataStore } from '../stores/obsPortalData'
 import { useUserDataStore } from '../stores/userData'
 import { useConfigurationStore } from '../stores/configuration'
+import { useProposalStore } from '../stores/proposalManagement'
 
 export function createTestStores () {
   const pinia = createPinia()
@@ -13,6 +14,7 @@ export function createTestStores () {
   const obsPortalDataStore = useObsPortalDataStore()
   const userDataStore = useUserDataStore()
   const configurationStore = useConfigurationStore()
+  const proposalManagementStore = useProposalStore()
 
   // Set the initial state needed for your tests
   userDataStore.authToken = 'mock-token'
@@ -26,6 +28,7 @@ export function createTestStores () {
     realTimeSessionsStore,
     obsPortalDataStore,
     userDataStore,
-    configurationStore
+    configurationStore,
+    proposalManagementStore
   }
 }
