@@ -47,17 +47,11 @@ const suggestionByType = ref('')
 const suggestionTargetSet = ref(false)
 const selectedTarget = ref({})
 const validTarget = ref(false)
+const isRaFocused = ref(false)
+const isDecFocused = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
-
-const raValue = computed(() => {
-  return skyCoordinatesStore.ra
-})
-
-const decValue = computed(() => {
-  return skyCoordinatesStore.dec
-})
 
 function getRaDecFromTargetName () {
   targeterror.value = false
@@ -77,6 +71,8 @@ function getRaDecFromTargetName () {
         if (vals[1] < 30.0) {
           targeterror.value = true
           targeterrorMsg.value = 'Target not visible. Try a different target.'
+        } else {
+          validTarget.value = true
         }
       }
     }).then(() => {
@@ -88,17 +84,22 @@ function getRaDecFromTargetName () {
     })
 }
 
+// ask Edward what units this is in
 function areRaAndDecInSky () {
   if (ra.value && dec.value) {
     skyCoordinatesStore.setCoordinates(ra.value, dec.value)
-    ra.value = parseFloat(raValue.value).toFixed(5)
-    dec.value = parseFloat(decValue.value).toFixed(5)
-    const vals = calcAltAz(raValue.value, decValue.value, siteInfo.lat, siteInfo.lon)
+    ra.value = parseFloat(ra.value).toFixed(5)
+    dec.value = parseFloat(dec.value).toFixed(5)
+    const vals = calcAltAz(ra.value, dec.value, siteInfo.lat, siteInfo.lon)
     if (vals[1] < 30.0) {
       targeterror.value = true
       targeterrorMsg.value = 'Target not visible. Try a different target.'
+      validTarget.value = false
     } else {
+      targeterror.value = false
+      targeterrorMsg.value = ''
       validTarget.value = true
+      skyCoordinatesStore.setCoordinates(ra.value, dec.value)
     }
     goToLocation()
   }
@@ -163,7 +164,7 @@ const sendGoCommand = async () => {
     expFilter: exposFilter,
     expTime: exposTime,
     // Name is the target name if entered, else the coordinates in string format
-    name: targetName.value || `${(Number(raValue.value).toFixed(4)).toString()}_${(Number(decValue.value).toFixed(4)).toString()}`,
+    name: targetName.value || `${(Number(ra.value).toFixed(4)).toString()}_${(Number(dec.value).toFixed(4)).toString()}`,
     ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
@@ -253,13 +254,57 @@ onMounted(async () => {
   getVisibleTargets()
   skyCoordinatesStore.clearCoordinates()
 })
+
+function handleUpdateCoordinates ({ ra: newRa, dec: newDec }) {
+  ra.value = parseFloat(newRa).toFixed(5)
+  dec.value = parseFloat(newDec).toFixed(5)
+}
+
+function updateCoordinatesStore () {
+  if (ra.value && dec.value) {
+    const parsedRa = parseFloat(ra.value).toFixed(5)
+    const parsedDec = parseFloat(dec.value).toFixed(5)
+    ra.value = parsedRa
+    dec.value = parsedDec
+    skyCoordinatesStore.setCoordinates(parsedRa, parsedDec)
+  }
+}
+
+function onRaBlur () {
+  isRaFocused.value = false
+  updateCoordinatesStore()
+}
+
+function onDecBlur () {
+  isDecFocused.value = false
+  updateCoordinatesStore()
+}
+
+// Watch for changes in the store and update local values only if the input is not being edited.
+watch(
+  () => skyCoordinatesStore.ra,
+  (newRa) => {
+    if (!isRaFocused.value && newRa !== null) {
+      ra.value = parseFloat(newRa).toFixed(5)
+    }
+  }
+)
+
+watch(
+  () => skyCoordinatesStore.dec,
+  (newDec) => {
+    if (!isDecFocused.value && newDec !== null) {
+      dec.value = parseFloat(newDec).toFixed(5)
+    }
+  }
+)
 </script>
 
 <template>
   <div v-if="!isCapturingImages">
     <div class="columns">
       <div class="column is-two-thirds">
-          <SkyChart />
+          <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
       </div>
       <div class="column grey-bg">
         <div v-show="suggestionOrManual === 'manual' || suggestionTargetSet">
@@ -338,7 +383,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false">
+                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false" @focus="isRaFocused = true" @blur="onRaBlur">
               </p>
             </div>
           </div>
@@ -350,7 +395,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false">
+                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false" @focus="isDecFocused = true" @blur="onDecBlur" >
               </p>
             </div>
           </div>
