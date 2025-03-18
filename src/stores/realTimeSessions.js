@@ -74,6 +74,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
 
       const poll = async () => {
         await this.fetchSessionStatus()
+        // fetching for telescope state every time we poll
         this.telescopeState = await getTelescopeState(this.currentSession.site, this.currentSession.telescope, this.currentSession.enclosure)
         const time = calculateSessionCountdown(this.currentSession)
         let nextInterval = 60000
