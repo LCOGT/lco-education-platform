@@ -1,8 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
+import { useProposalStore } from '../../stores/proposalManagement.js'
+
+const proposalStore = useProposalStore()
 
 const targetsData = ref([])
 const startDate = ref('')
@@ -51,6 +54,16 @@ const emitSelections = () => {
     })
   }
 }
+
+const hasManyProposals = () => {
+  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
+}
+
+onMounted(() => {
+  if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
+    selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+  }
+})
 </script>
 
 <template>
@@ -62,7 +75,7 @@ const emitSelections = () => {
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
   />
-  <ProposalDropdown @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
+  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <Calendar @updateDateRange="handleDateRangeUpdate" />
 </template>
 

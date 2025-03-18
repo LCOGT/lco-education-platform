@@ -13,6 +13,11 @@ export const useSkyCoordinatesStore = defineStore('coordinates', {
     },
     setTargetNameEntered (value) {
       this.targetNameEntered = value
+    },
+    clearCoordinates () {
+      this.ra = null
+      this.dec = null
+      this.targetNameEntered = ''
     }
   }
 })

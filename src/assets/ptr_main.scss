@@ -113,38 +113,30 @@ nav {
         min-height:2.75rem;
     }
 
-    button.observe-site-menu{
+    .observe-site-menu{
         color: $grey-level3;
         font-size: 2em;
-        padding: 0 10px;
         background-color: $red;
         text-transform: uppercase;
         font-family: $font-headers;
         font-weight: normal;
-  
-        span {
-          padding:0;
-        }
       }
 
     .learn-site-item {
-        color: $off-white;
+        color: $blue !important;
         font-size: 1.25em;
-        background-color: $blue;
         text-transform: uppercase;
         font-family: $font-headers;
       }
       .observe-site-item {
-        color: $off-white;
+        color: $red !important;
         font-size: 1.25em;
-        background-color: $red;
         text-transform: uppercase;
         font-family: $font-headers;
       }
       .datalab-site-item {
-        color: $off-white;
+        color: $green !important;
         font-size: 1.25em;
-        background-color: $green;
         text-transform: uppercase;
         font-family: $font-headers;
       }
@@ -152,11 +144,7 @@ nav {
         background-color: $red;
         color: $grey-level3;
       }
-      .is-small {
-        .svg-inline--fa {
-          font-size: 0.75em;
-        }
-      }
+
 }
 
 h1.site-name {
@@ -215,18 +203,11 @@ h1.site-name {
     text-align: center;
 }
 
-.highlight-target-field  {
-    border-radius: 5px;
-    border-color: $green;
-    border-style: solid;
-    padding: 5px;
-}
-
-.highlight-target-field {
-    .button {
-        background-color: $blue;
-        color: $grey-level4;
-    }
+.highlight-small-region {
+    background-color: $grey-level2;
+    color: $off-white;
+    padding: 0.5em;
+    border-radius: 1em;
 }
 
 .times {
@@ -340,6 +321,11 @@ input[type="radio"]:checked + label
     text-transform: uppercase
 }
 
+.status-error {
+    background-color: $red;
+    color: $off-white;
+}
+
 .status-in-progress {
     color: $blue;
     animation: blinker 1s linear infinite;
@@ -352,3 +338,8 @@ input[type="radio"]:checked + label
 }
 
 .hide { display: none; }
+
+.status-error {
+    background-color: $red;
+    color: $off-white;
+}

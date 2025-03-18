@@ -40,10 +40,10 @@ const fetchTelescopeStatus = async () => {
   if (configurationStore.demo) {
     status.value = {
       status: {
-        availability: 'Available',
+        availability: 'Sun up',
         telescope: 'Tracking',
         instrument: 'Exposing',
-        progress: 'Ready'
+        progress: 'Error on last observation'
       }
     }
     imagesDone.value = false
@@ -176,6 +176,21 @@ const setCameraState = computed(() => ({
   'status-in-progress': status.value.status.instrument === 'Exposing'
 }))
 
+const setTelState = computed(() => ({
+  'green': status.value.status.telescope === 'Tracking'
+}))
+
+const setProgressState = computed(() => ({
+  'status-error': status.value.status.progress === 'Error on last observation'
+}))
+
+const setSiteState = computed(() => {
+  if (status.value.status.availability !== 'Available') {
+    return 'status-error'
+  }
+  return 'green'
+})
+
 </script>
 
 <template>
@@ -189,7 +204,7 @@ const setCameraState = computed(() => ({
             </div>
             <div v-else>
                 <div v-for="item in status" :key="item" class="image-capture">
-                    <div>
+                    <div :class="setSiteState">
                       <span class="icon-text">
                         <span class="icon is-large">
                           <font-awesome-icon icon="fa-regular fa-location-dot" title="Observatory" />
@@ -197,7 +212,7 @@ const setCameraState = computed(() => ({
                         <span>{{ item.availability }}</span>
                       </span>
                     </div>
-                    <div>
+                    <div :class="setTelState">
                       <span class="icon-text">
                         <span class="icon is-large">
                           <font-awesome-icon icon="fa-regular fa-telescope" title="Telescope"/>
@@ -213,7 +228,7 @@ const setCameraState = computed(() => ({
                         <span>{{ item.instrument }}</span>
                       </span>
                     </div>
-                    <div>
+                    <div :class="setProgressState">
                       <span class="icon-text">
                         <span class="icon is-large">
                           <font-awesome-icon icon="fa-solid fa-list-check" title="Progress"/>

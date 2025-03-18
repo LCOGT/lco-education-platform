@@ -12,6 +12,28 @@ const skyCoordinatesStore = useSkyCoordinatesStore()
 const lat = ref()
 const lng = ref()
 
+const props = defineProps({
+  ra: {
+    type: Number,
+    default: null
+  },
+  dec: {
+    type: Number,
+    default: null
+  }
+})
+
+const emit = defineEmits(['update-coordinates'])
+
+watch(
+  () => [props.ra, props.dec],
+  ([newRa, newDec]) => {
+    if (newRa !== null && newDec !== null) {
+      moveCrosshairsToRaDec(newRa, newDec)
+    }
+  }
+)
+
 function updateLocation () {
   const time = new Date()
   time.setHours(time.getHours())
@@ -230,13 +252,14 @@ function attachClickListener () {
     // Convert the pixel coordinates to celestial coordinates
     const coords = Celestial.mapProjection.invert([x, y])
     if (coords) {
-      const ra = coords[0]
-      const dec = coords[1]
+      const newRa = coords[0]
+      const newDec = coords[1]
+      emit('update-coordinates', { ra: newRa, dec: newDec })
       const ctx = canvas.getContext('2d')
       ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2)
       Celestial.redraw()
-      drawCrosshairs(ctx, ra, dec)
-      skyCoordinatesStore.setCoordinates(ra, dec)
+      drawCrosshairs(ctx, newRa, newDec)
+      skyCoordinatesStore.setCoordinates(newRa, newDec)
       skyCoordinatesStore.setTargetNameEntered('')
     } else {
       console.error('Click is outside the celestial map bounds.')
