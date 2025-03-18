@@ -7,8 +7,8 @@ import WindyMap from './GlobeMap/WindyMap.vue'
 const realTimeSessionsStore = useRealTimeSessionsStore()
 
 const selectedSession = realTimeSessionsStore.currentSession
-const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
-const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
+// const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
+// const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
 
 const lat = computed(() => sites[selectedSession.site]?.lat)
 const lon = computed(() => sites[selectedSession.site]?.lon)
@@ -17,7 +17,7 @@ const lon = computed(() => sites[selectedSession.site]?.lon)
 
 <template>
   <div class="content">
-    <p>The telescope is {{  availability  }} because {{  reason  }}</p>
+    <!-- <p>The telescope is {{  availability  }} because {{  reason  }}</p> -->
     <WindyMap :lat="lat" :lon="lon"/>
   </div>
 </template>
