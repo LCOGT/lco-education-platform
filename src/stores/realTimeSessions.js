@@ -4,6 +4,7 @@ import { calculateSessionCountdown } from '../utils/formatTime'
 import { toRaw } from 'vue'
 import { useConfigurationStore } from './configuration'
 import { useObsPortalDataStore } from './obsPortalData'
+import { getTelescopeState } from '../utils/telescopeStates'
 
 export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
   state () {
@@ -12,7 +13,8 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       currentStatus: '',
       fetchInterval: null,
       sessionTokens: {},
-      isCapturingImagesMap: {}
+      isCapturingImagesMap: {},
+      telescopeState: {}
     }
   },
   persist: true,
@@ -29,6 +31,10 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     },
     isCapturingImagesForCurrentSession (state) {
       return state.isCapturingImagesMap[state.currentSessionId] || false
+    },
+    telescopeAvailability (state) {
+      console.log('telescopeState:', state.telescopeState)
+      return state.telescopeState
     }
   },
   actions: {
@@ -68,6 +74,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
 
       const poll = async () => {
         await this.fetchSessionStatus()
+        this.telescopeState = await getTelescopeState(this.currentSession.site, this.currentSession.telescope, this.currentSession.enclosure)
         const time = calculateSessionCountdown(this.currentSession)
         let nextInterval = 60000
         // 10 minutes (600 seconds) before session start poll every 10 seconds -- time is arbitrary
