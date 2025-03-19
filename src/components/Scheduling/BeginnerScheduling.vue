@@ -6,6 +6,10 @@ import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
+import { calcAltAz, calculateVisibleTargets } from '../../utils/visibility.js'
+import targets from '../../utils/targets.min.json'
+import supernova from '../../assets/Icons/supernova.png'
+import { ca } from 'date-fns/locale'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
 const proposalStore = useProposalStore()
@@ -16,6 +20,8 @@ const objectSelection = ref('')
 const objectSelected = ref(false)
 const targetSelection = ref('')
 const targetSelected = ref(false)
+const targetList = ref({})
+const targetsByType = ref([])
 const exposureSettings = ref([])
 const defaultSettings = ref([])
 const loading = ref(false)
@@ -61,24 +67,20 @@ const categories = ref([
   {
     location: 'Deep Space',
     options: [
-      { object: 'Galaxy' },
-      { object: 'Star Cluster' },
-      { object: 'Supernova' },
-      { object: 'Nebula' }
-    ]
-  },
-  {
-    location: 'Our Solar System',
-    options: [
-      { object: 'The Moon', type: 'natural' },
-      { object: 'Jupiter', type: 'planet' },
-      { object: 'Saturn', type: 'planet' },
-      { object: 'Mars', type: 'planet' },
-      { object: 'Ceres', type: 'dwarf' },
-      { object: 'Halley\'s Comet', type: 'short-period' }
+      { object: 'Galaxy', icon: require('@/assets/Icons/galaxy.png') },
+      { object: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png') },
+      { object: 'Supernova', icon: require('@/assets/Icons/supernova.png') },
+      { object: 'Nebula', icon: require('@/assets/Icons/nebula.png') }
     ]
   }
 ])
+
+const categoryIcons = {
+  'Galaxy': require('@/assets/Icons/galaxy.png'),
+  'Star Cluster': require('@/assets/Icons/star-cluster.png'),
+  'Supernova': require('@/assets/Icons/supernova.png'),
+  'Nebula': require('@/assets/Icons/nebula.png')
+}
 
 const objectCategories = [
   { label: 'Star Cluster', value: /cluster|Cluster of Stars/i },
@@ -194,6 +196,7 @@ const populateTargets = (response) => {
     deepSpaceCategory.options = Object.keys(filteredTargetsByCategory).map((label) => {
       return {
         object: label,
+        icon: categoryIcons[label],
         targets: filteredTargetsByCategory[label].map(target => ({
           name: target.name,
           ra: target.ra,
@@ -266,6 +269,11 @@ onMounted(() => {
   }
 })
 
+function getImageUrl (name) {
+  console.log(name)
+  return new URL(`../assets/Icons/${name}.png`, import.meta.url).href
+}
+
 </script>
 
 <template>
@@ -283,17 +291,21 @@ onMounted(() => {
       <div v-for="category in categories" :key="category.location" class="content">
         <h4>{{ category.location }}</h4>
         <div class="buttons">
-          <button
+          <a
             v-for="option in category.options"
             :key="option.object"
             @click="handleObjectSelection(option)"
-            class="button"
+            class="button suggestion"
           >
-            {{ option.object }}
-          </button>
+          <span>
+            <img :src=option.icon alt='icon' />
+          </span>
+          <span>{{ option.object }}</span>
+        </a>
         </div>
       </div>
     </div>
+
     <div v-if="objectSelection.targets && currentStep === 4">
       <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
       <div class="columns is-column-gap-3">
@@ -388,5 +400,12 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.suggestion {
+  display: inline-block !important;
+  min-width:100px;
+  span {
+    display:block;
+  }
 }
 </style>
