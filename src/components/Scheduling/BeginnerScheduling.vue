@@ -28,6 +28,17 @@ const totalLoaded = ref(3)
 const allCategoryTargets = ref({})
 const currentStep = ref(1)
 
+const handleProposalSelection = (proposal) => {
+  // Only advance step if still on step 1
+  if (currentStep.value === 1) {
+    selectedProposal.value = proposal
+    nextStep()
+  } else {
+    // Just update the proposal without advancing steps
+    selectedProposal.value = proposal
+  }
+}
+
 const nextStep = () => {
   currentStep.value += 1
 }
@@ -275,7 +286,7 @@ onMounted(() => {
   </template>
   <div class="container">
     <div v-if="!dateRange || currentStep === 1">
-      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="handleProposalSelection" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
