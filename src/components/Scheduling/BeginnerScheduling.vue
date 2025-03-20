@@ -79,18 +79,18 @@ const categories = ref([
       { object: 'Supernova' },
       { object: 'Nebula' }
     ]
-  },
-  {
-    location: 'Our Solar System',
-    options: [
-      { object: 'The Moon', type: 'natural' },
-      { object: 'Jupiter', type: 'planet' },
-      { object: 'Saturn', type: 'planet' },
-      { object: 'Mars', type: 'planet' },
-      { object: 'Ceres', type: 'dwarf' },
-      { object: 'Halley\'s Comet', type: 'short-period' }
-    ]
   }
+  // {
+  //   location: 'Our Solar System',
+  //   options: [
+  //     { object: 'The Moon', type: 'natural' },
+  //     { object: 'Jupiter', type: 'planet' },
+  //     { object: 'Saturn', type: 'planet' },
+  //     { object: 'Mars', type: 'planet' },
+  //     { object: 'Ceres', type: 'dwarf' },
+  //     { object: 'Halley\'s Comet', type: 'short-period' }
+  //   ]
+  // }
 ])
 
 const objectCategories = [
@@ -287,7 +287,7 @@ onMounted(() => {
     <v-progress-circular indeterminate color="white" class="loading" />
   </template>
   <div class="container">
-    <div v-if="!dateRange || currentStep === 1">
+    <div v-if="currentStep === 1">
       <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="handleProposalSelection" />
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
@@ -392,7 +392,8 @@ onMounted(() => {
       </div>
     </div>
     <div v-if="currentStep > 1" class="navigation-buttons">
-      <button @click="previousStep" class="button">Back</button>
+      <p v-if="selectedProposal">Selected Proposal: {{ selectedProposal }}</p>
+      <button @click="previousStep" class="button">Previous Step</button>
     </div>
   </div>
 </template>
