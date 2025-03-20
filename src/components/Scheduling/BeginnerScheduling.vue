@@ -345,7 +345,6 @@ onMounted(() => {
             <button class="button" @click="useDefaults">I'm OK with Defaults</button>
           </p>
         </div>
-        <button class="button" @click="resetSelections">Different targets</button>
       </div>
       <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <h4>Photon Ranch will schedule this for you</h4>
