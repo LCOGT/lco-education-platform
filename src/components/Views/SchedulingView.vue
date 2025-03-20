@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
@@ -82,6 +82,7 @@ const createRequest = (target, exposures, startDate, endDate) => ({
 
 const sendObservationRequest = async () => {
   if (observationData.value) {
+    console.log('Sending observation request:', observationData.value)
     const requestList = []
 
     // Handle single target
@@ -106,7 +107,9 @@ const sendObservationRequest = async () => {
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
       body: {
-        'name': 'UserObservation',
+        // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
+        // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
+        'name': `${observationData.value.target.name}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.targets[0].name}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.target.ra}_${observationData.value.target.dec}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.targets[0].ra}_${observationData.value.targets[0].dec}_${observationData.value.startDate.split('T')[0]}`,
         'proposal': observationData.value.proposal,
         'ipp_value': 1.05,
         'operator': operatorValue.value,
@@ -122,6 +125,12 @@ const sendObservationRequest = async () => {
     })
   }
 }
+
+watch(observationData.value, (newValue) => {
+  if (newValue) {
+    console.log('Observation data:', newValue)
+  }
+})
 
 const handleUserSelections = (data) => {
   observationData.value = data
