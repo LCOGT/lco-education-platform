@@ -45,6 +45,8 @@ const nextStep = () => {
 
 const previousStep = () => {
   loading.value = false
+  beginner.value = ''
+  exposureSettings.value = []
   // Prevents `Submit my request` button from showing when going back
   emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1
