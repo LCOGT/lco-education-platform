@@ -153,13 +153,13 @@ const resetView = () => {
 
     <div v-else-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
-        <v-btn color="indigo" @click="resetView"> Go back to levels (rename this!)</v-btn>
+        <v-btn color="indigo" @click="resetView"> Restart</v-btn>
         <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
     <div v-else-if="level === 'advanced' && !showScheduled">
       <AdvancedScheduling @selectionsComplete="handleUserSelections" />
-      <v-btn color="indigo" @click="resetView"> Go back to levels </v-btn>
+      <v-btn color="indigo" @click="resetView">Restart</v-btn>
       <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
     <div v-if="showScheduled">
