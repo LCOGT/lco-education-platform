@@ -45,7 +45,7 @@ const previousStep = () => {
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
   if (currentStep.value === 4) {
     if (!objectSelection.value || !objectSelection.value.targets) {
-      displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+      displayedTargets.value = objectSelection.value.slice(0, 3)
     }
   }
 }
@@ -72,7 +72,7 @@ const handleObjectSelection = (shortname, name) => {
 }
 
 const shuffleTargets = () => {
-  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  const currentCategoryTargets = objectSelection.value || []
   if (currentCategoryTargets.length === 0) return
 
   // Shuffle the full list of targets for this category and take the first 3
@@ -87,7 +87,7 @@ const shuffleTargets = () => {
 }
 
 const loadMoreTargets = () => {
-  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  const currentCategoryTargets = objectSelection.value || []
   if (currentCategoryTargets.length === 0) return
 
   // Calculate the new total to load, up to a maximum of 15 or the total number of targets

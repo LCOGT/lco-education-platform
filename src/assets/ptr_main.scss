@@ -145,6 +145,13 @@ nav {
         color: $grey-level3;
       }
 
+      .navbar-link:not(.is-arrowless):after {
+        border-color: $grey-level3;
+        inset-inline-end: 1.125em;
+        margin-top: -0.375em;
+        font-size: 50%;
+    }
+
 }
 
 h1.site-name {
