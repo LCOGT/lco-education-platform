@@ -126,12 +126,6 @@ const sendObservationRequest = async () => {
   }
 }
 
-watch(observationData.value, (newValue) => {
-  if (newValue) {
-    console.log('Observation data:', newValue)
-  }
-})
-
 const handleUserSelections = (data) => {
   observationData.value = data
 }

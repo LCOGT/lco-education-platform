@@ -23,7 +23,6 @@ const emits = defineEmits(['exposuresUpdated', 'targetUpdated'])
 
 const configurationStore = useConfigurationStore()
 
-const projectName = ref('')
 const targetList = ref([{ name: '', exposures: [], ra: '', dec: '' }])
 const activeTargetIndex = ref(0)
 const targetError = ref('')
@@ -36,17 +35,16 @@ const settings = reactive({
   count: ''
 })
 
-// State for enabling/disabling fields
-const targetEnabled = computed(() => {
-  return props.showProjectField ? projectName.value.trim() !== '' : true
-})
-
 const exposureEnabled = computed(() => {
-  return !props.showTitleField || targetList.value[activeTargetIndex.value]?.ra !== '' || targetList.value[activeTargetIndex.value]?.dec !== ''
+  return !props.showTitleField || (targetList.value[activeTargetIndex.value]?.ra !== '' && targetList.value[activeTargetIndex.value]?.dec !== '')
 })
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
 const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
+
+function clearTargetName () {
+  targetList.value[activeTargetIndex.value].name = ''
+}
 
 // Fetch RA and Dec based on the target name
 function getRaDecFromTargetName () {
@@ -129,21 +127,6 @@ onMounted(async () => {
 <template>
     <div class="columns">
       <div class="column is-one-third">
-      <div v-if="showProjectField" class="input-wrapper">
-
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-              <label for="project-name" class="label">Name</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input id="project-name" v-model="projectName" class="scheduling-inputs input" type="text" placeholder="Enter a name for your request" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <!-- Render saved targets and exposures -->
       <div v-if="targetList.length > 1">
         <div v-for="(target, index) in targetList" :key="index">
@@ -165,15 +148,13 @@ onMounted(async () => {
                 <input
                   id="target-list"
                   v-model="targetList[activeTargetIndex].name"
-                  @blur="getRaDecFromTargetName"
-                  :disabled="!targetEnabled"
-                  :readonly="isTargetConfirmed"
                   class="scheduling-inputs input"
                   placeholder="Enter target"
                 />
                 </div>
               </div>
             </div>
+            <v-btn color="indigo" @click="getRaDecFromTargetName">Find Target</v-btn>
         </div>
         <p v-if="targetError" class="error-text">{{ targetError }}</p>
         <div class="field is-horizontal">
@@ -183,7 +164,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="text" v-model="targetList[activeTargetIndex].ra" class="scheduling-inputs input" readonly disabled/>
+                <input type="text" v-model="targetList[activeTargetIndex].ra" @input="clearTargetName" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -195,7 +176,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="text" v-model="targetList[activeTargetIndex].dec" class="scheduling-inputs input" readonly disabled/>
+                <input type="text" v-model="targetList[activeTargetIndex].dec" @input="clearTargetName" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -240,7 +221,7 @@ onMounted(async () => {
         <div class="field-body">
           <div class="field is-narrow">
             <p class="control is-expanded">
-              <input id="exposureTime" type="number" class="input" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Seconds">
+              <input id="exposureTime" type="number" min="1" class="input" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Seconds">
             </p>
             <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
           </div>
@@ -249,7 +230,7 @@ onMounted(async () => {
           </div>
           <div class="field is-narrow">
             <p class="control is-expanded">
-              <input id="exposureCount" type="number" class="input" v-model="settings.count" :disabled="!exposureEnabled" value="1">
+              <input id="exposureCount" type="number" class="input" v-model="settings.count" :disabled="!exposureEnabled" min="1" placeholder="Count">
             </p>
           </div>
         </div>
