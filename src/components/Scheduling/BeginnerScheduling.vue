@@ -6,9 +6,8 @@ import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
-import { calcAltAz, calculateVisibleTargets } from '../../utils/visibility.js'
+import { calculateSchedulableTargets } from '../../utils/visibility.js'
 import targets from '../../utils/targets.min.json'
-import supernova from '../../assets/Icons/supernova.png'
 import { ca } from 'date-fns/locale'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
@@ -46,19 +45,7 @@ const previousStep = () => {
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
   if (currentStep.value === 4) {
     if (!objectSelection.value || !objectSelection.value.targets) {
-      // Re-populate targets if missing
-      const categoryRegex = objectCategories.find(cat => cat.label === objectSelection.value.object)?.value
-      if (categoryRegex) {
-        const filteredTargets = selectedTargets.value.filter(target => target.avmdesc.match(categoryRegex))
-        objectSelection.value.targets = filteredTargets.map(target => ({
-          name: target.name,
-          desc: target.desc,
-          filters: target.filters,
-          ra: target.ra,
-          dec: target.dec
-        }))
-        displayedTargets.value = objectSelection.value.targets.slice(0, 3)
-      }
+      displayedTargets.value = objectSelection.value.targets.slice(0, 3)
     }
   }
 }
@@ -67,55 +54,19 @@ const categories = ref([
   {
     location: 'Deep Space',
     options: [
-      { object: 'Galaxy', icon: require('@/assets/Icons/galaxy.png') },
-      { object: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png') },
-      { object: 'Supernova', icon: require('@/assets/Icons/supernova.png') },
-      { object: 'Nebula', icon: require('@/assets/Icons/nebula.png') }
+      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
+      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
+      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
     ]
   }
 ])
 
-const categoryIcons = {
-  'Galaxy': require('@/assets/Icons/galaxy.png'),
-  'Star Cluster': require('@/assets/Icons/star-cluster.png'),
-  'Supernova': require('@/assets/Icons/supernova.png'),
-  'Nebula': require('@/assets/Icons/nebula.png')
-}
+const handleObjectSelection = (shortname, name) => {
+  objectSelection.value = targetList.value[shortname]
+  objectSelected.value = name
 
-const objectCategories = [
-  { label: 'Star Cluster', value: /cluster|Cluster of Stars/i },
-  { label: 'Supernova', value: /supernov/i },
-  { label: 'Galaxy', value: /galax/i },
-  { label: 'Nebula', value: /nebul/i }
-]
-
-const handleObjectSelection = (option) => {
-  objectSelection.value = option
-  objectSelected.value = true
-
-  // Find the category regex for the selected object
-  const categoryRegex = objectCategories.find(cat => cat.label === option.object)?.value
-
-  if (!categoryRegex) {
-    return
-  }
-
-  const filteredTargets = selectedTargets.value.filter(
-    target => target.avmdesc.match(categoryRegex)
-  )
-
-  // Store all targets for this category in allCategoryTargets
-  allCategoryTargets.value[option.object] = filteredTargets
-
-  // Populate the targets for the selected object
-  objectSelection.value.targets = filteredTargets.map(target => ({
-    name: target.name,
-    desc: target.desc,
-    filters: target.filters,
-    ra: target.ra,
-    dec: target.dec
-  }))
-  displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+  displayedTargets.value = objectSelection.value.slice(0, 3)
   totalLoaded.value = 3
   nextStep()
 }
@@ -175,59 +126,18 @@ const handleTargetSelection = (target) => {
   nextStep()
 }
 
-const populateTargets = (response) => {
-  const allTargets = response.targets
-  const filteredTargetsByCategory = {}
-
-  objectCategories.forEach((category) => {
-    const filteredTargets = allTargets
-      .filter(target => target.avmdesc.match(category.value))
-      .slice(0, 3)
-
-    if (filteredTargets.length) {
-      filteredTargetsByCategory[category.label] = filteredTargets
-    }
-  })
-
-  selectedTargets.value = response.targets
-  const deepSpaceCategory = categories.value.find(category => category.location === 'Deep Space')
-
-  if (deepSpaceCategory) {
-    deepSpaceCategory.options = Object.keys(filteredTargetsByCategory).map((label) => {
-      return {
-        object: label,
-        icon: categoryIcons[label],
-        targets: filteredTargetsByCategory[label].map(target => ({
-          name: target.name,
-          ra: target.ra,
-          dec: target.dec,
-          desc: target.desc,
-          filters: target.filters
-        }))
-      }
-    })
-  }
-  loading.value = false
-  nextStep()
-}
-
-const fetchTargets = async (startDate, endDate) => {
+const getSchedulableTargets = (startDate, endDate) => {
   loading.value = true
-  await fetchApiCall({
-    url: `https://whatsup.lco.global/range/?start=${startDate}&end=${endDate}&aperture=0m4&mode=full`,
-    method: 'GET',
-    successCallback: populateTargets,
-    failCallback: (error) => {
-      console.error('Error fetching targets:', error)
-    }
-  })
+  targetList.value = calculateSchedulableTargets(targets, startDate, endDate)
+  loading.value = false
 }
 
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
   startDate.value = newDateRange.start.toISOString().split('.')[0]
   endDate.value = newDateRange.end.toISOString().split('.')[0]
-  fetchTargets(startDate.value, endDate.value)
+  getSchedulableTargets(newDateRange.start, newDateRange.end)
+  nextStep()
 }
 
 const resetSelections = () => {
@@ -269,11 +179,6 @@ onMounted(() => {
   }
 })
 
-function getImageUrl (name) {
-  console.log(name)
-  return new URL(`../assets/Icons/${name}.png`, import.meta.url).href
-}
-
 </script>
 
 <template>
@@ -293,21 +198,21 @@ function getImageUrl (name) {
         <div class="buttons">
           <a
             v-for="option in category.options"
-            :key="option.object"
-            @click="handleObjectSelection(option)"
+            :key="option.shortname"
+            @click="handleObjectSelection(option.shortname, option.name)"
             class="button suggestion"
           >
           <span>
             <img :src=option.icon alt='icon' />
           </span>
-          <span>{{ option.object }}</span>
+          <span>{{ option.name }}</span>
         </a>
         </div>
       </div>
     </div>
 
-    <div v-if="objectSelection.targets && currentStep === 4">
-      <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
+    <div v-if="displayedTargets && currentStep === 4">
+      <h3>Requesting an Observation of a <span class="blue">{{ objectSelected}}</span></h3>
       <div class="columns is-column-gap-3">
         <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
           <div class="card target-highlight is-clickable">
