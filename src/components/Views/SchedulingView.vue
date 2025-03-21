@@ -134,16 +134,19 @@ const enableButton = computed(() => {
 </script>
 
 <template>
-  <section class="section  highlight">
+  <section class="section highlight">
   <div class="container">
+    <h2>Schedule an Observation</h2>
     <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
-      <h2>Submit a Request</h2>
       <p>What level are you?</p>
       <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
       <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
     </div>
-
-    <div v-else-if="level === 'beginner' && !showScheduled">
+  </div>
+  </section>
+  <section class="section">
+    <div class="container">
+    <div v-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
         <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>

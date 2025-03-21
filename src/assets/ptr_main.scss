@@ -103,7 +103,7 @@ section {
 }
 
 section.highlight {
-    background-color: $grey-level1;
+    background-color: $grey-level2;
 }
 
 nav {
@@ -144,6 +144,13 @@ nav {
         background-color: $red;
         color: $grey-level3;
       }
+
+      .navbar-link:not(.is-arrowless):after {
+        border-color: $grey-level3;
+        inset-inline-end: 1.125em;
+        margin-top: -0.375em;
+        font-size: 50%;
+    }
 
 }
 
