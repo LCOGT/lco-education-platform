@@ -9,7 +9,8 @@ export default defineConfig({
     globals: true,
     coverage: {
       reporter: ['text', 'json', 'html']
-    }
+    },
+    exclude: ['node_modules', '.direnv', 'dist']
   },
   resolve: {
     alias: {

@@ -61,7 +61,7 @@ const hasManyProposals = () => {
 
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
-    selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
+    selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
   }
 })
 </script>
