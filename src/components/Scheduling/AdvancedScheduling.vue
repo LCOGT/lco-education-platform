@@ -68,14 +68,13 @@ onMounted(() => {
 
 <template>
   <h2>Request an Observation</h2>
-
+  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <SchedulingSettings
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
   />
-  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <Calendar @updateDateRange="handleDateRangeUpdate" />
 </template>
 
