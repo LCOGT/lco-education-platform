@@ -9,6 +9,10 @@ import { useProposalStore } from '../../stores/proposalManagement.js'
 import { calculateSchedulableTargets } from '../../utils/visibility.js'
 import targets from '../../utils/targets.min.json'
 import { ca } from 'date-fns/locale'
+import galaxyIcon from '@/assets/Icons/galaxy.png'
+import starClusterIcon from '@/assets/Icons/star-cluster.png'
+import supernovaIcon from '@/assets/Icons/supernova.png'
+import nebulaIcon from '@/assets/Icons/nebula.png'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
 const proposalStore = useProposalStore()
@@ -54,10 +58,10 @@ const categories = ref([
   {
     location: 'Deep Space',
     options: [
-      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies' },
-      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
-      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
-      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
+      { name: 'Galaxy', icon: galaxyIcon, shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: starClusterIcon, shortname: 'clusters' },
+      { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
+      { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
     ]
   }
 ])
