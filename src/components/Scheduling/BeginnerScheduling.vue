@@ -6,6 +6,13 @@ import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
+import { calculateSchedulableTargets } from '../../utils/visibility.js'
+import targets from '../../utils/targets.min.json'
+import { ca } from 'date-fns/locale'
+import galaxyIcon from '@/assets/Icons/galaxy.png'
+import starClusterIcon from '@/assets/Icons/star-cluster.png'
+import supernovaIcon from '@/assets/Icons/supernova.png'
+import nebulaIcon from '@/assets/Icons/nebula.png'
 
 const emits = defineEmits(['selectionsComplete', 'showButton'])
 const proposalStore = useProposalStore()
@@ -16,6 +23,8 @@ const objectSelection = ref('')
 const objectSelected = ref(false)
 const targetSelection = ref('')
 const targetSelected = ref(false)
+const targetList = ref({})
+const targetsByType = ref([])
 const exposureSettings = ref([])
 const defaultSettings = ref([])
 const loading = ref(false)
@@ -40,19 +49,7 @@ const previousStep = () => {
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
   if (currentStep.value === 4) {
     if (!objectSelection.value || !objectSelection.value.targets) {
-      // Re-populate targets if missing
-      const categoryRegex = objectCategories.find(cat => cat.label === objectSelection.value.object)?.value
-      if (categoryRegex) {
-        const filteredTargets = selectedTargets.value.filter(target => target.avmdesc.match(categoryRegex))
-        objectSelection.value.targets = filteredTargets.map(target => ({
-          name: target.name,
-          desc: target.desc,
-          filters: target.filters,
-          ra: target.ra,
-          dec: target.dec
-        }))
-        displayedTargets.value = objectSelection.value.targets.slice(0, 3)
-      }
+      displayedTargets.value = objectSelection.value.slice(0, 3)
     }
   }
 }
@@ -61,65 +58,25 @@ const categories = ref([
   {
     location: 'Deep Space',
     options: [
-      { object: 'Galaxy' },
-      { object: 'Star Cluster' },
-      { object: 'Supernova' },
-      { object: 'Nebula' }
-    ]
-  },
-  {
-    location: 'Our Solar System',
-    options: [
-      { object: 'The Moon', type: 'natural' },
-      { object: 'Jupiter', type: 'planet' },
-      { object: 'Saturn', type: 'planet' },
-      { object: 'Mars', type: 'planet' },
-      { object: 'Ceres', type: 'dwarf' },
-      { object: 'Halley\'s Comet', type: 'short-period' }
+      { name: 'Galaxy', icon: galaxyIcon, shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: starClusterIcon, shortname: 'clusters' },
+      { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
+      { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
     ]
   }
 ])
 
-const objectCategories = [
-  { label: 'Star Cluster', value: /cluster|Cluster of Stars/i },
-  { label: 'Supernova', value: /supernov/i },
-  { label: 'Galaxy', value: /galax/i },
-  { label: 'Nebula', value: /nebul/i }
-]
+const handleObjectSelection = (shortname, name) => {
+  objectSelection.value = targetList.value[shortname]
+  objectSelected.value = name
 
-const handleObjectSelection = (option) => {
-  objectSelection.value = option
-  objectSelected.value = true
-
-  // Find the category regex for the selected object
-  const categoryRegex = objectCategories.find(cat => cat.label === option.object)?.value
-
-  if (!categoryRegex) {
-    return
-  }
-
-  const filteredTargets = selectedTargets.value.filter(
-    target => target.avmdesc.match(categoryRegex)
-  )
-
-  // Store all targets for this category in allCategoryTargets
-  allCategoryTargets.value[option.object] = filteredTargets
-
-  // Populate the targets for the selected object
-  objectSelection.value.targets = filteredTargets.map(target => ({
-    name: target.name,
-    desc: target.desc,
-    filters: target.filters,
-    ra: target.ra,
-    dec: target.dec
-  }))
-  displayedTargets.value = objectSelection.value.targets.slice(0, 3)
+  displayedTargets.value = objectSelection.value.slice(0, 3)
   totalLoaded.value = 3
   nextStep()
 }
 
 const shuffleTargets = () => {
-  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  const currentCategoryTargets = objectSelection.value || []
   if (currentCategoryTargets.length === 0) return
 
   // Shuffle the full list of targets for this category and take the first 3
@@ -134,7 +91,7 @@ const shuffleTargets = () => {
 }
 
 const loadMoreTargets = () => {
-  const currentCategoryTargets = allCategoryTargets.value[objectSelection.value.object] || []
+  const currentCategoryTargets = objectSelection.value || []
   if (currentCategoryTargets.length === 0) return
 
   // Calculate the new total to load, up to a maximum of 15 or the total number of targets
@@ -173,58 +130,18 @@ const handleTargetSelection = (target) => {
   nextStep()
 }
 
-const populateTargets = (response) => {
-  const allTargets = response.targets
-  const filteredTargetsByCategory = {}
-
-  objectCategories.forEach((category) => {
-    const filteredTargets = allTargets
-      .filter(target => target.avmdesc.match(category.value))
-      .slice(0, 3)
-
-    if (filteredTargets.length) {
-      filteredTargetsByCategory[category.label] = filteredTargets
-    }
-  })
-
-  selectedTargets.value = response.targets
-  const deepSpaceCategory = categories.value.find(category => category.location === 'Deep Space')
-
-  if (deepSpaceCategory) {
-    deepSpaceCategory.options = Object.keys(filteredTargetsByCategory).map((label) => {
-      return {
-        object: label,
-        targets: filteredTargetsByCategory[label].map(target => ({
-          name: target.name,
-          ra: target.ra,
-          dec: target.dec,
-          desc: target.desc,
-          filters: target.filters
-        }))
-      }
-    })
-  }
-  loading.value = false
-  nextStep()
-}
-
-const fetchTargets = async (startDate, endDate) => {
+const getSchedulableTargets = (startDate, endDate) => {
   loading.value = true
-  await fetchApiCall({
-    url: `https://whatsup.lco.global/range/?start=${startDate}&end=${endDate}&aperture=0m4&mode=full`,
-    method: 'GET',
-    successCallback: populateTargets,
-    failCallback: (error) => {
-      console.error('Error fetching targets:', error)
-    }
-  })
+  targetList.value = calculateSchedulableTargets(targets, startDate, endDate)
+  loading.value = false
 }
 
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
   startDate.value = newDateRange.start.toISOString().split('.')[0]
   endDate.value = newDateRange.end.toISOString().split('.')[0]
-  fetchTargets(startDate.value, endDate.value)
+  getSchedulableTargets(newDateRange.start, newDateRange.end)
+  nextStep()
 }
 
 const resetSelections = () => {
@@ -284,19 +201,23 @@ onMounted(() => {
       <div v-for="category in categories" :key="category.location" class="content">
         <h4>{{ category.location }}</h4>
         <div class="buttons">
-          <button
+          <a
             v-for="option in category.options"
-            :key="option.object"
-            @click="handleObjectSelection(option)"
-            class="button"
+            :key="option.shortname"
+            @click="handleObjectSelection(option.shortname, option.name)"
+            class="button suggestion"
           >
-            {{ option.object }}
-          </button>
+          <span>
+            <img :src=option.icon alt='icon' />
+          </span>
+          <span>{{ option.name }}</span>
+        </a>
         </div>
       </div>
     </div>
-    <div v-if="objectSelection.targets && currentStep === 4">
-      <h3>Requesting an Observation of a <span class="blue">{{ objectSelection.object }}</span></h3>
+
+    <div v-if="displayedTargets && currentStep === 4">
+      <h3>Requesting an Observation of a <span class="blue">{{ objectSelected}}</span></h3>
       <div class="columns is-column-gap-3">
         <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
           <div class="card target-highlight is-clickable">
@@ -389,5 +310,12 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.suggestion {
+  display: inline-block !important;
+  min-width:100px;
+  span {
+    display:block;
+  }
 }
 </style>

@@ -53,6 +53,18 @@ const isDecFocused = ref(false)
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
 
+const categories = ref([
+  {
+    location: 'Deep Space',
+    options: [
+      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
+      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
+      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
+    ]
+  }
+])
+
 function getRaDecFromTargetName () {
   targeterror.value = false
   fetch(configurationStore.targetNameUrl + `${targetName.value}?target_type=sidereal`)
@@ -321,11 +333,22 @@ watch(
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
           <h3>What would you like to Observe?</h3>
           <p>Choose a type of target to see suggestions</p>
-          <div class="buttons are-medium">
-            <button class="button is-fullwidth" @click="setSuggestionType('galaxies')">Galaxy</button>
-            <button class="button is-fullwidth" @click="setSuggestionType('nebulae')">Nebula</button>
-            <button class="button is-fullwidth" @click="setSuggestionType('clusters')">Star Cluster</button>
+          <div v-for="category in categories" :key="category.location" class="content">
+          <h4>{{ category.location }}</h4>
+          <div class="buttons">
+            <a
+              v-for="option in category.options"
+              :key="option.shortname"
+              @click="setSuggestionType(option.shortname)"
+              class="button suggestion"
+            >
+            <span>
+              <img :src=option.icon alt='icon' />
+            </span>
+            <span>{{ option.name }}</span>
+          </a>
           </div>
+        </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
           <div v-if="!suggestionTargetSet">
