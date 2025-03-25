@@ -14,6 +14,8 @@ const selectedProposal = ref()
 
 // Handle each target update and store it in the array
 const handleTargetUpdate = (target) => {
+  console.log('handleTargetUpdate received target:', target)
+
   const existingTarget = targetsData.value.find(t => t.name === target.name)
   if (existingTarget) {
     // Update the existing target's RA/Dec if the name matches
@@ -30,6 +32,7 @@ const handleTargetUpdate = (target) => {
 }
 
 const handleExposuresUpdate = (exposures) => {
+  console.log('handleExposuresUpdate received exposures:', exposures)
   const activeTarget = targetsData.value[targetsData.value.length - 1]
   if (activeTarget) {
     activeTarget.exposures = exposures
