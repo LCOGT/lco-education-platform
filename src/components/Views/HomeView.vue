@@ -9,7 +9,7 @@ function hideView () {
 }
 </script>
 <template>
-<section class="hero highlight">
+<section class="hero grey-bg">
     <button class="delete" aria-label="delete" @click="hideView"></button>
     <div class="container">
         <div class="hero-body">

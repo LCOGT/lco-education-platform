@@ -123,3 +123,76 @@ export function calculateVisibleTargets (targets, lat, lon) {
   }
   return visible_targets
 }
+
+function calculateSunPosition (date) {
+  const rad = Math.PI / 180
+  const eclipticLongitude = (280.46646 + 0.9856474 * (juliandate(date) - 2451545)) % 360
+  const meanAnomaly = (357.52911 + 0.98560028 * (juliandate(date) - 2451545)) % 360
+  const sunEqOfCenter = 1.914602 * Math.sin(meanAnomaly * rad) + 0.019993 * Math.sin(2 * meanAnomaly * rad) + 0.000289 * Math.sin(3 * meanAnomaly * rad)
+  const trueLongitude = eclipticLongitude + sunEqOfCenter
+  const obliquityOfEcliptic = 23.439 - 0.00000036 * (juliandate(date) - 2451545)
+  const ra = Math.atan2(Math.cos(obliquityOfEcliptic * rad) * Math.sin(trueLongitude * rad), Math.cos(trueLongitude * rad)) / rad
+  const dec = Math.asin(Math.sin(obliquityOfEcliptic * rad) * Math.sin(trueLongitude * rad)) / rad
+  return { ra: (ra + 360) % 360, dec }
+}
+
+export function calculateMoonPosition (date) {
+  const rad = Math.PI / 180
+  const eclipticLongitude = (218.32 + 481267.881 * (juliandate(date) - 2451553)) % 360
+  const meanAnomaly = (134.9 + 477198.85 * (juliandate(date) - 2451553)) % 360
+  const moonEqOfCenter = 1.4979 * Math.sin(meanAnomaly * rad) + 0.0753 * Math.sin(2 * meanAnomaly * rad) + 0.0032 * Math.sin(3 * meanAnomaly * rad)
+  const trueLongitude = eclipticLongitude + moonEqOfCenter
+  const obliquityOfEcliptic = 23.439 - 0.00000036 * (juliandate(date) - 2451545)
+  const ra = Math.atan2(Math.cos(obliquityOfEcliptic * rad) * Math.sin(trueLongitude * rad), Math.cos(trueLongitude * rad)) / rad
+  const dec = Math.asin(Math.sin(obliquityOfEcliptic * rad) * Math.sin(trueLongitude * rad)) / rad
+  return { ra: (ra + 360) % 360, dec }
+}
+
+function isSunOutOfRange (lng, sun) {
+  const distance = Math.abs(lng - sun)
+  if ((distance < 60) || (distance > 300)) {
+    return false
+  } else {
+    return true
+  }
+}
+
+export function calculateSchedulableTargets (targets, start, end) {
+  let visible_targets = {}
+  const nebulae = []
+  const galaxies = []
+  const supernovae = []
+  const clusters = []
+  const other = []
+
+  const ra_sun_start = calculateSunPosition(start)
+  const starttargets = targets.filter(target => isSunOutOfRange(target.ra, ra_sun_start.ra))
+  const ra_sun_end = calculateSunPosition(end)
+  const endtargets = targets.filter(target => isSunOutOfRange(target.ra, ra_sun_end.ra))
+
+  const commonTargets = starttargets.filter(target =>
+    endtargets.some(endTarget => endTarget.id === target.id)
+  )
+  /* RESET THE LENGTH TO targets.length */
+  for (let i = 0; i < commonTargets.length; i++) {
+    if (targets[i].avmcode.startsWith('5')) {
+      galaxies.push(targets[i])
+    } else if (targets[i].avmcode.startsWith('4.1.4')) {
+      supernovae.push(targets[i])
+    } else if (targets[i].avmcode.startsWith('4')) {
+      nebulae.push(targets[i])
+    } else if (targets[i].avmcode.startsWith('3.6')) {
+      clusters.push(targets[i])
+    } else {
+      other.push(targets[i])
+    }
+  }
+  visible_targets = {
+    'nebulae': nebulae,
+    'galaxies': galaxies,
+    'supernovae': supernovae,
+    'clusters': clusters,
+    'other': other
+  }
+  return visible_targets
+}
