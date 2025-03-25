@@ -14,6 +14,7 @@ const operatorValue = ref('')
 const displayButton = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
+  console.log('Exposures:', exposures)
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
 
   return exposuresArray.map(exposure => ({
@@ -80,6 +81,26 @@ const createRequest = (target, exposures, startDate, endDate) => ({
   }
 })
 
+const getProjectName = () => {
+  let targetName = ''
+  if (observationData.value.target) {
+    targetName = observationData.value.target.name || ''
+  } else if (observationData.value.targets && observationData.value.targets.length) {
+    targetName = observationData.value.targets[0].name || ''
+  }
+  if (!targetName) {
+    const ra = observationData.value.target
+      ? observationData.value.target.ra
+      : observationData.value.targets[0].ra
+    const dec = observationData.value.target
+      ? observationData.value.target.dec
+      : observationData.value.targets[0].dec
+    targetName = `${ra}_${dec}`
+  }
+  console.log('Project name:', `${targetName}_${observationData.value.startDate.split('T')[0]}`)
+  return `${targetName}_${observationData.value.startDate.split('T')[0]}`
+}
+
 const sendObservationRequest = async () => {
   if (observationData.value) {
     console.log('Sending observation request:', observationData.value)
@@ -87,12 +108,14 @@ const sendObservationRequest = async () => {
 
     // Handle single target
     if (observationData.value.target) {
+      console.log('Single target:', observationData.value.target)
       const { target, settings, startDate, endDate } = observationData.value
       requestList.push(createRequest(target, settings, startDate, endDate))
     }
 
     // Handle multiple targets
     if (observationData.value.targets) {
+      console.log('Multiple targets:', observationData.value.targets)
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target => createRequest(target, target.exposures, startDate, endDate)))
     }
@@ -109,7 +132,7 @@ const sendObservationRequest = async () => {
       body: {
         // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
         // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
-        'name': `${observationData.value.target.name}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.targets[0].name}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.target.ra}_${observationData.value.target.dec}_${observationData.value.startDate.split('T')[0]}` || `${observationData.value.targets[0].ra}_${observationData.value.targets[0].dec}_${observationData.value.startDate.split('T')[0]}`,
+        'name': getProjectName(),
         'proposal': observationData.value.proposal,
         'ipp_value': 1.05,
         'operator': operatorValue.value,

@@ -36,19 +36,19 @@ const settings = reactive({
 })
 
 const exposureEnabled = computed(() => {
-  return !props.showTitleField || (targetList.value[activeTargetIndex.value]?.ra !== '' && targetList.value[activeTargetIndex.value]?.dec !== '')
+  return !props.showTitleField || (targetInput.ra !== '' && targetInput.dec !== '')
 })
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
 const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
 
 function clearTargetName () {
-  targetList.value[activeTargetIndex.value].name = ''
+  targetInput.name = ''
 }
 
 // Fetch RA and Dec based on the target name
 function getRaDecFromTargetName () {
-  const targetName = targetList.value[activeTargetIndex.value].name.trim()
+  const targetName = targetInput.name
 
   if (!targetName) {
     targetError.value = 'Please enter a target name.'
@@ -61,29 +61,45 @@ function getRaDecFromTargetName () {
       if (data.ra && data.dec) {
         const ra = parseFloat(data.ra_d).toFixed(3)
         const dec = parseFloat(data.dec_d).toFixed(3)
+        targetInput.ra = Number(ra)
+        targetInput.dec = Number(dec)
+        targetList.value[activeTargetIndex.value].name = targetInput.name
         targetList.value[activeTargetIndex.value].ra = Number(ra)
         targetList.value[activeTargetIndex.value].dec = Number(dec)
         targetError.value = ''
         isTargetConfirmed.value = true
-        handleTargetChange()
+        // handleTargetChange()
       } else {
         targetError.value = 'Target not found, try another target.'
-        targetList.value[activeTargetIndex.value].ra = ''
-        targetList.value[activeTargetIndex.value].dec = ''
+        targetInput.ra = ''
+        targetInput.dec = ''
         isTargetConfirmed.value = false
       }
     })
     .catch(() => {
       targetError.value = 'Error fetching target details. Try again later.'
-      targetList.value[activeTargetIndex.value].ra = ''
-      targetList.value[activeTargetIndex.value].dec = ''
+      targetInput.ra = ''
+      targetInput.dec = ''
       isTargetConfirmed.value = false
     })
 }
+// Add this alongside your existing reactive definitions
+const targetInput = reactive({
+  name: '',
+  ra: '',
+  dec: ''
+})
 
-// Add a new exposure to the current target
+// Add an exposure to the active target
 const addExposure = () => {
   if (addExposuresEnabled.value) {
+    console.log('Before addExposure, targetInput:', { ...targetInput })
+    // Commit the current input values to the targetList entry,
+    // ensuring RA/Dec are stored as numbers.
+    targetList.value[activeTargetIndex.value].name = targetInput.name || `${targetInput.ra}_${targetInput.dec}`
+    targetList.value[activeTargetIndex.value].ra = targetInput.ra !== '' ? Number(targetInput.ra) : null
+    targetList.value[activeTargetIndex.value].dec = targetInput.dec !== '' ? Number(targetInput.dec) : null
+    console.log('After commit, targetList[activeTargetIndex]:', targetList.value[activeTargetIndex.value])
     targetList.value[activeTargetIndex.value].exposures.push({
       filter: settings.filter,
       filterName: filterList.value.find(f => f.code === settings.filter)?.name || '',
@@ -93,25 +109,45 @@ const addExposure = () => {
     settings.filter = ''
     settings.exposureTime = ''
     settings.count = ''
+
     emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
+    emits('targetUpdated', {
+      name: targetList.value[activeTargetIndex.value].name,
+      ra: targetList.value[activeTargetIndex.value].ra,
+      dec: targetList.value[activeTargetIndex.value].dec
+    })
   }
 }
 
 // Add a new target with empty exposure settings
 const addTarget = () => {
   targetList.value.push({ name: '', exposures: [], ra: '', dec: '' })
+  targetInput.name = ''
+  targetInput.ra = ''
+  targetInput.dec = ''
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
 }
 
-const handleTargetChange = () => {
-  const targetData = {
-    name: targetList.value[activeTargetIndex.value].name,
-    ra: targetList.value[activeTargetIndex.value].ra,
-    dec: targetList.value[activeTargetIndex.value].dec
-  }
-  emits('targetUpdated', targetData)
-}
+// const handleTargetChange = () => {
+//   const targetData = {
+//     name: targetList.value[activeTargetIndex.value].name ? targetList.value[activeTargetIndex.value].name : `${targetList.value[activeTargetIndex.value].ra}_${targetList.value[activeTargetIndex.value].dec}`,
+//     ra: targetList.value[activeTargetIndex.value].ra,
+//     dec: targetList.value[activeTargetIndex.value].dec
+//   }
+//   emits('targetUpdated', targetData)
+// }
+
+// const handleTargetChange = () => {
+//   const currentTarget = targetList.value[activeTargetIndex.value]
+//   const targetData = {
+//     name: currentTarget.name ? currentTarget.name : `${currentTarget.ra}_${currentTarget.dec}`,
+//     ra: currentTarget.ra,
+//     dec: currentTarget.dec
+//   }
+//   console.log('handleTargetChange emits:', targetData)
+//   emits('targetUpdated', targetData)
+// }
 
 // Function to display exposures for a target as a concatenated string
 const formatExposures = (exposures) => {
@@ -131,7 +167,7 @@ onMounted(async () => {
       <div v-if="targetList.length > 1">
         <div v-for="(target, index) in targetList" :key="index">
           <div v-if="index !== activeTargetIndex && target.exposures.length > 0">
-            {{ target.name }}: {{ formatExposures(target.exposures) }}
+            {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
           </div>
         </div>
       </div>
@@ -147,7 +183,7 @@ onMounted(async () => {
               <div class="control">
                 <input
                   id="target-list"
-                  v-model="targetList[activeTargetIndex].name"
+                  v-model="targetInput.name"
                   class="scheduling-inputs input"
                   placeholder="Enter target"
                 />
@@ -164,7 +200,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="text" v-model="targetList[activeTargetIndex].ra" @input="clearTargetName" class="scheduling-inputs input"/>
+                <input type="number" v-model="targetInput.ra" @input="clearTargetName" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -176,7 +212,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="text" v-model="targetList[activeTargetIndex].dec" @input="clearTargetName" class="scheduling-inputs input"/>
+                <input type="number" v-model="targetInput.dec" @input="clearTargetName" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -203,7 +239,7 @@ onMounted(async () => {
           <div class="field is-narrow">
             <div class="control" :class="{ disabled: !exposureEnabled }">
               <div class="select is-fullwidth">
-                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField) || !exposureEnabled">
+                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField && targetInput.name) || !exposureEnabled">
                   <option disabled value="">Choose a filter</option>
                     <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
                       {{ filter.name }}
