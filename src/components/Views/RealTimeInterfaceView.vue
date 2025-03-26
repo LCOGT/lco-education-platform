@@ -18,6 +18,9 @@ const selectedSession = realTimeSessionsStore.currentSession
 const site = computed(() => sites[selectedSession.site]?.name)
 const telescope = computed(() => telname[selectedSession.telescope])
 
+const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
+const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
+
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
@@ -44,6 +47,8 @@ function countdown () {
     }
   }, 1000)
 }
+
+const telescopeMessage = `The telescope is ${availability.value} because of ${reason.value}`
 
 watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
@@ -83,6 +88,7 @@ onMounted(async () => {
           <h2>Session Not Started</h2>
           <p><span class="green-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
           <p>You are controlling the <strong>{{ telescope }}</strong> telescope in <strong>{{ site }}</strong></p>
+          <p>{{ telescopeMessage }}</p>
           <SessionPending/>
         </div>
        <div v-else-if="(realTimeSessionsStore.currentStatus === 'ACTIVE' || configurationStore.demo == true)" class="content">
@@ -91,6 +97,7 @@ onMounted(async () => {
             <span class="green-bg px-2 py-2">Time Remaining in session: {{ formatCountdown(timeRemaining) }}</span>
           </p>
           <p>You are controlling the <strong>{{ telescope }}</strong> telescope in <strong>{{ site }}</strong></p>
+          <p>{{ telescopeMessage }}</p>
           <SessionStarted/>
         </div>
        <div v-else-if="timeRemaining <= 0 && (realTimeSessionsStore.currentStatus === 'EXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE')">
