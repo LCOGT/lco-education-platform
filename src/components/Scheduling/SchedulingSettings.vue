@@ -55,7 +55,6 @@ function clearTargetName () {
 
 // Fetch RA and Dec based on the target name
 function getRaDecFromTargetName () {
-  console.log('HELLOOOOOO')
   const targetName = targetInput.name
 
   if (!targetName) {
