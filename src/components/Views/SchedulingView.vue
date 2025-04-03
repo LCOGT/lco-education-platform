@@ -1,10 +1,11 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
-import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
+import DashboardView from './DashboardView.vue'
+import router from '@/router'
 
 // TO DO (future): Get level depending on course completion
 const level = ref('')
@@ -14,7 +15,6 @@ const operatorValue = ref('')
 const displayButton = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
-  console.log('Exposures:', exposures)
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
 
   return exposuresArray.map(exposure => ({
@@ -97,25 +97,21 @@ const getProjectName = () => {
       : observationData.value.targets[0].dec
     targetName = `${ra}_${dec}`
   }
-  console.log('Project name:', `${targetName}_${observationData.value.startDate.split('T')[0]}`)
   return `${targetName}_${observationData.value.startDate.split('T')[0]}`
 }
 
 const sendObservationRequest = async () => {
   if (observationData.value) {
-    console.log('Sending observation request:', observationData.value)
     const requestList = []
 
     // Handle single target
     if (observationData.value.target) {
-      console.log('Single target:', observationData.value.target)
       const { target, settings, startDate, endDate } = observationData.value
       requestList.push(createRequest(target, settings, startDate, endDate))
     }
 
     // Handle multiple targets
     if (observationData.value.targets) {
-      console.log('Multiple targets:', observationData.value.targets)
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target => createRequest(target, target.exposures, startDate, endDate)))
     }
@@ -141,6 +137,7 @@ const sendObservationRequest = async () => {
       },
       successCallback: () => {
         showScheduled.value = true
+        router.push('/dashboard')
       },
       failCallback: (error) => {
         console.error('Error requesting observation:', error)
@@ -192,7 +189,7 @@ const resetView = () => {
       <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
     <div v-if="showScheduled">
-      <ScheduledObservations />
+      <DashboardView />
     </div>
     </div>
   </section>
