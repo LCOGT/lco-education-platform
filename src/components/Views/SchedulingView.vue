@@ -5,7 +5,7 @@ import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
-import router from '@/router'
+import { useRouter } from 'vue-router'
 
 // TO DO (future): Get level depending on course completion
 const level = ref('')
@@ -13,6 +13,7 @@ const observationData = ref(null)
 const showScheduled = ref(false)
 const operatorValue = ref('')
 const displayButton = ref(false)
+const router = useRouter()
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]

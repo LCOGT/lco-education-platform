@@ -55,6 +55,7 @@ function clearTargetName () {
 
 // Fetch RA and Dec based on the target name
 function getRaDecFromTargetName () {
+  console.log('HELLOOOOOO')
   const targetName = targetInput.name
 
   if (!targetName) {
@@ -73,6 +74,7 @@ function getRaDecFromTargetName () {
         targetList.value[activeTargetIndex.value].name = targetInput.name
         targetList.value[activeTargetIndex.value].ra = Number(ra)
         targetList.value[activeTargetIndex.value].dec = Number(dec)
+        console.log('targetList', targetList.value)
         targetError.value = ''
         isTargetConfirmed.value = true
         // handleTargetChange()

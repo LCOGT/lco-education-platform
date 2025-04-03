@@ -5,7 +5,7 @@ import { fetchApiCall } from '../../../utils/api.js'
 import { createTestStores } from '../../../utils/testUtils'
 import flushPromises from 'flush-promises'
 
-vi.mock('@/utils/api.js', () => ({
+vi.mock('../../../utils/api.js', () => ({
   fetchApiCall: vi.fn()
 }))
 
