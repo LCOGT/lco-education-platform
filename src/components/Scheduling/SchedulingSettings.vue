@@ -16,10 +16,16 @@ const props = defineProps({
   target: {
     type: String,
     default: ''
+  },
+  ra: {
+    type: Number
+  },
+  dec: {
+    type: Number
   }
 })
 
-const emits = defineEmits(['exposuresUpdated', 'targetUpdated'])
+const emits = defineEmits(['exposuresUpdated', 'targetUpdated', 'updateDisplay'])
 
 const configurationStore = useConfigurationStore()
 
@@ -28,6 +34,7 @@ const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
 const filterList = ref([])
+const currentStep = ref(1)
 
 const settings = reactive({
   filter: '',
@@ -93,13 +100,11 @@ const targetInput = reactive({
 // Add an exposure to the active target
 const addExposure = () => {
   if (addExposuresEnabled.value) {
-    console.log('Before addExposure, targetInput:', { ...targetInput })
     // Commit the current input values to the targetList entry,
-    // ensuring RA/Dec are stored as numbers.
-    targetList.value[activeTargetIndex.value].name = targetInput.name || `${targetInput.ra}_${targetInput.dec}`
+    // ensuring RA/Dec are stored as numbers
+    targetList.value[activeTargetIndex.value].name = props.target || targetInput.name || `${targetInput.ra}_${targetInput.dec}`
     targetList.value[activeTargetIndex.value].ra = targetInput.ra !== '' ? Number(targetInput.ra) : null
     targetList.value[activeTargetIndex.value].dec = targetInput.dec !== '' ? Number(targetInput.dec) : null
-    console.log('After commit, targetList[activeTargetIndex]:', targetList.value[activeTargetIndex.value])
     targetList.value[activeTargetIndex.value].exposures.push({
       filter: settings.filter,
       filterName: filterList.value.find(f => f.code === settings.filter)?.name || '',
@@ -127,32 +132,44 @@ const addTarget = () => {
   targetInput.dec = ''
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
+  currentStep.value = 1
 }
-
-// const handleTargetChange = () => {
-//   const targetData = {
-//     name: targetList.value[activeTargetIndex.value].name ? targetList.value[activeTargetIndex.value].name : `${targetList.value[activeTargetIndex.value].ra}_${targetList.value[activeTargetIndex.value].dec}`,
-//     ra: targetList.value[activeTargetIndex.value].ra,
-//     dec: targetList.value[activeTargetIndex.value].dec
-//   }
-//   emits('targetUpdated', targetData)
-// }
-
-// const handleTargetChange = () => {
-//   const currentTarget = targetList.value[activeTargetIndex.value]
-//   const targetData = {
-//     name: currentTarget.name ? currentTarget.name : `${currentTarget.ra}_${currentTarget.dec}`,
-//     ra: currentTarget.ra,
-//     dec: currentTarget.dec
-//   }
-//   console.log('handleTargetChange emits:', targetData)
-//   emits('targetUpdated', targetData)
-// }
 
 // Function to display exposures for a target as a concatenated string
 const formatExposures = (exposures) => {
   return exposures.map(exposure => `${exposure.filterName} - ${exposure.exposureTime}s x ${exposure.count}`).join(', ')
 }
+
+const nextStep = () => {
+  if (currentStep.value === 1) {
+    currentStep.value = 2
+  } else if (currentStep.value === 2) {
+    currentStep.value = 3
+  }
+  emits('updateDisplay', currentStep.value)
+}
+
+const previousStep = () => {
+  if (currentStep.value === 2) {
+    currentStep.value = 1
+  } else if (currentStep.value === 3) {
+    currentStep.value = 2
+  }
+  emits('updateDisplay', currentStep.value)
+}
+
+const disableNextStep = computed(() => {
+  if (currentStep.value === 1) {
+    return !targetInput.ra || !targetInput.dec
+  } else if (currentStep.value === 2) {
+    return !targetList.value[activeTargetIndex.value].exposures.length
+  }
+  return false
+})
+
+const buttonVisibility = computed(() => {
+  return props.showProjectField && currentStep.value !== 3
+})
 
 onMounted(async () => {
   filterList.value = await getFilterList()
@@ -164,16 +181,17 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <div v-if="targetList.length > 1">
+      <div v-if="(targetList.length > 1 && currentStep === 2)">
         <div v-for="(target, index) in targetList" :key="index">
           <div v-if="index !== activeTargetIndex && target.exposures.length > 0">
+
             {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
           </div>
         </div>
       </div>
 
       <!-- Target input -->
-      <div v-if="showTitleField" class="input-wrapper">
+      <div v-if="showTitleField && currentStep === 1" class="input-wrapper">
         <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label for="target-list" class="label">Target</label>
@@ -218,11 +236,10 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
     </div>
     <div class="column is-one-third">
       <!-- Render saved exposures for the active target -->
-      <div v-if="targetList[activeTargetIndex].exposures.length > 0">
+      <div v-if="(targetList[activeTargetIndex].exposures.length > 0 && currentStep === 2) || (props.target && targetList[activeTargetIndex].exposures.length > 0)">
         <div class="highlight-box">
           <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
           {{ targetList[activeTargetIndex].name || props.target }}: {{ formatExposures(targetList[activeTargetIndex].exposures) }}
@@ -230,7 +247,7 @@ onMounted(async () => {
       </div>
 
       <!-- Exposure settings -->
-
+      <div v-if="props.target || currentStep === 2">
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Filter</label>
@@ -273,7 +290,11 @@ onMounted(async () => {
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
+      <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+      </div>
       <!-- Add another target button -->
     </div>
+    <v-btn color="indigo" @click="previousStep" v-if="currentStep !==1">Go back</v-btn>
+    <v-btn color="indigo" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>
 </template>
