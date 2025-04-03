@@ -33,7 +33,6 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       return state.isCapturingImagesMap[state.currentSessionId] || false
     },
     telescopeAvailability (state) {
-      console.log('telescopeState:', state.telescopeState)
       return state.telescopeState
     }
   },

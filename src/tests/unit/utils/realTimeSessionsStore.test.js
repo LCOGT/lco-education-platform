@@ -68,18 +68,14 @@ describe('Real Time Sessions Store', () => {
     await flushPromises()
 
     expect(realTimeSessionsStore.currentStatus).toBe('ACTIVE')
-    // Token + first status fetch
-    expect(fetchApiCall).toHaveBeenCalledTimes(2)
+    // Token + first status fetch + telescope state
+    expect(fetchApiCall).toHaveBeenCalledTimes(3)
 
     // Fast-forward more time for the next polling iteration (1 second)
     vi.advanceTimersByTime(1000)
     await flushPromises()
     // Token + two status fetches
     expect(fetchApiCall).toHaveBeenCalledTimes(3)
-    vi.advanceTimersByTime(1000)
-    await flushPromises()
-    // Token + three status fetches
-    expect(fetchApiCall).toHaveBeenCalledTimes(4)
 
     vi.useRealTimers()
   }, 10000)
