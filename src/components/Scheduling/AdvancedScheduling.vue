@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
@@ -14,8 +14,6 @@ const selectedProposal = ref()
 
 // Handle each target update and store it in the array
 const handleTargetUpdate = (target) => {
-  console.log('handleTargetUpdate received target:', target)
-
   const existingTarget = targetsData.value.find(t => t.name === target.name)
   if (existingTarget) {
     // Update the existing target's RA/Dec if the name matches
@@ -32,12 +30,16 @@ const handleTargetUpdate = (target) => {
 }
 
 const handleExposuresUpdate = (exposures) => {
-  console.log('handleExposuresUpdate received exposures:', exposures)
-  const activeTarget = targetsData.value[targetsData.value.length - 1]
-  if (activeTarget) {
-    activeTarget.exposures = exposures
-  }
-  emitSelections()
+  // Use nextTick to wait for target update
+  nextTick(() => {
+    const activeTarget = targetsData.value[targetsData.value.length - 1]
+    if (activeTarget) {
+      activeTarget.exposures = exposures
+    } else {
+      return
+    }
+    emitSelections()
+  })
 }
 
 const handleDateRangeUpdate = (dateRange) => {
@@ -62,6 +64,12 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
+const step = ref(1)
+
+const handleDisplay = (display) => {
+  step.value = display
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
@@ -71,14 +79,15 @@ onMounted(() => {
 
 <template>
   <h2>Request an Observation</h2>
-  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
+  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <SchedulingSettings
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
+    @updateDisplay="handleDisplay"
   />
-  <Calendar @updateDateRange="handleDateRangeUpdate" />
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===3"/>
 </template>
 
 <style scoped>
