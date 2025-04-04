@@ -163,6 +163,7 @@ const resetView = () => {
   showScheduled.value = false
   operatorValue.value = ''
   displayButton.value = false
+  errorMessage.value = ''
 }
 
 </script>
