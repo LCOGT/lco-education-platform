@@ -14,6 +14,7 @@ const showScheduled = ref(false)
 const operatorValue = ref('')
 const displayButton = ref(false)
 const router = useRouter()
+const errorMessage = ref('')
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -141,7 +142,8 @@ const sendObservationRequest = async () => {
         router.push('/dashboard')
       },
       failCallback: (error) => {
-        console.error('Error requesting observation:', error)
+        showScheduled.value = false
+        errorMessage.value = error.requests[0].non_field_errors[0]
       }
     })
   }
@@ -184,14 +186,17 @@ const resetView = () => {
         <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
-    <div v-else-if="level === 'advanced' && !showScheduled">
-      <AdvancedScheduling @selectionsComplete="handleUserSelections" />
-      <v-btn color="indigo" @click="resetView">Restart</v-btn>
-      <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
-    </div>
-    <div v-if="showScheduled">
-      <DashboardView />
-    </div>
+      <div v-else-if="level === 'advanced' && !showScheduled">
+        <AdvancedScheduling @selectionsComplete="handleUserSelections" />
+        <div v-if="errorMessage && !showScheduled">
+          <p class="error-message">Error: {{ errorMessage }}</p>
+        </div>
+        <v-btn color="indigo" @click="resetView">Restart</v-btn>
+        <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+      </div>
+      <div v-if="showScheduled">
+        <DashboardView />
+      </div>
     </div>
   </section>
 </template>
