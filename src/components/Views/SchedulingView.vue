@@ -15,6 +15,8 @@ const operatorValue = ref('')
 const displayButton = ref(false)
 const router = useRouter()
 const errorMessage = ref('')
+// Used to clear error message when going back to previous display
+const previousDisplay = ref(null)
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -143,7 +145,10 @@ const sendObservationRequest = async () => {
       },
       failCallback: (error) => {
         showScheduled.value = false
-        errorMessage.value = error.requests[0].non_field_errors[0]
+        errorMessage.value = error.requests
+          .map(request => request.non_field_errors)
+          .flat()
+          .join(', ')
       }
     })
   }
@@ -156,6 +161,13 @@ const handleUserSelections = (data) => {
 const enableButton = computed(() => {
   return observationData.value && observationData.value.settings.length > 0
 })
+// Clears errorMessage if the new display value is less than the previous one (i.e. going back)
+const handleDisplay = (display) => {
+  if (previousDisplay.value !== null && display < previousDisplay.value) {
+    errorMessage.value = ''
+  }
+  previousDisplay.value = display
+}
 
 const resetView = () => {
   level.value = ''
@@ -188,7 +200,10 @@ const resetView = () => {
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
-        <AdvancedScheduling @selectionsComplete="handleUserSelections" />
+        <AdvancedScheduling
+        @selectionsComplete="handleUserSelections"
+        @updateDisplay="handleDisplay"
+        />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>

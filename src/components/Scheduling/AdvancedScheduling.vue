@@ -68,6 +68,7 @@ const step = ref(1)
 
 const handleDisplay = (display) => {
   step.value = display
+  emits('updateDisplay', display)
 }
 
 onMounted(() => {
