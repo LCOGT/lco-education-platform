@@ -53,6 +53,15 @@ function clearTargetName () {
   targetInput.name = ''
 }
 
+function updateTarget () {
+  emits('targetUpdated', {
+    index: activeTargetIndex.value,
+    name: targetInput.name || `${targetInput.ra}_${targetInput.dec}`,
+    ra: targetInput.ra,
+    dec: targetInput.dec
+  })
+}
+
 // Fetch RA and Dec based on the target name
 function getRaDecFromTargetName () {
   const targetName = targetInput.name
@@ -75,7 +84,6 @@ function getRaDecFromTargetName () {
         targetList.value[activeTargetIndex.value].dec = Number(dec)
         targetError.value = ''
         isTargetConfirmed.value = true
-        // handleTargetChange()
       } else {
         targetError.value = 'Target not found, try another target.'
         targetInput.ra = ''
@@ -171,24 +179,50 @@ const buttonVisibility = computed(() => {
   return props.showProjectField && currentStep.value !== 3
 })
 
+function editTarget (index) {
+  // Set the selected target as the active one for editing
+  activeTargetIndex.value = index
+  console.log('index', index)
+  // Copy the target's current values into targetInput so the form is pre-filled.
+  targetInput.name = targetList.value[index].name
+  targetInput.ra = targetList.value[index].ra
+  targetInput.dec = targetList.value[index].dec
+  // Optionally, you can set a flag or reset errors if needed:
+  isTargetConfirmed.value = true
+  targetError.value = ''
+  // If you want to force the user back to the target input form:
+  currentStep.value = 1
+}
+
 onMounted(async () => {
   filterList.value = await getFilterList()
 })
 
+const filteredTargets = computed(() => {
+  return targetList.value.filter(target => target.exposures.length > 0)
+})
 </script>
 
 <template>
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <div v-if="(targetList.length > 1 && currentStep === 2)">
+      <!-- <div v-if="(targetList.length > 1 && currentStep === 2)">
         <div v-for="(target, index) in targetList" :key="index">
           <div v-if="index !== activeTargetIndex && target.exposures.length > 0">
-
-            {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
+           {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
+           <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
           </div>
         </div>
-      </div>
+      </div> -->
+      <!-- Render all saved targets and exposures when currentStep is 2 -->
+      <div v-if="currentStep === 2">
+  <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
+    <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
+    {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
+    <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
+  </div>
+</div>
 
       <!-- Target input -->
       <div v-if="showTitleField && currentStep === 1" class="input-wrapper">
@@ -202,6 +236,7 @@ onMounted(async () => {
                 <input
                   id="target-list"
                   v-model="targetInput.name"
+                  @blur="updateTarget()"
                   class="scheduling-inputs input"
                   placeholder="Enter target"
                 />
@@ -218,7 +253,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="number" v-model="targetInput.ra" @input="clearTargetName" class="scheduling-inputs input"/>
+                <input type="number" v-model="targetInput.ra" @input="() => { clearTargetName(); updateTarget() }" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -230,7 +265,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="number" v-model="targetInput.dec" @input="clearTargetName" class="scheduling-inputs input"/>
+                <input type="number" v-model="targetInput.dec" @input="() => { clearTargetName(); updateTarget() }" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
