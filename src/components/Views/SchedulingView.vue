@@ -44,6 +44,7 @@ const createRequest = (target, exposures, startDate, endDate) => ({
   'configurations': [
     {
       'type': 'EXPOSE',
+      // TO DO: allow users to select instrument type based on the time they have available for each instrument
       'instrument_type': '0M4-SCICAM-QHY600',
       'instrument_configs': createInstrumentConfigs(exposures),
       'acquisition_config': {
