@@ -12,19 +12,28 @@ const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref()
 
-// Handle each target update and store it in the array
-const handleTargetUpdate = (target) => {
-  const existingTarget = targetsData.value.find(t => t.name === target.name)
-  if (existingTarget) {
-    // Update the existing target's RA/Dec if the name matches
-    existingTarget.ra = target.ra
-    existingTarget.dec = target.dec
+const handleTargetUpdate = (targetUpdate) => {
+  // If an index was passed and it exists in targetsData, update that entry.
+  if (targetsData.value[targetUpdate.index]) {
+    targetsData.value[targetUpdate.index] = {
+      ...targetsData.value[targetUpdate.index],
+      name: targetUpdate.name,
+      ra: targetUpdate.ra,
+      dec: targetUpdate.dec
+    }
   } else {
-    // Push new target if it doesn't exist in the array
-    targetsData.value.push({
-      ...target,
-      exposures: []
-    })
+    // Fallback: look for an existing target with the same name and update it.
+    const existingTarget = targetsData.value.find(t => t.name === targetUpdate.name)
+    if (existingTarget) {
+      existingTarget.ra = targetUpdate.ra
+      existingTarget.dec = targetUpdate.dec
+    } else {
+      // If no match, push a new target.
+      targetsData.value.push({
+        ...targetUpdate,
+        exposures: []
+      })
+    }
   }
   emitSelections()
 }
