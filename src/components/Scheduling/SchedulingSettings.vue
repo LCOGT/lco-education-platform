@@ -36,6 +36,12 @@ const isTargetConfirmed = ref(false)
 const filterList = ref([])
 const currentStep = ref(1)
 
+const targetInput = reactive({
+  name: '',
+  ra: '',
+  dec: ''
+})
+
 const settings = reactive({
   filter: '',
   exposureTime: '',
@@ -48,6 +54,10 @@ const exposureEnabled = computed(() => {
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
 const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
+
+const filteredTargets = computed(() => {
+  return targetList.value.filter(target => target.exposures.length > 0)
+})
 
 function clearTargetName () {
   targetInput.name = ''
@@ -98,12 +108,6 @@ function getRaDecFromTargetName () {
       isTargetConfirmed.value = false
     })
 }
-// Add this alongside your existing reactive definitions
-const targetInput = reactive({
-  name: '',
-  ra: '',
-  dec: ''
-})
 
 // Add an exposure to the active target
 const addExposure = () => {
@@ -197,33 +201,19 @@ function editTarget (index) {
 onMounted(async () => {
   filterList.value = await getFilterList()
 })
-
-const filteredTargets = computed(() => {
-  return targetList.value.filter(target => target.exposures.length > 0)
-})
 </script>
 
 <template>
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <!-- <div v-if="(targetList.length > 1 && currentStep === 2)">
-        <div v-for="(target, index) in targetList" :key="index">
-          <div v-if="index !== activeTargetIndex && target.exposures.length > 0">
-           {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
-           <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
+        <div v-if="currentStep === 2">
+          <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
+            <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
+            {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
+            <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
           </div>
         </div>
-      </div> -->
-      <!-- Render all saved targets and exposures when currentStep is 2 -->
-      <div v-if="currentStep === 2">
-  <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
-    <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
-    {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
-    <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
-  </div>
-</div>
-
       <!-- Target input -->
       <div v-if="showTitleField && currentStep === 1" class="input-wrapper">
         <div class="field is-horizontal">
