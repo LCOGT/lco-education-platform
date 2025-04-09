@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import SchedulingView from '../../../components/Views/SchedulingView.vue'
 import { fetchApiCall } from '../../../utils/api.js'
@@ -21,7 +21,7 @@ describe('SchedulingView.vue', () => {
     fetchApiCall.mockClear()
     const { pinia } = createTestStores()
 
-    wrapper = mount(SchedulingView, {
+    wrapper = shallowMount(SchedulingView, {
       global: {
         plugins: [pinia],
         provide: {
@@ -119,12 +119,12 @@ describe('SchedulingView.vue', () => {
 
     await wrapper.vm.sendObservationRequest()
     await flushPromises()
-
+    const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
       body: {
-        name: 'Test Target_2025-04-03',
+        name: `Test Target_${YYYYMMDD}`,
         proposal: 'Test Proposal',
         ipp_value: 1.05,
         operator: 'SINGLE',
