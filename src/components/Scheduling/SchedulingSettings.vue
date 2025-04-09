@@ -186,15 +186,13 @@ const buttonVisibility = computed(() => {
 function editTarget (index) {
   // Set the selected target as the active one for editing
   activeTargetIndex.value = index
-  console.log('index', index)
   // Copy the target's current values into targetInput so the form is pre-filled.
   targetInput.name = targetList.value[index].name
   targetInput.ra = targetList.value[index].ra
   targetInput.dec = targetList.value[index].dec
-  // Optionally, you can set a flag or reset errors if needed:
   isTargetConfirmed.value = true
   targetError.value = ''
-  // If you want to force the user back to the target input form:
+  // Moving back to step one so user can edit target
   currentStep.value = 1
 }
 
@@ -211,7 +209,7 @@ onMounted(async () => {
           <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
             <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
             {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
-            <v-btn @click="editTarget(index)" color="indigo">Edit</v-btn>
+            <v-btn @click="editTarget(index)" color="indigo">Change Target</v-btn>
           </div>
         </div>
       <!-- Target input -->
@@ -263,13 +261,6 @@ onMounted(async () => {
       </div>
     </div>
     <div class="column is-one-third">
-      <!-- Render saved exposures for the active target -->
-      <div v-if="(targetList[activeTargetIndex].exposures.length > 0 && currentStep === 2) || (props.target && targetList[activeTargetIndex].exposures.length > 0)">
-        <div class="highlight-box">
-          <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
-          {{ targetList[activeTargetIndex].name || props.target }}: {{ formatExposures(targetList[activeTargetIndex].exposures) }}
-        </div>
-      </div>
 
       <!-- Exposure settings -->
       <div v-if="props.target || currentStep === 2">
