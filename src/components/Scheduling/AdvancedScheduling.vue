@@ -11,6 +11,7 @@ const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref()
+const step = ref(1)
 
 const handleTargetUpdate = (targetUpdate) => {
   // If an index was passed and it exists in targetsData, update that entry.
@@ -72,8 +73,6 @@ const emitSelections = () => {
 const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
-
-const step = ref(1)
 
 const handleDisplay = (display) => {
   step.value = display
