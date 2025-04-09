@@ -71,12 +71,11 @@ const login = async () => {
             </span>
           </div>
         </div>
-
+        <p v-if="errorMessage">{{ errorMessage }}</p>
         <div class="field is-grouped">
           <div class="control">
             <input type="submit" id="login-btn" class="button is-link" value="Log me in">
           </div>
-          <p v-if="errorMessage">You have entered an invalid username or password</p>
           <div class="control">
             <button class="button is-link is-light">Cancel</button>
           </div>
