@@ -17,6 +17,7 @@ const router = useRouter()
 const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
+const isSubmitting = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -107,6 +108,7 @@ const getProjectName = () => {
 
 const sendObservationRequest = async () => {
   if (observationData.value) {
+    isSubmitting.value = true
     const requestList = []
 
     // Handle single target
@@ -143,9 +145,11 @@ const sendObservationRequest = async () => {
       successCallback: () => {
         showScheduled.value = true
         router.push('/dashboard')
+        isSubmitting.value = false
       },
       failCallback: (error) => {
         showScheduled.value = false
+        isSubmitting.value = false
         errorMessage.value = error.requests
           .map(request => request.non_field_errors)
           .flat()
@@ -197,7 +201,7 @@ const resetView = () => {
     <div v-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -209,7 +213,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn :disabled="!observationData || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />
