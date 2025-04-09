@@ -205,11 +205,11 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-        <div v-if="currentStep === 2">
+        <div v-if="currentStep === 2 || props.target">
           <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
             <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
             {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
-            <v-btn @click="editTarget(index)" color="indigo">Change Target</v-btn>
+            <v-btn v-if="!props.target" @click="editTarget(index)" color="indigo">Change Target</v-btn>
           </div>
         </div>
       <!-- Target input -->
