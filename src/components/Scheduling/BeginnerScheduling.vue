@@ -37,12 +37,25 @@ const totalLoaded = ref(3)
 const allCategoryTargets = ref({})
 const currentStep = ref(1)
 
+const handleProposalSelection = (proposal) => {
+  // Only advance step if still on step 1
+  if (currentStep.value === 1) {
+    selectedProposal.value = proposal
+    nextStep()
+  } else {
+    // Just update the proposal without advancing steps
+    selectedProposal.value = proposal
+  }
+}
+
 const nextStep = () => {
   currentStep.value += 1
 }
 
 const previousStep = () => {
   loading.value = false
+  beginner.value = ''
+  exposureSettings.value = []
   // Prevents `Submit my request` button from showing when going back
   emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1
@@ -64,6 +77,17 @@ const categories = ref([
       { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
     ]
   }
+  // {
+  //   location: 'Our Solar System',
+  //   options: [
+  //     { object: 'The Moon', type: 'natural' },
+  //     { object: 'Jupiter', type: 'planet' },
+  //     { object: 'Saturn', type: 'planet' },
+  //     { object: 'Mars', type: 'planet' },
+  //     { object: 'Ceres', type: 'dwarf' },
+  //     { object: 'Halley\'s Comet', type: 'short-period' }
+  //   ]
+  // }
 ])
 
 const handleObjectSelection = (shortname, name) => {
@@ -191,8 +215,11 @@ onMounted(() => {
     <v-progress-circular indeterminate color="white" class="loading" />
   </template>
   <div class="container">
-    <div v-if="!dateRange || currentStep === 1">
-      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal; nextStep() }" />
+    <div v-if="currentStep === 1">
+      <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="handleProposalSelection" />
+    </div>
+    <div v-if="currentStep > 1" class="navigation-buttons">
+      <p v-if="selectedProposal">Selected Proposal: {{ selectedProposal }}</p>
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">
@@ -217,7 +244,7 @@ onMounted(() => {
     </div>
 
     <div v-if="displayedTargets && currentStep === 4">
-      <h3>Requesting an Observation of a <span class="blue">{{ objectSelected}}</span></h3>
+      <h3>Requesting an Observation of a <span class="blue">{{ objectSelected }}</span></h3>
       <div class="columns is-column-gap-3">
         <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
           <div class="card target-highlight is-clickable">
@@ -238,10 +265,10 @@ onMounted(() => {
       <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
         <h2>
           Requesting an observation of
-          <span v-if="objectSelection.targets"> a </span>
+          <span v-if="targetSelection"> a </span>
           <span class="selection blue">
-            {{ objectSelection.object }}
-            <span v-if="objectSelection.targets"> - {{ targetSelection.name }}</span>
+            {{ objectSelected }}
+            <span v-if="targetSelection"> - {{ targetSelection.name }}</span>
           </span>
         </h2>
         <p>How do you want to set up your observation?</p>
@@ -253,7 +280,6 @@ onMounted(() => {
             <button class="button" @click="useDefaults">I'm OK with Defaults</button>
           </p>
         </div>
-        <button class="button" @click="resetSelections">Different targets</button>
       </div>
       <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <h4>Photon Ranch will schedule this for you</h4>
@@ -295,14 +321,14 @@ onMounted(() => {
           :show-project-field="false"
           :show-title-field="false"
           :target="targetSelection?.name"
+          :ra="targetSelection?.ra"
+          :dec="targetSelection?.dec"
           @exposuresUpdated="handleExposuresUpdate"
         />
       </div>
     </div>
-    <div v-if="currentStep > 1" class="navigation-buttons">
-      <button @click="previousStep" class="button">Back</button>
-    </div>
   </div>
+  <button v-if="currentStep!==1" @click="previousStep" class="button">Previous Step</button>
 </template>
 <style scoped>
 .loading {

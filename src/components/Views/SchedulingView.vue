@@ -2,9 +2,10 @@
 import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
-import ScheduledObservations from '../Scheduling/ScheduledObservations.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
+import DashboardView from './DashboardView.vue'
+import { useRouter } from 'vue-router'
 
 // TO DO (future): Get level depending on course completion
 const level = ref('')
@@ -12,6 +13,11 @@ const observationData = ref(null)
 const showScheduled = ref(false)
 const operatorValue = ref('')
 const displayButton = ref(false)
+const router = useRouter()
+const errorMessage = ref('')
+// Used to clear error message when going back to previous display
+const previousDisplay = ref(null)
+const isSubmitting = ref(false)
 
 const createInstrumentConfigs = (exposures) => {
   const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
@@ -39,6 +45,7 @@ const createRequest = (target, exposures, startDate, endDate) => ({
   'configurations': [
     {
       'type': 'EXPOSE',
+      // TO DO: allow users to select instrument type based on the time they have available for each instrument
       'instrument_type': '0M4-SCICAM-QHY600',
       'instrument_configs': createInstrumentConfigs(exposures),
       'acquisition_config': {
@@ -80,8 +87,28 @@ const createRequest = (target, exposures, startDate, endDate) => ({
   }
 })
 
+const getProjectName = () => {
+  let targetName = ''
+  if (observationData.value.target) {
+    targetName = observationData.value.target.name || ''
+  } else if (observationData.value.targets && observationData.value.targets.length) {
+    targetName = observationData.value.targets[0].name || ''
+  }
+  if (!targetName) {
+    const ra = observationData.value.target
+      ? observationData.value.target.ra
+      : observationData.value.targets[0].ra
+    const dec = observationData.value.target
+      ? observationData.value.target.dec
+      : observationData.value.targets[0].dec
+    targetName = `${ra}_${dec}`
+  }
+  return `${targetName}_${observationData.value.startDate.split('T')[0]}`
+}
+
 const sendObservationRequest = async () => {
   if (observationData.value) {
+    isSubmitting.value = true
     const requestList = []
 
     // Handle single target
@@ -106,7 +133,9 @@ const sendObservationRequest = async () => {
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
       body: {
-        'name': 'UserObservation',
+        // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
+        // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
+        'name': getProjectName(),
         'proposal': observationData.value.proposal,
         'ipp_value': 1.05,
         'operator': operatorValue.value,
@@ -115,9 +144,16 @@ const sendObservationRequest = async () => {
       },
       successCallback: () => {
         showScheduled.value = true
+        router.push('/dashboard')
+        isSubmitting.value = false
       },
       failCallback: (error) => {
-        console.error('Error requesting observation:', error)
+        showScheduled.value = false
+        isSubmitting.value = false
+        errorMessage.value = error.requests
+          .map(request => request.non_field_errors)
+          .flat()
+          .join(', ')
       }
     })
   }
@@ -130,6 +166,22 @@ const handleUserSelections = (data) => {
 const enableButton = computed(() => {
   return observationData.value && observationData.value.settings.length > 0
 })
+// Clears errorMessage if the new display value is less than the previous one (i.e. going back)
+const handleDisplay = (display) => {
+  if (previousDisplay.value !== null && display < previousDisplay.value) {
+    errorMessage.value = ''
+  }
+  previousDisplay.value = display
+}
+
+const resetView = () => {
+  level.value = ''
+  observationData.value = null
+  showScheduled.value = false
+  operatorValue.value = ''
+  displayButton.value = false
+  errorMessage.value = ''
+}
 
 </script>
 
@@ -148,16 +200,24 @@ const enableButton = computed(() => {
     <div class="container">
     <div v-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
-        <v-btn v-if="displayButton" :disabled="!enableButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn color="indigo" @click="resetView"> Restart</v-btn>
+        <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
-    <div v-else-if="level === 'advanced' && !showScheduled">
-      <AdvancedScheduling @selectionsComplete="handleUserSelections" />
-      <v-btn :disabled="!observationData" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
-    </div>
-    <div v-if="showScheduled">
-      <ScheduledObservations />
-    </div>
+      <div v-else-if="level === 'advanced' && !showScheduled">
+        <AdvancedScheduling
+        @selectionsComplete="handleUserSelections"
+        @updateDisplay="handleDisplay"
+        />
+        <div v-if="errorMessage && !showScheduled">
+          <p class="error-message">Error: {{ errorMessage }}</p>
+        </div>
+        <v-btn color="indigo" @click="resetView">Restart</v-btn>
+        <v-btn :disabled="!observationData || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+      </div>
+      <div v-if="showScheduled">
+        <DashboardView />
+      </div>
     </div>
   </section>
 </template>

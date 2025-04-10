@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
@@ -11,30 +11,45 @@ const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref()
+const step = ref(1)
 
-// Handle each target update and store it in the array
-const handleTargetUpdate = (target) => {
-  const existingTarget = targetsData.value.find(t => t.name === target.name)
-  if (existingTarget) {
-    // Update the existing target's RA/Dec if the name matches
-    existingTarget.ra = target.ra
-    existingTarget.dec = target.dec
+const handleTargetUpdate = (targetUpdate) => {
+  // If an index was passed and it exists in targetsData, update that entry.
+  if (targetsData.value[targetUpdate.index]) {
+    targetsData.value[targetUpdate.index] = {
+      ...targetsData.value[targetUpdate.index],
+      name: targetUpdate.name,
+      ra: targetUpdate.ra,
+      dec: targetUpdate.dec
+    }
   } else {
-    // Push new target if it doesn't exist in the array
-    targetsData.value.push({
-      ...target,
-      exposures: []
-    })
+    // Fallback: look for an existing target with the same name and update it.
+    const existingTarget = targetsData.value.find(t => t.name === targetUpdate.name)
+    if (existingTarget) {
+      existingTarget.ra = targetUpdate.ra
+      existingTarget.dec = targetUpdate.dec
+    } else {
+      // If no match, push a new target.
+      targetsData.value.push({
+        ...targetUpdate,
+        exposures: []
+      })
+    }
   }
   emitSelections()
 }
 
 const handleExposuresUpdate = (exposures) => {
-  const activeTarget = targetsData.value[targetsData.value.length - 1]
-  if (activeTarget) {
-    activeTarget.exposures = exposures
-  }
-  emitSelections()
+  // Use nextTick to wait for target update
+  nextTick(() => {
+    const activeTarget = targetsData.value[targetsData.value.length - 1]
+    if (activeTarget) {
+      activeTarget.exposures = exposures
+    } else {
+      return
+    }
+    emitSelections()
+  })
 }
 
 const handleDateRangeUpdate = (dateRange) => {
@@ -59,6 +74,11 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
+const handleDisplay = (display) => {
+  step.value = display
+  emits('updateDisplay', display)
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
@@ -68,15 +88,15 @@ onMounted(() => {
 
 <template>
   <h2>Request an Observation</h2>
-
+  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
   <SchedulingSettings
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
+    @updateDisplay="handleDisplay"
   />
-  <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
-  <Calendar @updateDateRange="handleDateRangeUpdate" />
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===3"/>
 </template>
 
 <style scoped>

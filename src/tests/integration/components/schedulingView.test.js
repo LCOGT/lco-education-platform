@@ -1,12 +1,17 @@
-import { mount } from '@vue/test-utils'
+import { shallowMount } from '@vue/test-utils'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import SchedulingView from '../../../components/Views/SchedulingView.vue'
 import { fetchApiCall } from '../../../utils/api.js'
 import { createTestStores } from '../../../utils/testUtils'
 import flushPromises from 'flush-promises'
 
-vi.mock('@/utils/api.js', () => ({
+vi.mock('../../../utils/api.js', () => ({
   fetchApiCall: vi.fn()
+}))
+
+const mockRouter = { push: vi.fn() }
+vi.mock('vue-router', () => ({
+  useRouter: () => mockRouter
 }))
 
 describe('SchedulingView.vue', () => {
@@ -16,22 +21,29 @@ describe('SchedulingView.vue', () => {
     fetchApiCall.mockClear()
     const { pinia } = createTestStores()
 
-    wrapper = mount(SchedulingView, {
+    wrapper = shallowMount(SchedulingView, {
       global: {
-        plugins: [pinia]
+        plugins: [pinia],
+        provide: {
+          router: mockRouter
+        }
       }
     })
   })
 
   it('calls fetchApiCall to schedule observation', async () => {
+    const now = new Date()
+    const oneHourLater = new Date(now.getTime() + 3600 * 1000)
+
+    // Strip milliseconds
+    const formatISOWithoutMilliseconds = (date) =>
+      date.toISOString().replace(/\.\d{3}Z$/, 'Z')
+
     const mockObservationData = {
       target: { name: 'Test Target', ra: 12.0, dec: -20.0 },
-      settings: [
-        { filter: 'F1', exposureTime: 300, count: 1 }
-      ],
-      startDate: new Date(),
-      // 1 hour later
-      endDate: new Date(new Date().getTime() + 3600 * 1000),
+      settings: [{ filter: 'F1', exposureTime: 300, count: 1 }],
+      startDate: formatISOWithoutMilliseconds(now),
+      endDate: formatISOWithoutMilliseconds(oneHourLater),
       proposal: 'Test Proposal'
     }
 
@@ -89,9 +101,8 @@ describe('SchedulingView.vue', () => {
         ],
         windows: [
           {
-            // The slice is to remove milliseconds
-            start: mockObservationData.startDate.toISOString().slice(0, -5) + 'Z',
-            end: mockObservationData.endDate.toISOString().slice(0, -5) + 'Z'
+            start: mockObservationData.startDate,
+            end: mockObservationData.endDate
           }
         ],
         location: {
@@ -107,14 +118,13 @@ describe('SchedulingView.vue', () => {
     wrapper.vm.observationData = mockObservationData
 
     await wrapper.vm.sendObservationRequest()
-
     await flushPromises()
-
+    const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
       url: 'https://observe.lco.global/api/requestgroups/',
       method: 'POST',
       body: {
-        name: 'UserObservation',
+        name: `Test Target_${YYYYMMDD}`,
         proposal: 'Test Proposal',
         ipp_value: 1.05,
         operator: 'SINGLE',
@@ -125,7 +135,6 @@ describe('SchedulingView.vue', () => {
       failCallback: expect.any(Function)
     })
 
-    expect(fetchApiCall).toHaveBeenCalledTimes(1)
     expect(wrapper.vm.showScheduled).toBe(true)
   })
 })

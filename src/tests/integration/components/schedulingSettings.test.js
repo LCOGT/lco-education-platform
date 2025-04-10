@@ -42,7 +42,7 @@ describe('SchedulingSettings.vue', () => {
       })
     )
 
-    wrapper.vm.targetList[wrapper.vm.activeTargetIndex].name = 'Test Target'
+    wrapper.vm.targetInput.name = 'TestTarget'
     await wrapper.vm.getRaDecFromTargetName()
 
     await flushPromises()
@@ -62,7 +62,7 @@ describe('SchedulingSettings.vue', () => {
     )
 
     // Simulate entering an invalid target name and triggering the blur event
-    wrapper.vm.targetList[wrapper.vm.activeTargetIndex].name = 'Invalid Target'
+    wrapper.vm.targetInput.name = 'InvalidTarget'
     await wrapper.vm.getRaDecFromTargetName()
 
     await flushPromises()
