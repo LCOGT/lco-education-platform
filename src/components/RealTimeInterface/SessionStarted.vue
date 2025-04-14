@@ -189,6 +189,7 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
+  console.log('request body', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
@@ -302,6 +303,8 @@ function onDecBlur () {
 
 const maxExposures = computed(() => {
   if (selectedFilter.value === 'rgb') {
+    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+    exposureCount.value = 1
     return 1
   } else {
     return 3
