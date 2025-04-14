@@ -189,7 +189,6 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
-  console.log('request body', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
