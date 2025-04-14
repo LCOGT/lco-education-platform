@@ -15,7 +15,7 @@ module.exports = {
     index: {
       // entry for the page
       entry: 'src/main.js',
-      title: 'Observe @ Photon Ranch'
+      title: 'Explore @ Photon Ranch'
     }
   }
 }

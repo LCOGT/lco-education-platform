@@ -108,7 +108,7 @@ watch(
       <div class="navbar-start">
         <div class="navbar-item has-dropdown is-hoverable">
             <a class="navbar-link observe-site-menu is-normal">
-              Observe
+              Explore
             </a>
             <div class="navbar-dropdown">
               <a href="https://learn.lco.global" class="navbar-item learn-site-item" >
@@ -116,7 +116,7 @@ watch(
               <span class="icon is-small">
                 <FontAwesomeIcon icon="fa-solid fa-chevron-right" />
               </span></a>
-              <a href="https://photonranch.lco.global" class="navbar-item datalab-site-item">
+              <a href="https://datalab.lco.global" class="navbar-item datalab-site-item">
               <span>DataLab</span>
               <span class="icon is-small">
                 <FontAwesomeIcon icon="fa-solid fa-chevron-right" />
