@@ -49,6 +49,7 @@ const selectedTarget = ref({})
 const validTarget = ref(false)
 const isRaFocused = ref(false)
 const isDecFocused = ref(false)
+const maxExposures = ref(3)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -300,15 +301,17 @@ function onDecBlur () {
   updateCoordinatesStore()
 }
 
-const maxExposures = computed(() => {
-  if (selectedFilter.value === 'rgb') {
-    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-    exposureCount.value = 1
-    return 1
-  } else {
-    return 3
+watch(
+  () => selectedFilter.value,
+  (newFilter) => {
+    if (newFilter === 'rgb') {
+      maxExposures.value = 1
+      exposureCount.value = 1
+    } else {
+      maxExposures.value = 3
+    }
   }
-})
+)
 
 // Watch for changes in the store and update local values only if the input is not being edited.
 watch(
