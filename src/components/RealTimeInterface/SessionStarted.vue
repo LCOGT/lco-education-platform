@@ -158,7 +158,6 @@ const sendGoCommand = async () => {
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
-  console.log('selected filter:', selectedFilter.value)
   const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -190,7 +189,6 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
-  console.log('request body:', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
@@ -203,7 +201,6 @@ const sendGoCommand = async () => {
     header: headers,
     successCallback: resetValues,
     failCallback: (error) => {
-      console.log('error:', error)
       loading.value = false
       if (error?.errors?.expTime) {
         isExposureTimeValid.value = false
@@ -272,7 +269,6 @@ watch(targetNameEntered, (newValue, oldValue) => {
 onMounted(async () => {
   loading.value = false
   filterList.value = await getFilterList()
-  console.log('filter list:', filterList.value)
   // Adds rgb to the top of the filter list
   filterList.value.unshift({ name: 'RGB', code: 'rgb' })
   getVisibleTargets()
