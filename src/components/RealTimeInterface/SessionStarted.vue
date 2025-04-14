@@ -158,19 +158,26 @@ const sendGoCommand = async () => {
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
-
+  console.log('selected filter:', selectedFilter.value)
   const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-
+  let exposFilter
+  let exposTime
+  // Prepare an array of filters for RGB exposures
+  if (selectedFilter.value === 'rgb' && suggestionOrManual.value === 'manual') {
+    exposFilter = ['SDSS-rp', 'Bessell-V', 'Bessell-B']
+    exposTime = [Number(exposureTime.value), Number(exposureTime.value), Number(exposureTime.value)]
+  } else {
   // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
   // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
   // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
-  const exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
-  const exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
+    exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
+    exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
+  }
   const requestBody = {
     dec: Number(dec.value),
     expFilter: exposFilter,
@@ -183,6 +190,7 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
+  console.log('request body:', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
@@ -195,6 +203,7 @@ const sendGoCommand = async () => {
     header: headers,
     successCallback: resetValues,
     failCallback: (error) => {
+      console.log('error:', error)
       loading.value = false
       if (error?.errors?.expTime) {
         isExposureTimeValid.value = false
@@ -263,6 +272,9 @@ watch(targetNameEntered, (newValue, oldValue) => {
 onMounted(async () => {
   loading.value = false
   filterList.value = await getFilterList()
+  console.log('filter list:', filterList.value)
+  // Adds rgb to the top of the filter list
+  filterList.value.unshift({ name: 'RGB', code: 'rgb' })
   getVisibleTargets()
   skyCoordinatesStore.clearCoordinates()
 })
@@ -291,6 +303,14 @@ function onDecBlur () {
   isDecFocused.value = false
   updateCoordinatesStore()
 }
+
+const maxExposures = computed(() => {
+  if (selectedFilter.value === 'rgb') {
+    return 1
+  } else {
+    return 3
+  }
+})
 
 // Watch for changes in the store and update local values only if the input is not being edited.
 watch(
@@ -427,6 +447,25 @@ watch(
       <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
     </div>
         <div v-if="ra && dec && !targeterror && validTarget">
+          <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Filter</label>
+                </div>
+                <div class="field-body">
+                    <div class="field is-narrow">
+                      <div class="control">
+                        <div class="select is-fullwidth">
+                            <select id="filter" v-model="selectedFilter">
+                              <option disabled value="">Choose a filter</option>
+                              <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
+                                {{ filter.name }}
+                              </option>
+                            </select>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
             <div class="field is-horizontal">
               <div class="field-label is-normal">
                 <label class="label">Exposure</label>
@@ -443,31 +482,12 @@ watch(
                 </div>
                 <div class="field">
                   <p class="control is-expanded">
-                    <input id="exposureCount" type="number" class="input" v-model="exposureCount">
+                    <input id="exposureCount" type="number" class="input" v-model="exposureCount" :max="maxExposures" min="1">
                   </p>
                 </div>
               </div>
             </div>
-            <div class="field is-horizontal">
-                <div class="field-label is-normal">
-                    <label class="label">Filter</label>
-                </div>
-                <div class="field-body">
-                    <div class="field is-narrow">
-                    <div class="control">
-                        <div class="select is-fullwidth">
-                            <select id="filter" v-model="selectedFilter">
-                              <option disabled value="">Choose a filter</option>
-                              <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
-                                {{ filter.name }}
-                              </option>
-                            </select>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                </div>
-              </div>
+          </div>
         </div>
         <div class="buttons are-medium" v-if="suggestionOrManual != ''">
           <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
