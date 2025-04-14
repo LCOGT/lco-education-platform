@@ -169,7 +169,7 @@ const blockRti = async () => {
   }
   const requestBody = {
     proposal: selectedProposal.value,
-    name: 'Live Observing',
+    name: `Live-${startDateTime.toISOString().split('T')[0].replace(/-/g, '')}-${selectedSite.value.site}`,
     site: selectedSite.value.site,
     enclosure,
     telescope,
