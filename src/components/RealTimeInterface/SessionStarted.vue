@@ -222,6 +222,8 @@ function resetSuggestionOrManual () {
   suggestionByType.value = ''
   targetsByType.value = []
   suggestionTargetSet.value = false
+  exposureError.value = ''
+  isExposureTimeValid.value = true
 }
 
 function updateRenderGallery (value) {
@@ -476,7 +478,6 @@ watch(
                   <p class="control is-expanded">
                     <input id="exposureTime" type="number" class="input" v-model="exposureTime" placeholder="Seconds">
                   </p>
-                  <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
                 </div>
                 <div class="times">
                   <FontAwesomeIcon icon="fa-solid fa-xmark"  />
@@ -490,6 +491,7 @@ watch(
             </div>
           </div>
         </div>
+        <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
         <div class="buttons are-medium" v-if="suggestionOrManual != ''">
           <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
           <button class="button" @click="resetSuggestionOrManual">Start Again</button>
