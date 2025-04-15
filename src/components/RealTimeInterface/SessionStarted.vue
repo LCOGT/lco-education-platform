@@ -169,7 +169,7 @@ const sendGoCommand = async () => {
   let exposTime
   // Prepare an array of filters for RGB exposures
   if (selectedFilter.value === 'rgb' && suggestionOrManual.value === 'manual') {
-    exposFilter = ['SDSS-rp', 'Bessell-V', 'Bessell-B']
+    exposFilter = ['rp', 'V', 'B']
     exposTime = [Number(exposureTime.value), Number(exposureTime.value), Number(exposureTime.value)]
   } else {
   // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
@@ -190,6 +190,7 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
+  console.log('request body:', requestBody)
   if (configurationStore.demo == true) {
     loading.value = false
     resetValues()
