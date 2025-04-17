@@ -3,6 +3,7 @@ import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vu
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { de } from 'date-fns/locale'
 
 const props = defineProps({
   showProjectField: {
@@ -196,6 +197,14 @@ function editTarget (index) {
   currentStep.value = 1
 }
 
+function deleteExposure (targetIndex, exposureIndex) {
+  targetList.value[targetIndex].exposures.splice(exposureIndex, 1)
+  // Check if the deleted exposure belongs to the active target, then emit updated exposures
+  if (targetIndex === activeTargetIndex.value) {
+    emits('exposuresUpdated', targetList.value[targetIndex].exposures)
+  }
+}
+
 onMounted(async () => {
   filterList.value = await getFilterList()
 })
@@ -205,13 +214,35 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-        <div v-if="currentStep === 2 || props.target">
-          <div v-for="(target, index) in filteredTargets" :key="index" class="highlight-box">
-            <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
-            {{ target.name || `${target.ra}_${target.dec}` }}: {{ formatExposures(target.exposures) }}
-            <v-btn v-if="!props.target" @click="editTarget(index)" color="indigo">Change Target</v-btn>
+      <div v-if="currentStep === 2 || props.target">
+        <div
+          v-for="(target, tIndex) in filteredTargets"
+          :key="tIndex"
+          class="highlight-box"
+        >
+          <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
+          {{ target.name || `${target.ra}_${target.dec}` }}:
+          <div v-for="(exposure, index) in target.exposures" :key="index" class="exposure-item">
+            <span>
+              {{ exposure.filterName }} - {{ exposure.exposureTime }}s x {{ exposure.count }}
+            </span>
+            <v-btn
+              @click="deleteExposure(tIndex, index)"
+              color="indigo"
+              class="delete-exposure"
+            >
+              Delete exposure
+            </v-btn>
           </div>
+          <v-btn
+            v-if="!props.target"
+            @click="editTarget(tIndex)"
+            color="indigo"
+          >
+            Change Target
+          </v-btn>
         </div>
+      </div>
       <!-- Target input -->
       <div v-if="showTitleField && currentStep === 1" class="input-wrapper">
         <div class="field is-horizontal">
