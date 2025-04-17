@@ -354,7 +354,7 @@ watch(
         </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
-          <h3>What would you like to Observe?</h3>
+          <h3>What would you like to Explore?</h3>
           <p>Choose a type of target to see suggestions</p>
           <div v-for="category in categories" :key="category.location" class="content">
           <h4>{{ category.location }}</h4>
