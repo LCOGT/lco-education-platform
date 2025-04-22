@@ -5,9 +5,7 @@ import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { fetchApiCall } from '../../utils/api'
 import { formatToUTC, formatDateTime } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
-
 import { useProposalStore } from '../../stores/proposalManagement.js'
-
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import sites from '../../utils/sites.JSON'
@@ -29,7 +27,9 @@ const today = ref(new Date())
 const oneYearFromNow = ref(new Date())
 oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
 const bookingInProgess = ref(null)
+
 const emits = defineEmits(['timeSelected'])
+
 // Loads template only after the obs portal has returned available times
 const hasAvailableTimes = computed(() => {
   return Object.keys(availableTimes.value).length > 0
@@ -84,6 +84,7 @@ function processTelescopeAvailability (data) {
       })
     })
   })
+  // group the available‑times for the selected date by site
   // processedData looks like this:
   // // This is the selected date
   // { Fri Aug 02 2024: {
@@ -126,11 +127,7 @@ const resetSession = () => {
   selectedSite.value = null
   realTimeSessionsStore.currentSessionId = null
 }
-const showMoreTimes = () => {
-  errorMessage.value = null
-  selectedSite.value = null
-  refreshTimes()
-}
+
 const blockRti = async () => {
   bookingInProgess.value = true
   // Gets the start and end times for the session
@@ -191,11 +188,51 @@ const blockRti = async () => {
     }
   })
 }
+
 const bookDate = () => {
   if (date.value && startTime.value && selectedSite.value) {
     router.push('/dashboard')
   }
 }
+
+// Gets the available times for the selected date and sorts them by site and deduplicates times
+const siteTimes = computed(() => {
+  if (!date.value) return {}
+
+  const dateStr = date.value.toDateString()
+  const daySlots = availableTimes.value[dateStr] || {}
+  const grouped = {}
+
+  // Iterates over the available times (dayslots) for the selected date
+  // timeKey is the time in ISO format (e.g. Thu Apr 24 2025 21:45:00 GMT-0700 (Pacific Daylight Time))
+  // and resources are the telescopes available per site (e.g. {site: 'tfn', enclosure: 'aqwa', telescope: '0m4a'}, {site: 'tfn', enclosure: 'aqwa', telescope: '0m4b'})
+  Object.entries(daySlots).forEach(([timeKey, { resources }]) => {
+    const slot = new Date(timeKey)
+    resources.forEach(({ site }) => {
+      // If the site is not already in the grouped object, create a new Set for it
+      if (!grouped[site]) grouped[site] = new Set()
+      // Adds the timestamp to the Set (automatically deduplicating [some sites have multiple telescopes and therefore more of the same time availability. So say, for example, 2 telescopes are available at 10:00, we only want to show that time once])
+      grouped[site].add(slot.getTime())
+    })
+  })
+
+  // convert sets back into sorted arrays of Date
+  return Object.fromEntries(
+    // Converts the grouped object into an array of entries, where each entry is an array containing the site and an array of times
+    Object.entries(grouped).map(([site, timesSet]) => {
+      const arr = Array.from(timesSet)
+        .map(ms => new Date(ms))
+        .sort((a, b) => a - b)
+      return [site, arr]
+    })
+  )
+})
+
+function onTimeClick (site, time) {
+  selectedSite.value = { site, lat: sites[site].lat, lon: sites[site].lon }
+  startTime.value = time
+}
+
 async function getAvailableTimes () {
   await fetchApiCall({
     url: configurationStore.observationPortalUrl + 'realtime/availability/',
@@ -204,6 +241,7 @@ async function getAvailableTimes () {
     failCallback: (error) => { console.error('API call failed with error', error) }
   })
 }
+
 // Used to block out dates that are not in the availableTimes object from the date picker
 const isDateAllowed = (date) => {
   // Gets the dates from availableTimes
@@ -212,6 +250,7 @@ const isDateAllowed = (date) => {
   const lastDate = new Date(Math.max(...availableDates.map(date => new Date(date))))
   return date >= firstDate && date <= lastDate
 }
+
 const disabledDates = computed(() => {
   if (Object.keys(availableTimes.value).length === 0) {
     return []
@@ -225,14 +264,15 @@ const disabledDates = computed(() => {
     return date
   }).filter(date => !isDateAllowed(date))
 })
+
 function displaySiteName (site) {
-  console.log(site)
   if (site) {
     return sites[site]?.name
   } else {
     return 'No site selected'
   }
 }
+
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -242,30 +282,30 @@ watch(date, (newDate, oldDate) => {
     localTimes.value = Object.keys(availableTimes.value[dateStr] || {}).map(time => new Date(time))
   }
 })
-// Resets the session and emits the selected time when startTime changes
-watch(startTime, (newTime, oldTime) => {
-  if (newTime !== oldTime) {
-    resetSession()
-    emits('timeSelected', newTime)
-  }
-})
+
 onMounted(() => {
   getAvailableTimes()
   if (proposalStore.proposalsWithRealTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithRealTimeAllocation[0].id
   }
 })
+
 </script>
+
 <template>
   <template v-if="!hasAvailableTimes">
-    <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
+    <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
   </template>
   <template v-if="hasAvailableTimes">
     <h2>Book your live observing session</h2>
-    <ProposalDropdown v-if="!selectedProposal" :isItRealTime="true" @selectionsComplete="(proposal) => { selectedProposal = proposal }" />
+    <ProposalDropdown
+      v-if="!selectedProposal"
+      :isItRealTime="true"
+      @selectionsComplete="(proposal) => { selectedProposal = proposal }"
+    />
     <div class="columns">
       <div v-if="selectedProposal" class="column is-one-third">
-        <p>Select a date and time:</p>
+        <h4>Select a date and time:</h4>
         <div>
           <VDatePicker
             v-model="date"
@@ -280,26 +320,46 @@ onMounted(() => {
         </div>
       </div>
       <div class="column">
-        <div v-if="date && startTime == null" class="selected-date">
-          <p>Select a time:</p>
-          <div class="grid">
-            <div class="cell" v-for="time in localTimes" :key="time.toISOString()">
-              <button class="button" @click="startTime = time">{{ time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</button>
+        <div v-if="date">
+          <div v-for="(times, site) in siteTimes" :key="site" class="site-times">
+            <h3>{{ displaySiteName(site) }}</h3>
+            <div class="grid">
+              <button
+                class="button"
+                v-for="time in times"
+                :key="time.toISOString()"
+                :class="{ 'is-selected': startTime && selectedSite?.site === site && time.getTime() === startTime.getTime() }"
+                @click="onTimeClick(site, time)"
+              >
+                {{ time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+              </button>
             </div>
           </div>
+          <LeafletMap
+            :availableTimes="availableTimes"
+            :selectedTime="startTime?.toISOString()"
+            :highlightedSite="selectedSite?.site"
+          />
         </div>
         <div v-if="startTime" class="column">
           <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">{{ selectedSite.site }} selected for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
-            <span v-else-if="!selectedSite">Click on a pin to book for {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+            <span v-if="selectedSite && !errorMessage">
+              {{ displaySiteName(selectedSite.site) }} selected for
+              {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at
+              {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+            </span>
             <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
           </p>
           <div v-if="!bookingInProgess">
             <div class="buttons">
-              <button  v-if="date && selectedSite" @click="blockRti" class="button blue-bg">Book</button>
-              <button  v-if="date" @click="showMoreTimes" class="button">Show more times</button>
+              <button
+                v-if="date && selectedSite"
+                @click="blockRti"
+                class="button blue-bg"
+              >
+                Book
+              </button>
             </div>
-            <LeafletMap v-if="startTime" :availableTimes="availableTimes" :selectedTime="startTime.toISOString()" @siteSelected="selectedSite = $event" />
           </div>
           <div v-else>
             <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
@@ -309,14 +369,13 @@ onMounted(() => {
     </div>
   </template>
 </template>
+
 <style scoped>
-.loading {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
 .error {
   color: red;
+}
+.button.is-selected {
+  background-color: rgb(77, 170, 233);
+  color: white;
 }
 </style>
