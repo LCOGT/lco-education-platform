@@ -16,6 +16,7 @@ const configurationStore = useConfigurationStore()
 const proposalStore = useProposalStore()
 
 const date = ref(null)
+const dateStr = computed(() => { return date.value.toDateString() })
 const startTime = ref(null)
 const errorMessage = ref(null)
 const selectedSite = ref(null)
@@ -139,9 +140,9 @@ const blockRti = async () => {
   let telescope = null
   // The following code is temporary since the user cannot select telescope and enclosure
   // Finds the matching entry in availableTimes
-  const dateStr = date.value.toDateString()
+  const dateString = dateStr.value
   // Get the available time entries for the selected date
-  const timeEntries = availableTimes.value[dateStr]
+  const timeEntries = availableTimes.value[dateString]
   if (timeEntries) {
     Object.keys(timeEntries).forEach(timeKey => {
       const timeObj = new Date(timeKey)
@@ -196,27 +197,31 @@ const bookDate = () => {
 }
 
 const siteTimes = computed(() => {
-  const dateKey = date.value.toDateString()
-  const slots = availableTimes.value[dateKey] || {}
+  const dateKey = dateStr.value
+  const daySlots = availableTimes.value[dateKey] || {}
   const groupedSiteTimes = {}
-
+  // Iterates over the available times (dayslots) for the selected date
   // timeKey is the time in ISO format (e.g. Thu Apr 24 2025 21:45:00 GMT-0700 (Pacific Daylight Time))
   // and resources are the telescopes available per site (e.g. {site: 'tfn', enclosure: 'aqwa', telescope: '0m4a'}, {site: 'tfn', enclosure: 'aqwa', telescope: '0m4b'})
-  for (const [timeKey, { resources }] of Object.entries(slots)) {
-    const dateTime = new Date(timeKey)
-    for (const { site } of resources) {
-      const arr = groupedSiteTimes[site] ||= []
-      // with `some` we avoid duplicating times. Some sites have multiple telescopes and therefore more of the same time availability. So say, for example, 2 telescopes are available at 10:00, we only want to show that time once
-      if (!arr.some(d => d.getTime() === dateTime.getTime())) {
-        arr.push(dateTime)
-      }
-    }
-  }
-  // sorts in ascending order
-  for (const arr of Object.values(groupedSiteTimes)) {
-    arr.sort((a, b) => a - b)
-  }
-  return groupedSiteTimes
+  Object.entries(daySlots).forEach(([timeKey, { resources }]) => {
+    const slot = new Date(timeKey)
+    resources.forEach(({ site }) => {
+      // If the site is not already in the grouped object, create a new Set for it
+      if (!groupedSiteTimes[site]) groupedSiteTimes[site] = new Set()
+      // Adds the timestamp to the Set (automatically deduplicating [some sites have multiple telescopes and therefore more of the same time availability. So say, for example, 2 telescopes are available at 10:00, we only want to show that time once])
+      groupedSiteTimes[site].add(slot.getTime())
+    })
+  })
+  // convert sets back into sorted arrays of Date
+  return Object.fromEntries(
+    // Converts the grouped object into an array of entries, where each entry is an array containing the site and an array of times
+    Object.entries(groupedSiteTimes).map(([site, timesSet]) => {
+      const arr = Array.from(timesSet)
+        .map(ms => new Date(ms))
+        .sort((a, b) => a - b)
+      return [site, arr]
+    })
+  )
 })
 
 function onTimeClick (site, time) {
