@@ -48,7 +48,9 @@ function countdown () {
   }, 1000)
 }
 
-const telescopeMessage = `The telescope's status is ${availability.value} because of ${reason.value}`
+const telescopeMessage = computed(
+  () => `The telescope's status is ${availability.value} because of ${reason.value}`
+)
 
 watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
