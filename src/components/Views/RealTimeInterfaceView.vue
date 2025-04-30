@@ -6,7 +6,6 @@ import SessionStarted from '../RealTimeInterface/SessionStarted.vue'
 import { formatCountdown, calculateSessionCountdown } from '../../utils/formatTime.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import sites from '../../utils/sites.JSON'
-import { getTelescopeState } from '../../utils/telescopeStates.js'
 
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
