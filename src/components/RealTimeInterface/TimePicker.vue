@@ -181,7 +181,7 @@ const blockRti = async () => {
     successCallback: bookDate,
     failCallback: (e) => {
       bookingInProgess.value = false
-      if (e.non_field_errors[0]?.includes('Not enough realtime')) {
+      if (e.non_field_errors && e.non_field_errors[0]?.includes('Not enough realtime')) {
         errorMessage.value = 'This project does not have any live observing credit. Choose another project.'
       } else {
         errorMessage.value = 'Failed to book session. Please select another time'
