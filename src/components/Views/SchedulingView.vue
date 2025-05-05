@@ -199,15 +199,22 @@ const resetView = () => {
   <section class="section">
     <div class="container">
     <div v-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
+        <BeginnerScheduling
+          @selectionsComplete="handleUserSelections"
+          @showButton="displayButton = $event"
+          @clearErrorMessage="errorMessage = ''"
+        />
+        <div v-if="errorMessage && !showScheduled">
+          <p class="error-message">Error: {{ errorMessage }}</p>
+        </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
         <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
-        @selectionsComplete="handleUserSelections"
-        @updateDisplay="handleDisplay"
+          @selectionsComplete="handleUserSelections"
+          @updateDisplay="handleDisplay"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
