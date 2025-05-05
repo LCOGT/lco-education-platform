@@ -6,6 +6,9 @@ import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
+import { useConfigurationStore } from '../../stores/configuration.js'
+
+const configurationStore = useConfigurationStore()
 
 // TO DO (future): Get level depending on course completion
 const level = ref('')
@@ -130,7 +133,7 @@ const sendObservationRequest = async () => {
     }
 
     await fetchApiCall({
-      url: 'https://observe.lco.global/api/requestgroups/',
+      url: `${configurationStore.observationPortalUrl}requestgroups/`,
       method: 'POST',
       body: {
         // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
