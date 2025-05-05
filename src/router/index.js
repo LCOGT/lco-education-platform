@@ -54,9 +54,10 @@ const routes = [
     component: LogIn
   },
   {
-    path: '/observations/:id',
+    path: '/observations/:requestId',
     name: 'ScheduledObsDetailsView',
-    component: ScheduledObsDetailsView
+    component: ScheduledObsDetailsView,
+    props: true
   }
 ]
 
