@@ -121,7 +121,7 @@ describe('SchedulingView.vue', () => {
     await flushPromises()
     const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'https://observe.lco.global/api/requestgroups/',
+      url: 'http://mock-api.com/requestgroups/',
       method: 'POST',
       body: {
         name: `Test Target_${YYYYMMDD}`,
