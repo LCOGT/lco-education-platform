@@ -15,10 +15,6 @@ const observationDetails = computed(() => {
   return obsPortalDataStore.observationDetails.results[0].requests
 })
 
-// const configurations = computed(() => {
-//   return obsPortalDataStore.observationDetails.results[0].requests[0].configurations
-// })
-
 onMounted(async () => {
   const requestId = props.requestId
   await obsPortalDataStore.fetchSelectedObservationDetails(requestId)
