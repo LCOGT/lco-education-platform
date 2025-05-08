@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
-import { fetchApiCall } from '../../utils/api.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 import { calculateSchedulableTargets } from '../../utils/visibility.js'
 import targets from '../../utils/targets.min.json'
@@ -14,7 +13,7 @@ import starClusterIcon from '@/assets/Icons/star-cluster.png'
 import supernovaIcon from '@/assets/Icons/supernova.png'
 import nebulaIcon from '@/assets/Icons/nebula.png'
 
-const emits = defineEmits(['selectionsComplete', 'showButton'])
+const emits = defineEmits(['selectionsComplete', 'showButton', 'clearErrorMessage'])
 const proposalStore = useProposalStore()
 
 const beginner = ref()
@@ -56,6 +55,7 @@ const previousStep = () => {
   loading.value = false
   beginner.value = ''
   exposureSettings.value = []
+  emits('clearErrorMessage')
   // Prevents `Submit my request` button from showing when going back
   emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1

@@ -66,6 +66,13 @@ async function deleteSession (sessionId) {
   })
 }
 
+async function viewSelectedObsDetails (requestId) {
+  router.push({
+    name: 'ScheduledObsDetailsView',
+    params: { requestId }
+  })
+}
+
 onMounted(async () => {
   await obsPortalDataStore.fetchUpcomingRealTimeSessions()
   await obsPortalDataStore.fetchPendingScheduledObservations()
@@ -92,9 +99,10 @@ onMounted(async () => {
         <div class="table-summary">
             <div v-for="scheduledObs in pendingScheduledObservations" :key="scheduledObs.id">
               <div v-for="configuration in scheduledObs.request.configurations" :key="configuration.id">
-                {{ configuration.target.name}}
+                <p class="target-name" @click="viewSelectedObsDetails(scheduledObs.request.id)">{{ configuration.target.name}}</p>
+                <v-btn @click="viewSelectedObsDetails(scheduledObs.request.id)" class="button" color="indigo">View Observation Details</v-btn>
                 <!-- TO DO: Define progress and get progress from api -->
-                <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div>
+                <!-- <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div> -->
               </div>
             </div>
         </div>
@@ -102,6 +110,9 @@ onMounted(async () => {
     </div>
 </template>
 <style scoped>
+.target-name {
+  cursor: pointer;
+}
 .progress.is-primary{
     --bulma-progress-value-background-color: #A6CE39;
     --bulma-progress-bar-background-color:#262e35;

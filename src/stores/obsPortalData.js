@@ -82,6 +82,18 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
+    async fetchSelectedObservationDetails (requestId) {
+      const configurationStore = useConfigurationStore()
+      const userDataStore = useUserDataStore()
+      const username = userDataStore.username
+      await fetchApiCall({
+        url: configurationStore.observationPortalUrl + `requestgroups/?state=PENDING&user=${username}&request_id=${requestId}`,
+        method: 'GET',
+        successCallback: (response) => {
+          this.observationDetails = response
+        }
+      })
+    },
     async fetchCompletedObservations (page = 1) {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
