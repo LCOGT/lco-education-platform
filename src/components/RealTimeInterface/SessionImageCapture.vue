@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, defineProps } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
@@ -8,6 +8,13 @@ import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { LottieAnimation } from 'lottie-web-vue'
 import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
+
+const props = defineProps({
+  exposureCount: {
+    type: Number,
+    required: true
+  }
+})
 
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -27,6 +34,36 @@ const failedToCaptureImages = computed(() => {
   return status.value.status === 'Unknown'
 })
 
+const fetchTimeRemaining = async () => {
+  console.log('props.exposureCount', props.exposureCount)
+  const token = realTimeSessionsStore.getTokenForCurrentSession
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `${token}`
+  }
+  const requestBody = {
+    'expTime': props.exposureCount
+  }
+
+  // I believe I also have to send the body of the request, not sure
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'observation-params',
+    method: 'POST',
+    header: headers,
+    body: requestBody,
+    successCallback: (response) => {
+      const timeRemaining = response
+      // this is where we would update the progress bar
+      console.log('Time remaining:', timeRemaining)
+    }
+  })
+}
+
+// ^^^ this returns 'observation_length'. we should make a request every 5 seconds and update the time remaining
+// the progress bar should have a gradual increase and check every 5 seconds
+// render % of the progress bar --> total time - current time / total time??? check the math
+
 const fetchTelescopeStatus = async () => {
   if (configurationStore.demo) {
     status.value = {
@@ -45,6 +82,9 @@ const fetchTelescopeStatus = async () => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `${token}`
+  }
+  const requestBody = {
+    'expTime': [30]
   }
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'status',
@@ -80,11 +120,12 @@ const sendStopCommand = async () => {
   await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
 
-onMounted(() => {
+onMounted(async () => {
   imagesDone.value = false
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
+  await fetchTimeRemaining()
 })
 
 onUnmounted(() => {
