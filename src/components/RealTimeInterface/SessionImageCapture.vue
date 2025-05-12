@@ -10,8 +10,8 @@ import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const props = defineProps({
-  exposureCount: {
-    type: Number,
+  exposureSettings: {
+    type: Array,
     required: true
   }
 })
@@ -35,23 +35,20 @@ const failedToCaptureImages = computed(() => {
 })
 
 const fetchTimeRemaining = async () => {
-  console.log('props.exposureCount', props.exposureCount)
   const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  const requestBody = {
-    'expTime': props.exposureCount
-  }
+  const payload = { expTime: props.exposureSettings }
 
   // I believe I also have to send the body of the request, not sure
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'observation-params',
     method: 'POST',
     header: headers,
-    body: requestBody,
+    body: JSON.stringify(payload),
     successCallback: (response) => {
       const timeRemaining = response
       // this is where we would update the progress bar
@@ -82,9 +79,6 @@ const fetchTelescopeStatus = async () => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Authorization': `${token}`
-  }
-  const requestBody = {
-    'expTime': [30]
   }
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'status',
