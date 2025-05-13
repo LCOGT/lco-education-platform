@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed, defineProps } from 'vue'
+import { ref, onMounted, onUnmounted, computed, defineProps, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
@@ -24,6 +24,10 @@ let pollingInterval = null
 const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
+const timeRemaining = ref(0)
+const totalObservationTime = ref(0)
+const lastUpdatedAt = ref(0)
+
 const emits = defineEmits(['updateRenderGallery'])
 
 const imagesCaptured = computed(() => {
@@ -41,21 +45,32 @@ const fetchTimeRemaining = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  const payload = { expTime: props.exposureSettings }
+  const cleanedExpTime = props.exposureSettings.map(Number)
+  const payload = { expTime: cleanedExpTime }
 
   // I believe I also have to send the body of the request, not sure
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'observation-params',
     method: 'POST',
     header: headers,
-    body: JSON.stringify(payload),
+    body: payload,
     successCallback: (response) => {
-      const timeRemaining = response
-      // this is where we would update the progress bar
-      console.log('Time remaining:', timeRemaining)
+      const seconds = response.observation_params.observation_length
+      timeRemaining.value = seconds
+      totalObservationTime.value = seconds
+      lastUpdatedAt.value = Date.now()
     }
   })
 }
+const now = ref(Date.now())
+
+const progressPercent = computed(() => {
+  const total = totalObservationTime.value
+  if (!total || !lastUpdatedAt.value) return 0
+
+  const elapsed = (now.value - lastUpdatedAt.value) / 1000
+  return Math.min((elapsed / total) * 100, 100)
+})
 
 // ^^^ this returns 'observation_length'. we should make a request every 5 seconds and update the time remaining
 // the progress bar should have a gradual increase and check every 5 seconds
@@ -113,18 +128,23 @@ const sendStopCommand = async () => {
   }
   await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
 }
-
-onMounted(async () => {
+let ticker = null
+onMounted(() => {
   imagesDone.value = false
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
-  await fetchTimeRemaining()
+  fetchTimeRemaining()
+  ticker = setInterval(() => {
+    /* just bump a dummy reactive */
+    now.value = Date.now()
+  }, 1000)
 })
 
 onUnmounted(() => {
   clearInterval(pollingInterval)
   imagesDone.value = false
+  clearInterval(ticker)
 })
 
 const setCameraState = computed(() => ({
@@ -194,6 +214,12 @@ const setSiteState = computed(() => {
                 </div>
               </div>
             </div>
+            <div class="progress-container">
+    <div
+      class="progress-bar"
+      :style="{ width: progressPercent + '%' }"
+    />
+  </div>
             <button class="button red-bg" @click="sendStopCommand">
             Cancel Observation
             </button>
@@ -217,3 +243,19 @@ const setSiteState = computed(() => {
           </div>
     </div>
 </template>
+
+<style scoped>
+.progress-container {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+.progress-bar {
+  height: 100%;
+  transition: width 0.5s linear;
+  background: linear-gradient(to right, #3b82f6, #10b981);
+}
+</style>
