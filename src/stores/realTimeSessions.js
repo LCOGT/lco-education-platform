@@ -14,7 +14,11 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       fetchInterval: null,
       sessionTokens: {},
       isCapturingImagesMap: {},
-      telescopeState: {}
+      telescopeState: {},
+      observationTotalTime: 0,
+      observationStartedAt: 0,
+      observationNow: Date.now(),
+      observationTicker: null
     }
   },
   persist: true,
@@ -34,6 +38,14 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     },
     telescopeAvailability (state) {
       return state.telescopeState
+    },
+    getObservationTotalTime (state) {
+      return state.observationTotalTime
+    },
+    progressPercent (state) {
+      const total = state.observationTotalTime
+      const elapsed = (state.observationNow - state.observationStartedAt) / 1000
+      return total > 0 ? Math.min((elapsed / total) * 100, 100) : 0
     }
   },
   actions: {
@@ -62,7 +74,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       }
 
       const response = await fetchApiCall({
-        url: configurationStore.rtiBridgeUrl + 'session_status',
+        url: configurationStore.rtiBridgeUrl + 'sessionstatus',
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
@@ -99,6 +111,37 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
+    },
+    async fetchObservationParams (exposureTime) {
+      const configurationStore = useConfigurationStore()
+      const token = this.getTokenForCurrentSession
+      await fetchApiCall({
+        url: configurationStore.rtiBridgeUrl + 'observation-params',
+        method: 'POST',
+        header: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': token
+        },
+        body: { expTime: exposureTime.map(Number) },
+        successCallback: resp => {
+          const secs = resp.observation_params.observation_length
+          this.observationTotalTime = secs
+          this.observationStartedAt = Date.now()
+          if (!this.observationTicker) {
+            this.observationTicker = setInterval(() => {
+              this.observationNow = Date.now()
+            }, 1000)
+          }
+        }
+      })
+    },
+    resetProgress () {
+      clearInterval(this.observationTicker)
+      this.observationTicker = null
+      this.observationTotalTime = 0
+      this.observationStartedAt = 0
+      this.observationNow = Date.now()
     }
   }
 })
