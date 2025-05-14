@@ -154,6 +154,7 @@ const resetValues = () => {
   selectedFilter.value = ''
   fieldOfView.value = 1.0
   loading.value = false
+  realTimeSessionsStore.resetProgress()
 }
 
 const sendGoCommand = async () => {
