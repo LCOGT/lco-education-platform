@@ -24,9 +24,6 @@ let pollingInterval = null
 const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
-const timeRemaining = ref(0)
-const totalObservationTime = ref(0)
-const lastUpdatedAt = ref(0)
 
 const emits = defineEmits(['updateRenderGallery'])
 
@@ -38,39 +35,40 @@ const failedToCaptureImages = computed(() => {
   return status.value.status === 'Unknown'
 })
 
-const fetchTimeRemaining = async () => {
-  const token = realTimeSessionsStore.getTokenForCurrentSession
-  const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `${token}`
-  }
-  const cleanedExpTime = props.exposureSettings.map(Number)
-  const payload = { expTime: cleanedExpTime }
+// const fetchTimeRemaining = async () => {
+//   const token = realTimeSessionsStore.getTokenForCurrentSession
+//   const headers = {
+//     'Content-Type': 'application/json',
+//     'Accept': 'application/json',
+//     'Authorization': `${token}`
+//   }
+//   const cleanedExpTime = props.exposureSettings.map(Number)
+//   const payload = { expTime: cleanedExpTime }
 
-  // I believe I also have to send the body of the request, not sure
-  await fetchApiCall({
-    url: configurationStore.rtiBridgeUrl + 'observation-params',
-    method: 'POST',
-    header: headers,
-    body: payload,
-    successCallback: (response) => {
-      const seconds = response.observation_params.observation_length
-      timeRemaining.value = seconds
-      totalObservationTime.value = seconds
-      lastUpdatedAt.value = Date.now()
-    }
-  })
-}
-const now = ref(Date.now())
+//   // I believe I also have to send the body of the request, not sure
+//   await fetchApiCall({
+//     url: configurationStore.rtiBridgeUrl + 'observation-params',
+//     method: 'POST',
+//     header: headers,
+//     body: payload,
+//     successCallback: (response) => {
+//       const seconds = response.observation_params.observation_length
+//       realTimeSessionsStore.updateRequestedExposureTime(seconds)
+//       timeRemaining.value = seconds
+//       totalObservationTime.value = seconds
+//       lastUpdatedAt.value = Date.now()
+//     }
+//   })
+// }
+// const now = ref(Date.now())
 
-const progressPercent = computed(() => {
-  const total = totalObservationTime.value
-  if (!total || !lastUpdatedAt.value) return 0
+// const progressPercent = computed(() => {
+//   const total = totalObservationTime.value
+//   if (!total || !lastUpdatedAt.value) return 0
 
-  const elapsed = (now.value - lastUpdatedAt.value) / 1000
-  return Math.min((elapsed / total) * 100, 100)
-})
+//   const elapsed = (now.value - lastUpdatedAt.value) / 1000
+//   return Math.min((elapsed / total) * 100, 100)
+// })
 
 // ^^^ this returns 'observation_length'. we should make a request every 5 seconds and update the time remaining
 // the progress bar should have a gradual increase and check every 5 seconds
@@ -116,6 +114,7 @@ const handleThumbnailsFetched = (fetched) => {
 }
 
 const goBackToSessionStarted = () => {
+  realTimeSessionsStore.resetProgress()
   emits('updateRenderGallery', false)
 }
 
@@ -126,25 +125,28 @@ const sendStopCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'command/stop',
+    method: 'POST',
+    header: headers,
+    successCallback: () => {
+      imagesDone.value = true
+      realTimeSessionsStore.resetProgress() },
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
 }
-let ticker = null
+
 onMounted(() => {
   imagesDone.value = false
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
-  fetchTimeRemaining()
-  ticker = setInterval(() => {
-    /* just bump a dummy reactive */
-    now.value = Date.now()
-  }, 1000)
+  realTimeSessionsStore.fetchObservationParams(props.exposureSettings)
 })
 
 onUnmounted(() => {
   clearInterval(pollingInterval)
   imagesDone.value = false
-  clearInterval(ticker)
 })
 
 const setCameraState = computed(() => ({
@@ -215,11 +217,12 @@ const setSiteState = computed(() => {
               </div>
             </div>
             <div class="progress-container">
-    <div
-      class="progress-bar"
-      :style="{ width: progressPercent + '%' }"
-    />
-  </div>
+              <div
+                class="progress-bar"
+                :style="{ width: realTimeSessionsStore.progressPercent + '%' }"
+              />
+              </div>
+
             <button class="button red-bg" @click="sendStopCommand">
             Cancel Observation
             </button>
@@ -241,7 +244,7 @@ const setSiteState = computed(() => {
               @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
-    </div>
+        </div>
 </template>
 
 <style scoped>
