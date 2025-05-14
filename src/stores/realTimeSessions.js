@@ -74,7 +74,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       }
 
       const response = await fetchApiCall({
-        url: configurationStore.rtiBridgeUrl + 'sessionstatus',
+        url: configurationStore.rtiBridgeUrl + 'session_status',
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
