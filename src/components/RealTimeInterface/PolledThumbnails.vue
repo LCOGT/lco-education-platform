@@ -23,7 +23,7 @@ const getThumbnails = async () => {
     successCallback: (data) => {
       thumbnails.value = data.results.map(result => result.url)
       if (thumbnails.value.length > 0) {
-        emits('thumbnailsFetched', true)
+        emits('thumbnailsFetched', thumbnails.value.length)
       }
     },
     failCallback: console.error
