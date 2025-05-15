@@ -48,7 +48,12 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     progressPercent (state) {
       const total = state.observationTotalTime
       const elapsed = (state.observationNow - state.observationStartedAt) / 1000
-      return total > 0 ? Math.min((elapsed / total) * 100, 100) : 0
+      const percent = total > 0 ? Math.min((elapsed / total) * 100, 100) : 0
+      // If the countdown is finished but no new thumbnail yet, linger at 95%
+      if (state.currentThumbnail < state.exposureCount && percent >= 100) {
+        return 95
+      }
+      return percent
     }
   },
   actions: {
@@ -129,7 +134,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
         body: { expTime: exposureTime.map(Number) },
         successCallback: resp => {
           const secs = resp.observation_params.observation_length
-          this.observationTotalTime = secs
+          if (this.exposureCount !== 0) this.observationTotalTime = secs / this.exposureCount
           this.observationStartedAt = Date.now()
           if (!this.observationTicker) {
             this.observationTicker = setInterval(() => {
