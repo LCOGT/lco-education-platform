@@ -35,45 +35,6 @@ const failedToCaptureImages = computed(() => {
   return status.value.status === 'Unknown'
 })
 
-// const fetchTimeRemaining = async () => {
-//   const token = realTimeSessionsStore.getTokenForCurrentSession
-//   const headers = {
-//     'Content-Type': 'application/json',
-//     'Accept': 'application/json',
-//     'Authorization': `${token}`
-//   }
-//   const cleanedExpTime = props.exposureSettings.map(Number)
-//   const payload = { expTime: cleanedExpTime }
-
-//   // I believe I also have to send the body of the request, not sure
-//   await fetchApiCall({
-//     url: configurationStore.rtiBridgeUrl + 'observation-params',
-//     method: 'POST',
-//     header: headers,
-//     body: payload,
-//     successCallback: (response) => {
-//       const seconds = response.observation_params.observation_length
-//       realTimeSessionsStore.updateRequestedExposureTime(seconds)
-//       timeRemaining.value = seconds
-//       totalObservationTime.value = seconds
-//       lastUpdatedAt.value = Date.now()
-//     }
-//   })
-// }
-// const now = ref(Date.now())
-
-// const progressPercent = computed(() => {
-//   const total = totalObservationTime.value
-//   if (!total || !lastUpdatedAt.value) return 0
-
-//   const elapsed = (now.value - lastUpdatedAt.value) / 1000
-//   return Math.min((elapsed / total) * 100, 100)
-// })
-
-// ^^^ this returns 'observation_length'. we should make a request every 5 seconds and update the time remaining
-// the progress bar should have a gradual increase and check every 5 seconds
-// render % of the progress bar --> total time - current time / total time??? check the math
-
 const fetchTelescopeStatus = async () => {
   if (configurationStore.demo) {
     status.value = {
