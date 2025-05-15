@@ -107,10 +107,12 @@ const fetchTelescopeStatus = async () => {
   })
 }
 
-const handleThumbnailsFetched = (fetched) => {
-  if (fetched) {
-    thumbnailsFetched.value = true
-  }
+const handleThumbnailsFetched = (count) => {
+  thumbnailsFetched.value = true
+  // Updates store with new count and restarts the progress bar
+  realTimeSessionsStore.countThumbnails(count)
+  realTimeSessionsStore.resetProgress()
+  realTimeSessionsStore.initializeProgressTicker()
 }
 
 const goBackToSessionStarted = () => {
@@ -215,6 +217,9 @@ const setSiteState = computed(() => {
                     </div>
                 </div>
               </div>
+            </div>
+            <div v-if="realTimeSessionsStore.exposureCount > 1" class="thumbnail-counter">
+              {{ realTimeSessionsStore.currentThumbnail }} of {{ realTimeSessionsStore.exposureCount }}
             </div>
             <div class="progress-container">
               <div
