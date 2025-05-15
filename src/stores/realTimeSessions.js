@@ -18,7 +18,10 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       observationTotalTime: 0,
       observationStartedAt: 0,
       observationNow: Date.now(),
-      observationTicker: null
+      observationTicker: null,
+      exposureCount: 0,
+      thumbnailCount: 0,
+      currentThumbnail: 0
     }
   },
   persist: true,
@@ -142,6 +145,9 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       this.observationTotalTime = 0
       this.observationStartedAt = 0
       this.observationNow = Date.now()
+    },
+    countThumbnails (count) {
+      this.thumbnailCount = count
     }
   }
 })
