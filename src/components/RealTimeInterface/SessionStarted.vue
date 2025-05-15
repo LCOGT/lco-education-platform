@@ -155,6 +155,7 @@ const resetValues = () => {
   fieldOfView.value = 1.0
   loading.value = false
   realTimeSessionsStore.resetProgress()
+  realTimeSessionsStore.fetchObservationParams(exposureSettings.value)
 }
 
 const sendGoCommand = async () => {

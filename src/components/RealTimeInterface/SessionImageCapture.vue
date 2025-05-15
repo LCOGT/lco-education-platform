@@ -141,7 +141,7 @@ onMounted(() => {
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
-  realTimeSessionsStore.fetchObservationParams(props.exposureSettings)
+  realTimeSessionsStore.initializeProgressTicker()
 })
 
 onUnmounted(() => {
