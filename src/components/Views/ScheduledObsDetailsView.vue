@@ -12,7 +12,7 @@ const props = defineProps({
 const obsPortalDataStore = useObsPortalDataStore()
 
 const observationDetails = computed(() => {
-  if (obsPortalDataStore.observationDetails.results.length === 0) {
+  if (!obsPortalDataStore.observationDetails || !obsPortalDataStore.observationDetails.results) {
     return null
   }
   return obsPortalDataStore.observationDetails.results[0].requests
