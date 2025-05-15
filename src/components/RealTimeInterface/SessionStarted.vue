@@ -175,6 +175,7 @@ const sendGoCommand = async () => {
     exposFilter = ['rp', 'V', 'B']
     exposTime = [Number(exposureTime.value), Number(exposureTime.value), Number(exposureTime.value)]
     exposureSettings.value = exposTime
+    realTimeSessionsStore.exposureCount = exposTime.length
   } else {
   // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
   // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
@@ -182,6 +183,7 @@ const sendGoCommand = async () => {
     exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
     exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
     exposureSettings.value = exposTime
+    realTimeSessionsStore.exposureCount = exposTime.length
   }
   const requestBody = {
     dec: Number(dec.value),
