@@ -283,6 +283,10 @@ onMounted(async () => {
   filterList.value.unshift({ name: 'RGB', code: 'rgb' })
   getVisibleTargets()
   skyCoordinatesStore.clearCoordinates()
+  // TO DO: fetch telescope status every 5 seconds if it's available. If it's not available, fetch every second.
+  // also if not available, render a different view
+  //
+  await realTimeSessionsStore.fetchTelescopeStatus()
 })
 
 function handleUpdateCoordinates ({ ra: newRa, dec: newDec }) {
