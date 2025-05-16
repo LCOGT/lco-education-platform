@@ -15,7 +15,12 @@ const observationDetails = computed(() => {
   if (!obsPortalDataStore.observationDetails || !obsPortalDataStore.observationDetails.results) {
     return null
   }
-  return obsPortalDataStore.observationDetails.results[0].requests
+  else if (obsPortalDataStore.observationDetails && obsPortalDataStore.observationDetails.results.length !== 0 && obsPortalDataStore.observationDetails.results[0].requests.length !== 0) {
+    return obsPortalDataStore.observationDetails.results[0].requests
+  }
+  else {
+    return null
+  }
 })
 
 onMounted(async () => {
