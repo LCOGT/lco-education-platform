@@ -163,6 +163,28 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     },
     countThumbnails (count) {
       this.thumbnailCount = count
+    },
+    async fetchTelescopeStatus () {
+      const configurationStore = useConfigurationStore()
+      const token = this.getTokenForCurrentSession
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `${token}`
+      }
+      const response = await fetchApiCall({
+        url: configurationStore.rtiBridgeUrl + 'status',
+        method: 'GET',
+        header: headers,
+        successCallback: (telState) => {
+          console.log('Telescope state:', telState)
+          this.telescopeState = telState
+        },
+        failCallback: (error) => {
+          console.error('Error fetching telescope status:', error)
+        }
+      })
+      console.log('response:', response)
     }
   }
 })
