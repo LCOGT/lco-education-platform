@@ -15,7 +15,7 @@ const obsPortalDataStore = useObsPortalDataStore()
 const currentPage = ref(1)
 const sessionsPerPage = 5
 
-const pendingScheduledObservations = obsPortalDataStore.pendingScheduledObservations
+const pendingScheduledObservations = computed(() => obsPortalDataStore.pendingScheduledObservations)
 
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
