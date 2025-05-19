@@ -9,7 +9,7 @@ export const getTelescopeState = async (site, telescope, enclosure) => {
       url: `${configurationStore.observationPortalUrl}telescope_states/?site=${site}&telescope=${telescope}`,
       method: 'GET',
       successCallback: (response) => {
-        const data = response[`${site}.${enclosure}.${telescope}`][0]
+        const data = response && response[`${site}.${enclosure}.${telescope}`][0]
         resolve(data)
       },
       failCallback: (error) => {

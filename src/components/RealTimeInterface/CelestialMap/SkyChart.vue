@@ -35,12 +35,8 @@ watch(
 )
 
 function updateLocation () {
-  const time = new Date()
-  time.setHours(time.getHours())
-  // Adjust for timezone so that celestial will display the correct sky map
-  time.setTime(time.getTime() + time.getTimezoneOffset() * 60000)
-  Celestial.date(time)
-  Celestial.location([lat.value, lng.value])
+  const now = new Date().toUTCString()
+  Celestial.skyview({ date: now, location: [lat.value, lng.value] })
   Celestial.resize({ width: 0 })
 }
 
