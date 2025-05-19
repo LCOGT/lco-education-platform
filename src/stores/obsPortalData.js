@@ -44,31 +44,147 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     },
     storePendingScheduledObservations (response) {
       // The format of the response is as follows:
-      // [
-      //     {
-      //       "id": 680316844,
-      //       "request": {
-      //           "id": 3784722,
-      //           "state": "PENDING",
-      //           "configurations": [
-      //             {...configuration details...}
-      //           ]
-      //       },
-      //       and other fields
-      //   }
-      // ]
+    //   {
+    //     "count": 7,
+    //     "next": null,
+    //     "previous": null,
+    //     "results": [
+    //         {
+    //             "id": 2240578,
+    //             "submitter": "ccapetillo",
+    //             "proposal": "LCOEPO2014B-010",
+    //             "name": "M109_2025-05-19",
+    //             "observation_type": "NORMAL",
+    //             "operator": "SINGLE",
+    //             "ipp_value": 1,
+    //             "state": "PENDING",
+    //             "created": "2025-05-19T16:27:20.299250Z",
+    //             "modified": "2025-05-19T16:27:20.299261Z",
+    //             "requests": [
+    //                 {
+    //                     "id": 3866319,
+    //                     "observation_note": "",
+    //                     "optimization_type": "TIME",
+    //                     "state": "PENDING",
+    //                     "acceptability_threshold": 90,
+    //                     "configuration_repeats": 1,
+    //                     "extra_params": {},
+    //                     "modified": "2025-05-19T16:27:20.303691Z",
+    //                     "duration": 656,
+    //                     "configurations": [
+    //                         {
+    //                             "id": 12966963,
+    //                             "instrument_type": "0M4-SCICAM-QHY600",
+    //                             "type": "EXPOSE",
+    //                             "repeat_duration": null,
+    //                             "extra_params": {
+    //                                 "sub_expose": false
+    //                             },
+    //                             "priority": 1,
+    //                             "instrument_configs": [
+    //                                 {
+    //                                     "optical_elements": {
+    //                                         "filter": "rp"
+    //                                     },
+    //                                     "mode": "central30x30",
+    //                                     "exposure_time": 180,
+    //                                     "exposure_count": 1,
+    //                                     "rotator_mode": "",
+    //                                     "extra_params": {
+    //                                         "defocus": 0,
+    //                                         "offset_ra": 0,
+    //                                         "offset_dec": 0
+    //                                     },
+    //                                     "rois": []
+    //                                 },
+    //                                 {
+    //                                     "optical_elements": {
+    //                                         "filter": "B"
+    //                                     },
+    //                                     "mode": "central30x30",
+    //                                     "exposure_time": 180,
+    //                                     "exposure_count": 1,
+    //                                     "rotator_mode": "",
+    //                                     "extra_params": {
+    //                                         "defocus": 0,
+    //                                         "offset_ra": 0,
+    //                                         "offset_dec": 0
+    //                                     },
+    //                                     "rois": []
+    //                                 },
+    //                                 {
+    //                                     "optical_elements": {
+    //                                         "filter": "V"
+    //                                     },
+    //                                     "mode": "central30x30",
+    //                                     "exposure_time": 180,
+    //                                     "exposure_count": 1,
+    //                                     "rotator_mode": "",
+    //                                     "extra_params": {
+    //                                         "defocus": 0,
+    //                                         "offset_ra": 0,
+    //                                         "offset_dec": 0
+    //                                     },
+    //                                     "rois": []
+    //                                 }
+    //                             ],
+    //                             "constraints": {
+    //                                 "max_airmass": 1.6,
+    //                                 "min_lunar_distance": 30,
+    //                                 "max_lunar_phase": 1,
+    //                                 "extra_params": {}
+    //                             },
+    //                             "acquisition_config": {
+    //                                 "mode": "OFF",
+    //                                 "extra_params": {}
+    //                             },
+    //                             "guiding_config": {
+    //                                 "optional": true,
+    //                                 "mode": "ON",
+    //                                 "optical_elements": {},
+    //                                 "exposure_time": null,
+    //                                 "extra_params": {}
+    //                             },
+    //                             "target": {
+    //                                 "type": "ICRS",
+    //                                 "name": "M109",
+    //                                 "ra": 179.4,
+    //                                 "dec": 53.37,
+    //                                 "proper_motion_ra": 0,
+    //                                 "proper_motion_dec": 0,
+    //                                 "parallax": 0,
+    //                                 "epoch": 2000,
+    //                                 "hour_angle": null,
+    //                                 "extra_params": {}
+    //                             }
+    //                         }
+    //                     ],
+    //                     "location": {
+    //                         "telescope_class": "0m4"
+    //                     },
+    //                     "windows": [
+    //                         {
+    //                             "start": "2025-05-20T14:00:00Z",
+    //                             "end": "2025-05-27T14:00:00Z"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // }
       this.pendingScheduledObservations = {}
-
-      for (const pendingScheduledObservation of response.results) {
+      const results = response.results
+      const requests = results.map((result) => result.requests).flat()
+      for (const pendingScheduledObservation of requests) {
         // Because a scheduled request is ephemeral and its id can change, we store the request id which is stable
         // So the example above would be stored as:
         // {
         //   3784722: {... details of the request ...}
-        this.pendingScheduledObservations[pendingScheduledObservation.request.id] = pendingScheduledObservation
+        this.pendingScheduledObservations[pendingScheduledObservation.id] = pendingScheduledObservation
       }
     },
     async fetchPendingScheduledObservations () {
-      this.pendingScheduledObservations = {}
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
@@ -76,7 +192,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         // This will only work with NORMAL observations, so TIME_CRITICAL or RAPID_RESPONSE will not show up.
         //  Also only getting ones submitted by the user, which ignores observations on a shared proposal the user has access too.
         // In the future, we have to change the query
-        url: configurationStore.observationPortalUrl + `observations/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
+        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
           this.storePendingScheduledObservations(response)

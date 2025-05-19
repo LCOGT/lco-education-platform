@@ -52,15 +52,17 @@ describe('Observation Portal Data Store', () => {
   it('fetches PENDING NORMAL observation requests', async () => {
     // --- Upcoming NORMAL sessions ---
     const mockPendingScheduledObservationsResponse = {
-      results: [{
-        request:
+      results: [
         {
-          id: 456,
-          // start and end are not relevant for PENDING NORMAL observations
-          state: 'PENDING',
-          observation_type: 'NORMAL'
+          requests: [
+            {
+              id: 456,
+              state: 'PENDING',
+              observation_type: 'NORMAL'
+            }
+          ]
         }
-      }]
+      ]
     }
 
     // --- Test fetchPendingScheduledObservations ---
@@ -70,7 +72,7 @@ describe('Observation Portal Data Store', () => {
     await obsPortalDataStore.fetchPendingScheduledObservations()
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
     expect(obsPortalDataStore.pendingScheduledObservations).toEqual({
-      456: mockPendingScheduledObservationsResponse.results[0]
+      456: mockPendingScheduledObservationsResponse.results[0].requests[0]
     })
   })
 
