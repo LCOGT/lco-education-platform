@@ -15,7 +15,7 @@ const obsPortalDataStore = useObsPortalDataStore()
 const currentPage = ref(1)
 const sessionsPerPage = 5
 
-const pendingScheduledObservations = computed(() => obsPortalDataStore.pendingScheduledObservations)
+const pendingScheduledRequests = computed(() => obsPortalDataStore.pendingScheduledRequests)
 
 // change to bookings and add an icon to show completion
 const sortedSessions = computed(() => {
@@ -75,7 +75,7 @@ async function viewSelectedObsDetails (requestId) {
 
 onMounted(async () => {
   await obsPortalDataStore.fetchUpcomingRealTimeSessions()
-  await obsPortalDataStore.fetchPendingScheduledObservations()
+  await obsPortalDataStore.fetchPendingScheduledRequests()
 })
 
 </script>
@@ -95,9 +95,9 @@ onMounted(async () => {
         <button class="button red-bg" @click="router.push('/book/realtime')"> Book Slot </button>
     </div>
     <div class="observations upcoming-obs">
-        <h3><span v-if="Object.keys(pendingScheduledObservations).length == 0">No </span>Scheduled Requests</h3>
+        <h3><span v-if="Object.keys(pendingScheduledRequests).length == 0">No </span>Scheduled Requests</h3>
         <div class="table-summary">
-            <div v-for="requestedObservation in pendingScheduledObservations" :key="requestedObservation.id">
+            <div v-for="requestedObservation in pendingScheduledRequests" :key="requestedObservation.id">
               <div v-for="configuration of requestedObservation.configurations" :key="configuration.id">
                 <p class="target-name">{{ configuration.target.name}}</p>
                 <v-btn @click="viewSelectedObsDetails(requestedObservation.id)" class="button" color="indigo">View Observation Details</v-btn>

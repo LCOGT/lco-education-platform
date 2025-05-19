@@ -51,7 +51,7 @@ describe('Observation Portal Data Store', () => {
 
   it('fetches PENDING NORMAL observation requests', async () => {
     // --- Upcoming NORMAL sessions ---
-    const mockPendingScheduledObservationsResponse = {
+    const mockPendingScheduledRequestsResponse = {
       results: [
         {
           requests: [
@@ -65,14 +65,14 @@ describe('Observation Portal Data Store', () => {
       ]
     }
 
-    // --- Test fetchPendingScheduledObservations ---
+    // --- Test fetchPendingScheduledRequests ---
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback(mockPendingScheduledObservationsResponse)
+      successCallback(mockPendingScheduledRequestsResponse)
     })
-    await obsPortalDataStore.fetchPendingScheduledObservations()
+    await obsPortalDataStore.fetchPendingScheduledRequests()
     expect(fetchApiCall).toHaveBeenCalledTimes(1)
-    expect(obsPortalDataStore.pendingScheduledObservations).toEqual({
-      456: mockPendingScheduledObservationsResponse.results[0].requests[0]
+    expect(obsPortalDataStore.pendingScheduledRequests).toEqual({
+      456: mockPendingScheduledRequestsResponse.results[0].requests[0]
     })
   })
 

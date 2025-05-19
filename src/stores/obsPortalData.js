@@ -10,7 +10,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     return {
       completedObservations: {},
       upcomingRealTimeSessions: {},
-      pendingScheduledObservations: {},
+      pendingScheduledRequests: {},
       observationDetails: {},
       selectedConfiguration: null,
       completedObservationsCount: 0
@@ -42,7 +42,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         }
       })
     },
-    storePendingScheduledObservations (response) {
+    storePendingScheduledRequests (response) {
       // The format of the response is as follows:
     //   {
     //     "count": 7,
@@ -173,18 +173,18 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
     //         }
     //     ]
     // }
-      this.pendingScheduledObservations = {}
+      this.pendingScheduledRequests = {}
       const results = response.results
       const requests = results.map((result) => result.requests).flat()
-      for (const pendingScheduledObservation of requests) {
+      for (const pendingScheduledRequest of requests) {
         // Because a scheduled request is ephemeral and its id can change, we store the request id which is stable
         // So the example above would be stored as:
         // {
         //   3784722: {... details of the request ...}
-        this.pendingScheduledObservations[pendingScheduledObservation.id] = pendingScheduledObservation
+        this.pendingScheduledRequests[pendingScheduledRequest.id] = pendingScheduledRequest
       }
     },
-    async fetchPendingScheduledObservations () {
+    async fetchPendingScheduledRequests () {
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
@@ -195,7 +195,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
         method: 'GET',
         successCallback: (response) => {
-          this.storePendingScheduledObservations(response)
+          this.storePendingScheduledRequests(response)
         }
       })
     },
