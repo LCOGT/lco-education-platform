@@ -126,7 +126,7 @@ describe('SchedulingView.vue', () => {
       body: {
         name: `Test Target_${YYYYMMDD}`,
         proposal: 'Test Proposal',
-        ipp_value: 1.05,
+        ipp_value: 1.0,
         operator: 'SINGLE',
         observation_type: 'NORMAL',
         requests: mockRequestList

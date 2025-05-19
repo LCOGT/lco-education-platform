@@ -92,6 +92,8 @@ const createRequest = (target, exposures, startDate, endDate) => ({
 
 const getProjectName = () => {
   let targetName = ''
+  const today = new Date()
+  const formattedDate = today.toISOString().split('T')[0]
   if (observationData.value.target) {
     targetName = observationData.value.target.name || ''
   } else if (observationData.value.targets && observationData.value.targets.length) {
@@ -106,7 +108,7 @@ const getProjectName = () => {
       : observationData.value.targets[0].dec
     targetName = `${ra}_${dec}`
   }
-  return `${targetName}_${observationData.value.startDate.split('T')[0]}`
+  return `${targetName}_${formattedDate}`
 }
 
 const sendObservationRequest = async () => {
@@ -140,7 +142,7 @@ const sendObservationRequest = async () => {
         // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
         'name': getProjectName(),
         'proposal': observationData.value.proposal,
-        'ipp_value': 1.05,
+        'ipp_value': 1.0,
         'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
@@ -154,9 +156,9 @@ const sendObservationRequest = async () => {
         showScheduled.value = false
         isSubmitting.value = false
         errorMessage.value = error.requests
-          .map(request => request.non_field_errors)
-          .flat()
-          .join(', ')
+        // .map(request => request.non_field_errors)
+        // .flat()
+        // .join(', ')
       }
     })
   }
