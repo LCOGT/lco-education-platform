@@ -68,6 +68,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
       }
     },
     async fetchPendingScheduledObservations () {
+      this.pendingScheduledObservations = {}
       const configurationStore = useConfigurationStore()
       const userDataStore = useUserDataStore()
       const username = userDataStore.username
