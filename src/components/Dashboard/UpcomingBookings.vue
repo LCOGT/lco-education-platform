@@ -97,10 +97,10 @@ onMounted(async () => {
     <div class="observations upcoming-obs">
         <h3><span v-if="Object.keys(pendingScheduledObservations).length == 0">No </span>Scheduled Requests</h3>
         <div class="table-summary">
-            <div v-for="scheduledObs in pendingScheduledObservations" :key="scheduledObs.id">
-              <div v-for="configuration in scheduledObs.request.configurations" :key="configuration.id">
-                <p class="target-name" @click="viewSelectedObsDetails(scheduledObs.request.id)">{{ configuration.target.name}}</p>
-                <v-btn @click="viewSelectedObsDetails(scheduledObs.request.id)" class="button" color="indigo">View Observation Details</v-btn>
+            <div v-for="requestedObservation in pendingScheduledObservations" :key="requestedObservation.id">
+              <div v-for="configuration of requestedObservation.configurations" :key="configuration.id">
+                <p class="target-name">{{ configuration.target.name}}</p>
+                <v-btn @click="viewSelectedObsDetails(requestedObservation.id)" class="button" color="indigo">View Observation Details</v-btn>
                 <!-- TO DO: Define progress and get progress from api -->
                 <!-- <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div> -->
               </div>
