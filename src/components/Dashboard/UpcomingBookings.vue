@@ -15,6 +15,9 @@ const obsPortalDataStore = useObsPortalDataStore()
 const currentPage = ref(1)
 const sessionsPerPage = 5
 
+const currentRequestPage = ref(1)
+const requestsPerPage = 5
+
 const pendingScheduledRequests = computed(() => obsPortalDataStore.pendingScheduledRequests)
 
 // change to bookings and add an icon to show completion
@@ -39,6 +42,24 @@ const totalPages = computed(() => {
 
 const changePage = (page) => {
   currentPage.value = page
+}
+
+const numberOfRequests = computed(() => {
+  return Object.keys(obsPortalDataStore.pendingScheduledRequests).length
+})
+
+const paginatedRequests = computed(() => {
+  const start = (currentRequestPage.value - 1) * requestsPerPage
+  const end = start + requestsPerPage
+  return Object.values(obsPortalDataStore.pendingScheduledRequests).slice(start, end)
+})
+
+const totalRequestPages = computed(() => {
+  return Math.ceil(numberOfRequests.value / requestsPerPage)
+})
+
+const changeRequestPage = (page) => {
+  currentRequestPage.value = page
 }
 
 const selectSession = (sessionId) => {
@@ -97,14 +118,14 @@ onMounted(async () => {
     <div class="observations upcoming-obs">
         <h3><span v-if="Object.keys(pendingScheduledRequests).length == 0">No </span>Scheduled Requests</h3>
         <div class="table-summary">
-            <div v-for="requestedObservation in pendingScheduledRequests" :key="requestedObservation.id">
+            <div v-for="requestedObservation in paginatedRequests" :key="requestedObservation.id">
               <div v-for="configuration of requestedObservation.configurations" :key="configuration.id">
                 <p class="target-name">{{ configuration.target.name}}</p>
                 <v-btn @click="viewSelectedObsDetails(requestedObservation.id)" class="button" color="indigo">View Observation Details</v-btn>
-                <!-- TO DO: Define progress and get progress from api -->
-                <!-- <div><progress class="progress is-large is-primary" :value="progress" max="100">{{ progress }}%</progress></div> -->
               </div>
             </div>
+            <button v-if="numberOfRequests > 5 && currentRequestPage!=1" @click="changeRequestPage(currentRequestPage - 1)" class="button">previous</button>
+            <button v-if="numberOfRequests > 5 && currentRequestPage!=totalRequestPages" @click="changeRequestPage(currentRequestPage + 1)" class="button">more</button>
         </div>
         <button class="button red-bg" @click="router.push('/schedule')">Schedule Observations</button>
     </div>
