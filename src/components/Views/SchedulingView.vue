@@ -6,6 +6,9 @@ import { fetchApiCall } from '../../utils/api.js'
 import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
+import { useConfigurationStore } from '../../stores/configuration.js'
+
+const configurationStore = useConfigurationStore()
 
 // TO DO (future): Get level depending on course completion
 const level = ref('')
@@ -89,6 +92,8 @@ const createRequest = (target, exposures, startDate, endDate) => ({
 
 const getProjectName = () => {
   let targetName = ''
+  const today = new Date()
+  const formattedDate = today.toISOString().split('T')[0]
   if (observationData.value.target) {
     targetName = observationData.value.target.name || ''
   } else if (observationData.value.targets && observationData.value.targets.length) {
@@ -103,7 +108,7 @@ const getProjectName = () => {
       : observationData.value.targets[0].dec
     targetName = `${ra}_${dec}`
   }
-  return `${targetName}_${observationData.value.startDate.split('T')[0]}`
+  return `${targetName}_${formattedDate}`
 }
 
 const sendObservationRequest = async () => {
@@ -130,14 +135,14 @@ const sendObservationRequest = async () => {
     }
 
     await fetchApiCall({
-      url: 'https://observe.lco.global/api/requestgroups/',
+      url: `${configurationStore.observationPortalUrl}requestgroups/`,
       method: 'POST',
       body: {
         // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
         // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
         'name': getProjectName(),
         'proposal': observationData.value.proposal,
-        'ipp_value': 1.05,
+        'ipp_value': 1.0,
         'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
@@ -151,9 +156,9 @@ const sendObservationRequest = async () => {
         showScheduled.value = false
         isSubmitting.value = false
         errorMessage.value = error.requests
-          .map(request => request.non_field_errors)
-          .flat()
-          .join(', ')
+        // .map(request => request.non_field_errors)
+        // .flat()
+        // .join(', ')
       }
     })
   }
@@ -199,15 +204,22 @@ const resetView = () => {
   <section class="section">
     <div class="container">
     <div v-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling @selectionsComplete="handleUserSelections" @showButton="displayButton = $event" />
+        <BeginnerScheduling
+          @selectionsComplete="handleUserSelections"
+          @showButton="displayButton = $event"
+          @clearErrorMessage="errorMessage = ''"
+        />
+        <div v-if="errorMessage && !showScheduled">
+          <p class="error-message">Error: {{ errorMessage }}</p>
+        </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
         <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
-        @selectionsComplete="handleUserSelections"
-        @updateDisplay="handleDisplay"
+          @selectionsComplete="handleUserSelections"
+          @updateDisplay="handleDisplay"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
