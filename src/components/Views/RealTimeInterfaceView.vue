@@ -21,6 +21,38 @@ const telescope = computed(() => telname[selectedSession.telescope])
 const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
 const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
 
+const telescopeStatus = computed(() => { return realTimeSessionsStore.telescopeStatus })
+const availabilityStatus = computed(() => { return telescopeStatus.value.status.availability })
+// this is going to be used to conditionally render
+const isTelescopeAvailable = computed(() => {
+  return realTimeSessionsStore.isTelescopeAvailable
+})
+
+const availabilityReason = computed(() => {
+  const reason = availabilityStatus.value
+  switch (reason) {
+    case 'Sun up':
+      return 'Telescope is currently closed because the Sun is up'
+    case 'Unavailable for technical reasons':
+      return 'Telescope is unavailable for technical reasons'
+    case 'Closed for bad weather':
+      return 'Telescope is currently closed for bad weather'
+    case 'Closed for maintenance':
+      return 'Telescope is temporarily closed for maintenance'
+    default:
+      // Available is default
+      return reason
+  }
+})
+
+watch(() => availabilityStatus.value, () => {
+  if (availabilityStatus.value !== 'Available') {
+    realTimeSessionsStore.isTelescopeAvailable = false
+  } else if (availabilityStatus.value === 'Available') {
+    realTimeSessionsStore.isTelescopeAvailable = true
+  }
+})
+
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
@@ -55,7 +87,15 @@ const telescopeMessage = computed(
 watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
-  } else {
+    const fetchTelescopeStatusInterval = setInterval(() => {
+      realTimeSessionsStore.fetchTelescopeStatus()
+    }, 1000)
+
+    onBeforeUnmount(() => {
+      clearInterval(fetchTelescopeStatusInterval)
+    })
+  }
+  else {
     realTimeSessionsStore.resetSessionState()
     timeRemaining.value = 0
     realTimeSessionsStore.updateImageCaptureState(false)
@@ -70,6 +110,9 @@ onMounted(async () => {
   loading.value = true
   // initiate the handshake and retrieve a token prior to polling
   await realTimeSessionsStore.fetchSessionToken()
+
+  await realTimeSessionsStore.fetchTelescopeStatus()
+
   realTimeSessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {
@@ -82,6 +125,17 @@ onMounted(async () => {
 <template>
   <template v-if="loading">
     <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
+  </template>
+  <template v-else-if="!isTelescopeAvailable && realTimeSessionsStore.currentStatus === 'ACTIVE'">
+    <section>
+      <div class="container">
+        <div class="content">
+          <h2>Telescope Unavailable</h2>
+          <p><span class="red-bg px-2 py-2">{{ availabilityReason }}</span></p>
+          <SessionPending/>
+        </div>
+      </div>
+    </section>
   </template>
   <template v-else>
     <section>
