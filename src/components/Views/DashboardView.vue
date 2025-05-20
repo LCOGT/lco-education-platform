@@ -2,10 +2,7 @@
 import MyGallery from '../Images/MyGallery.vue'
 import UpcomingBookings from '../Dashboard/UpcomingBookings.vue'
 import HomeView from './HomeView.vue'
-import { onMounted, ref } from 'vue'
-import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
-
-const obsPortalDataStore = useObsPortalDataStore()
+import { ref } from 'vue'
 
 const homeIsVisible = ref(true)
 
@@ -13,9 +10,6 @@ function closeHomeView () {
   homeIsVisible.value = false
 }
 
-onMounted(async () => {
-  await obsPortalDataStore.fetchPendingScheduledObservations()
-})
 </script>
 
 <template>

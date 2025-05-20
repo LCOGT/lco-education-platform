@@ -6,11 +6,11 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight, faSquare, faThLarge, faGear, faSliders, faClock, faXmark, faPlusCircle, faDownload, faPenRuler, faListCheck, faChevronDown } from '@fortawesome/free-solid-svg-icons'
-import { faTelescope, faLocationDot, faCameraRetro } from '@fortawesome/pro-regular-svg-icons'
+import { faTelescope, faLocationDot, faCameraRetro, faArrowRight } from '@fortawesome/pro-regular-svg-icons'
 import VCalendar from 'v-calendar'
 import 'v-calendar/style.css'
 
-library.add(faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight, faSquare, faThLarge, faGear, faSliders, faClock, faXmark, faPlusCircle, faDownload, faPenRuler, faTelescope, faLocationDot, faCameraRetro, faListCheck, faChevronDown)
+library.add(faBook, faStar, faChartLine, faCalendarDays, faGamepad, faChevronRight, faSquare, faThLarge, faGear, faSliders, faClock, faXmark, faPlusCircle, faDownload, faPenRuler, faTelescope, faLocationDot, faCameraRetro, faListCheck, faChevronDown, faArrowRight)
 
 require('@/assets/ptr_main.scss')
 

@@ -121,12 +121,12 @@ describe('SchedulingView.vue', () => {
     await flushPromises()
     const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'https://observe.lco.global/api/requestgroups/',
+      url: 'http://mock-api.com/requestgroups/',
       method: 'POST',
       body: {
         name: `Test Target_${YYYYMMDD}`,
         proposal: 'Test Proposal',
-        ipp_value: 1.05,
+        ipp_value: 1.0,
         operator: 'SINGLE',
         observation_type: 'NORMAL',
         requests: mockRequestList
