@@ -16,7 +16,15 @@ const emits = defineEmits(['thumbnailsFetched'])
 const thumbnails = ref([])
 let pollingInterval = null
 
+let demoCounter = 0
 const getThumbnails = async () => {
+  if (configurationStore.demo) {
+    // simulate one new thumbnail every 15s until exposureCount
+    demoCounter = Math.min(demoCounter + 1, realTimeSessionsStore.exposureCount)
+    thumbnails.value = Array(demoCounter).fill('')
+    emits('thumbnailsFetched', demoCounter)
+    return
+  }
   await fetchApiCall({
     url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`,
     method: 'GET',
@@ -32,7 +40,8 @@ const getThumbnails = async () => {
 
 onMounted(() => {
   getThumbnails()
-  pollingInterval = setInterval(getThumbnails, 3000)
+  const intervalMs = configurationStore.demo ? 15000 : 3000
+  pollingInterval = setInterval(getThumbnails, intervalMs)
 })
 
 </script>
