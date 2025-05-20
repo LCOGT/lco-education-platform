@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, defineProps } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useObsPortalDataStore } from '../../stores/obsPortalData.js'
 
 const props = defineProps({
@@ -31,31 +32,40 @@ onMounted(async () => {
 </script>
 
 <template>
+  <section class="section">
+  <div class="container">
     <div v-if="observationDetails">
-        <h2>scheduled observation details</h2>
+        <h1>scheduled observation details</h1>
       <div
         v-for="(observation) in observationDetails"
         :key="observation.id">
         <div
           v-for="(config) in observation.configurations"
           :key="config.id">
-          <p>Target: {{ config.target.name }}</p>
+          <h2>Target: <span class="green">{{ config.target.name }}</span></h2>
+          <h3>This observation is: {{ observation.state }}</h3>
+
+          <h3><font-awesome-icon icon="fa-regular fa-camera-retro" title="Camera" /> Exposures</h3>
           <div
             v-for="(exposure, expIndex) in config.instrument_configs"
             :key="expIndex">
-            <p>Filter: {{ exposure.optical_elements.filter }}</p>
-            <p>Exposure Time: {{ exposure.exposure_time }}s</p>
-            <p>Exposure Count: {{ exposure.exposure_count }}</p>
+            <p> <font-awesome-icon icon="fa-solid fa-sliders" title="sliders" /> {{ exposure.optical_elements.filter }}
+              - {{ exposure.exposure_time }}s <font-awesome-icon icon="fa-solid fa-xmark" title="times" />
+             {{ exposure.exposure_count }}</p>
           </div>
         </div>
       </div>
-      <p>Start Date: {{ observationDetails[0].windows[0].start }}</p>
-      <p>End Date: {{ observationDetails[0].windows[0].end }}</p>
+      <h3><font-awesome-icon icon="fa-solid fa-calendar-days" title="Calendar" /> Date Window</h3>
+      <p><span class="green">{{ observationDetails[0].windows[0].start }}</span> <FontAwesomeIcon icon="fa-regular fa-arrow-right"  />
+      <span class="red">{{ observationDetails[0].windows[0].end }}</span></p>
     </div>
 
     <div v-else>
       <div>
-        <h1>No Observation Details Available</h1>
+        <h1>Problem viewing observation</h1>
+        <p>There are no details available for this observation</p>
       </div>
     </div>
+    </div>
+  </section>
   </template>
