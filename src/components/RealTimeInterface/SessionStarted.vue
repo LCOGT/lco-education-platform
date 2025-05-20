@@ -162,6 +162,7 @@ const sendGoCommand = async () => {
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
+  realTimeSessionsStore.thumbnailCount = 0
   const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
