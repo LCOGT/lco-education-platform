@@ -260,7 +260,7 @@ const incompleteSelection = computed(() => {
   return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === '' || isExposureTimeValid.value === false
 })
 
-watch(exposureTime, (newTime) => {
+watch(exposureTime, () => {
   isExposureTimeValid.value = true
   exposureError.value = ''
 })
@@ -269,7 +269,7 @@ const targetNameEntered = computed(() => {
   return skyCoordinatesStore.targetNameEntered
 })
 
-watch(targetNameEntered, (newValue, oldValue) => {
+watch(targetNameEntered, () => {
   if (targetNameEntered.value === '') {
     targeterror.value = false
     targeterrorMsg.value = ''
