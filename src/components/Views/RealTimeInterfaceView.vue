@@ -21,37 +21,32 @@ const telescope = computed(() => telname[selectedSession.telescope])
 const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
 const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
 
-const telescopeStatus = computed(() => { return realTimeSessionsStore.telescopeStatus })
-const availabilityStatus = computed(() => { return telescopeStatus.value.status.availability })
 // this is going to be used to conditionally render
 const isTelescopeAvailable = computed(() => {
   return realTimeSessionsStore.isTelescopeAvailable
 })
 
 const availabilityReason = computed(() => {
-  const reason = availabilityStatus.value
-  switch (reason) {
-    case 'Sun up':
-      return 'Telescope is currently closed because the Sun is up'
-    case 'Unavailable for technical reasons':
-      return 'Telescope is unavailable for technical reasons'
-    case 'Closed for bad weather':
-      return 'Telescope is currently closed for bad weather'
-    case 'Closed for maintenance':
-      return 'Telescope is temporarily closed for maintenance'
-    default:
-      // Available is default
-      return reason
+  let message
+  if (reason.value === 'Available' || !reason.value) {
+    message = 'Telescope is available for observation'
+  } else {
+    // Replace underscores with spaces and capitalize first letter
+    const formattedReason = reason.value
+      ? reason.value.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
+      : ''
+    message = `Telescope is currently closed for the following reason: ${formattedReason}`
   }
+  return message
 })
 
-watch(() => availabilityStatus.value, () => {
-  if (availabilityStatus.value !== 'Available') {
-    realTimeSessionsStore.isTelescopeAvailable = false
-  } else if (availabilityStatus.value === 'Available') {
-    realTimeSessionsStore.isTelescopeAvailable = true
-  }
-})
+// watch(() => availabilityStatus.value, () => {
+//   if (availabilityStatus.value !== 'Available') {
+//     realTimeSessionsStore.isTelescopeAvailable = false
+//   } else if (availabilityStatus.value === 'Available') {
+//     realTimeSessionsStore.isTelescopeAvailable = true
+//   }
+// })
 
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
