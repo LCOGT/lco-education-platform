@@ -3,8 +3,6 @@ import { fetchApiCall } from '../utils/api'
 import { useUserDataStore } from './userData'
 import { useConfigurationStore } from './configuration'
 
-const fifteenDaysAgo = new Date(new Date().getTime() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-
 export const useObsPortalDataStore = defineStore('obsPortalData', {
   state () {
     return {
@@ -192,7 +190,7 @@ export const useObsPortalDataStore = defineStore('obsPortalData', {
         // This will only work with NORMAL observations, so TIME_CRITICAL or RAPID_RESPONSE will not show up.
         //  Also only getting ones submitted by the user, which ignores observations on a shared proposal the user has access too.
         // In the future, we have to change the query
-        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}&created_after=${fifteenDaysAgo}`,
+        url: configurationStore.observationPortalUrl + `requestgroups/?observation_type=NORMAL&state=PENDING&user=${username}`,
         method: 'GET',
         successCallback: (response) => {
           this.storePendingScheduledRequests(response)
