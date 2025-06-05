@@ -44,9 +44,6 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     telescopeAvailability (state) {
       return state.telescopeState
     },
-    getObservationTotalTime (state) {
-      return state.observationTotalTime
-    },
     progressPercent (state) {
       const total = state.observationTotalTime
       const elapsed = (state.observationNow - state.observationStartedAt) / 1000

@@ -36,10 +36,6 @@ watch(
 
 function updateLocation () {
   const now = new Date().toUTCString()
-  // time.setHours(time.getHours())
-  // time.setTime(time.getTime() + time.getTimezoneOffset() * 60000)
-  // Celestial.date(now)
-  // Celestial.location([lat.value, lng.value])
   Celestial.skyview({ date: now, location: [lat.value, lng.value] })
   Celestial.resize({ width: 0 })
   Celestial.redraw()
@@ -195,7 +191,6 @@ function initializeCelestial () {
   }
   Celestial.display(config)
   updateLocation()
-  // Celestial.rotate([0, 0, zRotation])
   setTimeout(() => {
     renderCrosshairsAtCenter()
   }, 1000)

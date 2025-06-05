@@ -40,14 +40,6 @@ const availabilityReason = computed(() => {
   return message
 })
 
-// watch(() => availabilityStatus.value, () => {
-//   if (availabilityStatus.value !== 'Available') {
-//     realTimeSessionsStore.isTelescopeAvailable = false
-//   } else if (availabilityStatus.value === 'Available') {
-//     realTimeSessionsStore.isTelescopeAvailable = true
-//   }
-// })
-
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
