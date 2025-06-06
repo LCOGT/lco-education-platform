@@ -159,6 +159,7 @@ const resetValues = () => {
 }
 
 const sendGoCommand = async () => {
+  realTimeSessionsStore.resetProgress()
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
