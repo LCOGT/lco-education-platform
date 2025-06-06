@@ -24,7 +24,6 @@ let pollingInterval = null
 const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
-const currentThumbnail = computed(() => realTimeSessionsStore.currentThumbnail)
 const exposureCount = computed(() => realTimeSessionsStore.exposureCount)
 
 const emits = defineEmits(['updateRenderGallery'])
@@ -71,6 +70,7 @@ const fetchTelescopeStatus = async () => {
 }
 
 const handleThumbnailsFetched = (count) => {
+  console.log('Thumbnails fetched:', count)
   thumbnailsFetched.value = true
   // Updates store with new count and restarts the progress bar
   realTimeSessionsStore.countThumbnails(count)
@@ -181,7 +181,7 @@ const setSiteState = computed(() => {
               </div>
             </div>
             <div v-if="exposureCount > 1" class="thumbnail-counter">
-              {{ currentThumbnail }} of {{ exposureCount }}
+              {{ realTimeSessionsStore.currentThumbnail }} of {{ exposureCount }}
             </div>
             <div class="progress-container">
               <div
