@@ -29,7 +29,9 @@ const getThumbnails = async () => {
     url: configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`,
     method: 'GET',
     successCallback: (data) => {
-      thumbnails.value = data.results.map(result => result.url)
+      thumbnails.value = data.results
+        .filter(result => result.url.includes('e91-large_thumbnail'))
+        .map(result => result.url)
       if (thumbnails.value.length > 0) {
         emits('thumbnailsFetched', thumbnails.value.length)
       }
