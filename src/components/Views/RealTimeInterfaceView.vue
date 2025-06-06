@@ -21,11 +21,6 @@ const telescope = computed(() => telname[selectedSession.telescope])
 const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
 const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
 
-// this is going to be used to conditionally render
-const isTelescopeAvailable = computed(() => {
-  return realTimeSessionsStore.isTelescopeAvailable
-})
-
 const availabilityReason = computed(() => {
   let message
   if (reason.value === 'Available' || !reason.value) {
@@ -113,7 +108,7 @@ onMounted(async () => {
   <template v-if="loading">
     <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
   </template>
-  <template v-else-if="!isTelescopeAvailable && realTimeSessionsStore.currentStatus === 'ACTIVE'">
+  <template v-else-if="!realTimeSessionsStore.isTelescopeAvailable && realTimeSessionsStore.currentStatus === 'ACTIVE'">
     <section>
       <div class="container">
         <div class="content">
