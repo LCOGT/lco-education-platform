@@ -149,6 +149,8 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       this.observationTotalTime = 0
       this.observationStartedAt = 0
       this.observationNow = Date.now()
+      this.thumbnailCount = 0
+      this.currentThumbnail = 0
     },
     initializeProgressTicker () {
       // If already running or nothing to track, bail
