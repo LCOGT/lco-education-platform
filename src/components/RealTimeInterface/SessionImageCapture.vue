@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, defineProps, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
@@ -9,6 +9,13 @@ import { LottieAnimation } from 'lottie-web-vue'
 import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
+const props = defineProps({
+  exposureSettings: {
+    type: Array,
+    required: true
+  }
+})
+
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
 
@@ -17,6 +24,8 @@ let pollingInterval = null
 const anim = ref(null)
 const thumbnailsFetched = ref(false)
 const imagesDone = ref(false)
+const exposureCount = computed(() => realTimeSessionsStore.exposureCount)
+
 const emits = defineEmits(['updateRenderGallery'])
 
 const imagesCaptured = computed(() => {
@@ -60,13 +69,15 @@ const fetchTelescopeStatus = async () => {
   })
 }
 
-const handleThumbnailsFetched = (fetched) => {
-  if (fetched) {
-    thumbnailsFetched.value = true
-  }
+const handleThumbnailsFetched = (count) => {
+  thumbnailsFetched.value = true
+  // Updates store with new count and restarts the progress bar
+  realTimeSessionsStore.countThumbnails(count)
+  realTimeSessionsStore.initializeProgressTicker()
 }
 
 const goBackToSessionStarted = () => {
+  realTimeSessionsStore.resetProgress()
   emits('updateRenderGallery', false)
 }
 
@@ -77,7 +88,15 @@ const sendStopCommand = async () => {
     'Accept': 'application/json',
     'Authorization': `${token}`
   }
-  await fetchApiCall({ url: configurationStore.rtiBridgeUrl + 'command/stop', method: 'POST', header: headers, successCallback: () => { imagesDone.value = true }, failCallback: (error) => { console.error('API failed with error', error) } })
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + 'command/stop',
+    method: 'POST',
+    header: headers,
+    successCallback: () => {
+      imagesDone.value = true
+      realTimeSessionsStore.resetProgress() },
+    failCallback: (error) => { console.error('API failed with error', error) }
+  })
 }
 
 onMounted(() => {
@@ -85,6 +104,7 @@ onMounted(() => {
   fetchTelescopeStatus()
   pollingInterval = setInterval(fetchTelescopeStatus, 1000)
   anim.value.goToAndPlay(0, true)
+  realTimeSessionsStore.initializeProgressTicker()
 })
 
 onUnmounted(() => {
@@ -159,6 +179,16 @@ const setSiteState = computed(() => {
                 </div>
               </div>
             </div>
+            <div v-if="exposureCount > 1" class="thumbnail-counter">
+              {{ realTimeSessionsStore.currentThumbnail }} of {{ exposureCount }}
+            </div>
+            <div class="progress-container">
+              <div
+                class="progress-bar"
+                :style="{ width: realTimeSessionsStore.progressPercent + '%' }"
+              />
+              </div>
+
             <button class="button red-bg" @click="sendStopCommand">
             Cancel Observation
             </button>
@@ -180,5 +210,21 @@ const setSiteState = computed(() => {
               @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
-    </div>
+        </div>
 </template>
+
+<style scoped>
+.progress-container {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+.progress-bar {
+  height: 100%;
+  transition: width 0.5s linear;
+  background: linear-gradient(to right, #3b82f6, #10b981);
+}
+</style>

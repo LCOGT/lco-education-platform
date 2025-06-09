@@ -155,7 +155,9 @@ const sendObservationRequest = async () => {
       failCallback: (error) => {
         showScheduled.value = false
         isSubmitting.value = false
-        errorMessage.value = error.requests
+        for (const errorMssg of error.requests) {
+          errorMessage.value = errorMssg.non_field_errors[0]
+        }
         // .map(request => request.non_field_errors)
         // .flat()
         // .join(', ')

@@ -50,6 +50,7 @@ const validTarget = ref(false)
 const isRaFocused = ref(false)
 const isDecFocused = ref(false)
 const maxExposures = ref(3)
+const exposureSettings = ref([])
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -153,12 +154,16 @@ const resetValues = () => {
   selectedFilter.value = ''
   fieldOfView.value = 1.0
   loading.value = false
+  realTimeSessionsStore.resetProgress()
+  realTimeSessionsStore.fetchObservationParams(exposureSettings.value)
 }
 
 const sendGoCommand = async () => {
+  realTimeSessionsStore.resetProgress()
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
+  realTimeSessionsStore.thumbnailCount = 0
   const token = realTimeSessionsStore.getTokenForCurrentSession
   const headers = {
     'Content-Type': 'application/json',
@@ -171,12 +176,16 @@ const sendGoCommand = async () => {
   if (selectedFilter.value === 'rgb' && suggestionOrManual.value === 'manual') {
     exposFilter = ['rp', 'V', 'B']
     exposTime = [Number(exposureTime.value), Number(exposureTime.value), Number(exposureTime.value)]
+    exposureSettings.value = exposTime
+    realTimeSessionsStore.exposureCount = exposTime.length
   } else {
   // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
   // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
   // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
     exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
     exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
+    exposureSettings.value = exposTime
+    realTimeSessionsStore.exposureCount = exposTime.length
   }
   const requestBody = {
     dec: Number(dec.value),
@@ -252,7 +261,7 @@ const incompleteSelection = computed(() => {
   return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === '' || isExposureTimeValid.value === false
 })
 
-watch(exposureTime, (newTime) => {
+watch(exposureTime, () => {
   isExposureTimeValid.value = true
   exposureError.value = ''
 })
@@ -261,7 +270,7 @@ const targetNameEntered = computed(() => {
   return skyCoordinatesStore.targetNameEntered
 })
 
-watch(targetNameEntered, (newValue, oldValue) => {
+watch(targetNameEntered, () => {
   if (targetNameEntered.value === '') {
     targeterror.value = false
     targeterrorMsg.value = ''
@@ -276,6 +285,10 @@ onMounted(async () => {
   filterList.value.unshift({ name: 'RGB', code: 'rgb' })
   getVisibleTargets()
   skyCoordinatesStore.clearCoordinates()
+  // TO DO: fetch telescope status every 5 seconds if it's available. If it's not available, fetch every second.
+  // also if not available, render a different view
+  //
+  await realTimeSessionsStore.fetchTelescopeStatus()
 })
 
 function handleUpdateCoordinates ({ ra: newRa, dec: newDec }) {
@@ -501,7 +514,7 @@ watch(
     </div>
   </div>
   <div v-else-if="isCapturingImages">
-    <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :selected-filter="selectedFilter" :exposure-time="exposureTime" :target-name="targetName" :field-of-view="fieldOfView"/>
+    <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :exposure-time="exposureTime" :exposure-settings="exposureSettings" :selected-filter="selectedFilter" :target-name="targetName" :field-of-view="fieldOfView"/>
   </div>
 </template>
 

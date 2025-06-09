@@ -21,6 +21,20 @@ const telescope = computed(() => telname[selectedSession.telescope])
 const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
 const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
 
+const availabilityReason = computed(() => {
+  let message
+  if (reason.value === 'Available' || !reason.value) {
+    message = 'Telescope is available for observation'
+  } else {
+    // Replace underscores with spaces and capitalize first letter
+    const formattedReason = reason.value
+      ? reason.value.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
+      : ''
+    message = `Telescope is currently closed for the following reason: ${formattedReason}`
+  }
+  return message
+})
+
 const statusNotExpired = computed(() => {
   return realTimeSessionsStore.currentStatus === 'ACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED' || realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
@@ -55,7 +69,15 @@ const telescopeMessage = computed(
 watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
-  } else {
+    const fetchTelescopeStatusInterval = setInterval(() => {
+      realTimeSessionsStore.fetchTelescopeStatus()
+    }, 1000)
+
+    onBeforeUnmount(() => {
+      clearInterval(fetchTelescopeStatusInterval)
+    })
+  }
+  else {
     realTimeSessionsStore.resetSessionState()
     timeRemaining.value = 0
     realTimeSessionsStore.updateImageCaptureState(false)
@@ -70,6 +92,9 @@ onMounted(async () => {
   loading.value = true
   // initiate the handshake and retrieve a token prior to polling
   await realTimeSessionsStore.fetchSessionToken()
+
+  await realTimeSessionsStore.fetchTelescopeStatus()
+
   realTimeSessionsStore.startPolling()
   countdown()
   const checkTimeRemaining = setInterval(() => {
@@ -82,6 +107,17 @@ onMounted(async () => {
 <template>
   <template v-if="loading">
     <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
+  </template>
+  <template v-else-if="!realTimeSessionsStore.isTelescopeAvailable && realTimeSessionsStore.currentStatus === 'ACTIVE'">
+    <section>
+      <div class="container">
+        <div class="content">
+          <h2>Telescope Unavailable</h2>
+          <p><span class="red-bg px-2 py-2">{{ availabilityReason }}</span></p>
+          <SessionPending/>
+        </div>
+      </div>
+    </section>
   </template>
   <template v-else>
     <section>

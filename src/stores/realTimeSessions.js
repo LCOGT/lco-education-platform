@@ -14,7 +14,16 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       fetchInterval: null,
       sessionTokens: {},
       isCapturingImagesMap: {},
-      telescopeState: {}
+      telescopeState: {},
+      telescopeStatus: {},
+      isTelescopeAvailable: true,
+      observationTotalTime: 0,
+      observationStartedAt: 0,
+      observationNow: Date.now(),
+      observationTicker: null,
+      exposureCount: 0,
+      thumbnailCount: 0,
+      currentThumbnail: 0
     }
   },
   persist: true,
@@ -34,6 +43,16 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
     },
     telescopeAvailability (state) {
       return state.telescopeState
+    },
+    progressPercent (state) {
+      const total = state.observationTotalTime
+      const elapsed = (state.observationNow - state.observationStartedAt) / 1000
+      const percent = total > 0 ? Math.min((elapsed / total) * 100, 100) : 0
+      // If the countdown is finished but no new thumbnail yet, linger at 95%
+      if (state.currentThumbnail < state.exposureCount && percent >= 100) {
+        return 95
+      }
+      return percent
     }
   },
   actions: {
@@ -99,6 +118,73 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       if (this.currentSessionId) {
         this.isCapturingImagesMap[this.currentSessionId] = isCapturing
       }
+    },
+    async fetchObservationParams (exposureTime) {
+      const configurationStore = useConfigurationStore()
+      const token = this.getTokenForCurrentSession
+      await fetchApiCall({
+        url: configurationStore.rtiBridgeUrl + 'observation-params',
+        method: 'POST',
+        header: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': token
+        },
+        body: { expTime: exposureTime.map(Number) },
+        successCallback: resp => {
+          const secs = resp.observation_params.observation_length
+          if (this.exposureCount !== 0) this.observationTotalTime = secs / this.exposureCount
+          this.observationStartedAt = Date.now()
+          if (!this.observationTicker) {
+            this.observationTicker = setInterval(() => {
+              this.observationNow = Date.now()
+            }, 1000)
+          }
+        }
+      })
+    },
+    resetProgress () {
+      clearInterval(this.observationTicker)
+      this.observationTicker = null
+      this.observationTotalTime = 0
+      this.observationStartedAt = 0
+      this.observationNow = Date.now()
+      this.thumbnailCount = 0
+      this.currentThumbnail = 0
+    },
+    initializeProgressTicker () {
+      // If already running or nothing to track, bail
+      if (this.observationTicker || this.observationTotalTime === 0 || this.observationStartedAt === 0) {
+        return
+      }
+      // Start ticking
+      this.observationTicker = setInterval(() => {
+        this.observationNow = Date.now()
+      }, 1000)
+    },
+    countThumbnails (count) {
+      this.thumbnailCount = count
+      this.currentThumbnail = count
+    },
+    async fetchTelescopeStatus () {
+      const configurationStore = useConfigurationStore()
+      const token = this.getTokenForCurrentSession
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `${token}`
+      }
+      await fetchApiCall({
+        url: configurationStore.rtiBridgeUrl + 'status',
+        method: 'GET',
+        header: headers,
+        successCallback: (telStatus) => {
+          this.telescopeStatus = telStatus
+        },
+        failCallback: (error) => {
+          console.error('Error fetching telescope status:', error)
+        }
+      })
     }
   }
 })
