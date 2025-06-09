@@ -70,7 +70,6 @@ const fetchTelescopeStatus = async () => {
 }
 
 const handleThumbnailsFetched = (count) => {
-  console.log('Thumbnails fetched:', count)
   thumbnailsFetched.value = true
   // Updates store with new count and restarts the progress bar
   realTimeSessionsStore.countThumbnails(count)
