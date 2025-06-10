@@ -9,6 +9,12 @@ import { useProposalStore } from '../../stores/proposalManagement.js'
 import LeafletMap from './GlobeMap/LeafletMap.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import sites from '../../utils/sites.JSON'
+import oggFlag from '@/assets/Icons/ogg_flag.png'
+import cojFlag from '@/assets/Icons/coj_flag.png'
+import tfnFlag from '@/assets/Icons/tfn_flag.svg'
+import cptFlag from '@/assets/Icons/cpt_flag.svg'
+import elpFlag from '@/assets/Icons/elp_flag.png'
+import lscFlag from '@/assets/Icons/lsc_flag.png'
 
 const router = useRouter()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -269,6 +275,28 @@ function displaySiteName (site) {
   }
 }
 
+const siteFlag = computed(() => {
+  if (selectedSite.value) {
+    switch (selectedSite.value.site) {
+      case 'ogg':
+        return oggFlag
+      case 'coj':
+        return cojFlag
+      case 'tfn':
+        return tfnFlag
+      case 'cpt':
+        return cptFlag
+      case 'elp':
+        return elpFlag
+      case 'lsc':
+        return lscFlag
+      default:
+        return null
+    }
+  }
+  return null
+})
+
 // Handles both resetting the session and updating localTimes.value when the date changes
 watch(date, (newDate, oldDate) => {
   if (newDate !== oldDate) {
@@ -314,6 +342,53 @@ onMounted(() => {
             expanded
           />
         </div>
+        <div v-if="startTime" class="column">
+          <div class="card highlight-box">
+              <header class="card-header">
+                <h4 class="card-header-title">Ready to book?</h4>
+              </header>
+              <div class="card-content">
+                <div class="content">
+
+                  <div class="media">
+                    <div class="media-left">
+                      <figure class="image" style="max-width:50px">
+                        <img
+                          :src=siteFlag
+                          alt="Flag"
+                        />
+                      </figure>
+                    </div>
+                  <div class="media-content">
+                  <p class="selected-datetime">
+                    <span v-if="selectedSite && !errorMessage">
+
+                      {{ displaySiteName(selectedSite.site) }} selected for
+                      <time :datetime=date>{{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at
+                      {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</time>
+                    </span>
+                    <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
+                  </p>
+                  </div>
+                  </div>
+                <div v-if="!bookingInProgess">
+                  <div class="buttons">
+                    <button
+                      v-if="date && selectedSite"
+                      @click="blockRti"
+                      class="button blue-bg"
+                    >
+                      Book
+                    </button>
+                  </div>
+                </div>
+                <div v-else>
+                  <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
       </div>
       <div class="column">
         <div v-if="date">
@@ -336,30 +411,6 @@ onMounted(() => {
             :selectedTime="startTime?.toISOString()"
             :highlightedSite="selectedSite?.site"
           />
-        </div>
-        <div v-if="startTime" class="column">
-          <p class="selected-datetime">
-            <span v-if="selectedSite && !errorMessage">
-              {{ displaySiteName(selectedSite.site) }} selected for
-              {{ formatDateTime(date, { year: 'numeric', month: 'long', day: 'numeric' }) }} at
-              {{ startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
-            </span>
-            <span v-else-if="selectedSite && errorMessage" class="error">{{ errorMessage }}</span>
-          </p>
-          <div v-if="!bookingInProgess">
-            <div class="buttons">
-              <button
-                v-if="date && selectedSite"
-                @click="blockRti"
-                class="button blue-bg"
-              >
-                Book
-              </button>
-            </div>
-          </div>
-          <div v-else>
-            <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
-          </div>
         </div>
       </div>
     </div>
