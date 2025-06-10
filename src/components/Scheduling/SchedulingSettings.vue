@@ -226,13 +226,12 @@ onMounted(async () => {
             <span>
               {{ exposure.filterName }} - {{ exposure.exposureTime }}s x {{ exposure.count }}
             </span>
-            <v-btn
+            <a
               @click="deleteExposure(tIndex, index)"
-              color="indigo"
-              class="delete-exposure"
+              class="delete-exposure red"
             >
-              Delete exposure
-            </v-btn>
+              <FontAwesomeIcon icon="fa-solid fa-trash-can" />
+          </a>
           </div>
           <v-btn
             v-if="!props.target"
