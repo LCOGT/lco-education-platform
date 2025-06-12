@@ -282,6 +282,16 @@ h1.site-name {
     }
 }
 
+.real-time-table {
+    display: table; 
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.2rem;
+    img.site-flag {
+        max-width: 50px;
+    }
+}
+
 .content .icon-text-list ul {
     display:inline-grid;
 }

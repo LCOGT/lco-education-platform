@@ -13,6 +13,17 @@ const endDate = ref('')
 const selectedProposal = ref()
 const step = ref(1)
 
+const handleProposalSelection = (proposal) => {
+  // Only advance step if still on step 1
+  if (step.value === 1) {
+    selectedProposal.value = proposal
+    step.value = 2 // Move to the next step
+  } else {
+    // Just update the proposal without advancing steps
+    selectedProposal.value = proposal
+  }
+}
+
 const handleTargetUpdate = (targetUpdate) => {
   // If an index was passed and it exists in targetsData, update that entry.
   if (targetsData.value[targetUpdate.index]) {
@@ -87,9 +98,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <h2>Request an Observation</h2>
-  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="(proposal) => { selectedProposal = proposal }"/>
-  <SchedulingSettings
+  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
+  <SchedulingSettings v-if="step!=1"
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"

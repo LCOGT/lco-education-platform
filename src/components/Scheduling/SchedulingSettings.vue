@@ -221,18 +221,7 @@ onMounted(async () => {
           class="highlight-box"
         >
           <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
-          {{ target.name || `${target.ra}_${target.dec}` }}:
-          <div v-for="(exposure, index) in target.exposures" :key="index" class="exposure-item">
-            <span>
-              {{ exposure.filterName }} - {{ exposure.exposureTime }}s x {{ exposure.count }}
-            </span>
-            <a
-              @click="deleteExposure(tIndex, index)"
-              class="delete-exposure red"
-            >
-              <FontAwesomeIcon icon="fa-solid fa-trash-can" />
-          </a>
-          </div>
+          {{ target.name || `${target.ra}_${target.dec}` }}
           <v-btn
             v-if="!props.target"
             @click="editTarget(tIndex)"
@@ -240,6 +229,26 @@ onMounted(async () => {
           >
             Change Target
           </v-btn>
+          <table class="table is-fullwidth">
+            <thead>
+              <tr>
+                <th>Filter</th>
+                <th>Exposure Time (s)</th>
+                <th colspan="2">Count</th>
+              </tr>
+            </thead>
+            <tbody>
+          <tr v-for="(exposure, index) in target.exposures" :key="index" class="exposure-item">
+              <td>{{ exposure.filterName }}</td><td>{{ exposure.exposureTime }}s</td><td> x {{ exposure.count }}</td>
+            <td><a
+              @click="deleteExposure(tIndex, index)"
+              class="delete-exposure red"
+            >
+              <FontAwesomeIcon icon="fa-solid fa-trash-can" />
+          </a></td>
+        </tr>
+        </tbody>
+      </table>
         </div>
       </div>
       <!-- Target input -->
