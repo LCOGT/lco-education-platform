@@ -21,6 +21,8 @@ const realTimeSessionsStore = useRealTimeSessionsStore()
 const timeRemaining = ref(0)
 const loading = ref(true)
 const telname = { '0m4a': 'Delta Rho 0.35m', '0m4b': 'Delta Rho 0.35m', '1m0a': '1 meter', '2m0a': '2 meter' }
+const imageSrc = ref('')
+const baseUrl = 'https://lco.global/camera/data/{}/allsky/lastsnap.jpg'
 
 const selectedSession = realTimeSessionsStore.currentSession
 const site = computed(() => sites[selectedSession.site]?.name)
@@ -28,6 +30,8 @@ const telescope = computed(() => telname[selectedSession.telescope])
 
 const availability = computed(() => realTimeSessionsStore.telescopeAvailability.event_type)
 const reason = computed(() => realTimeSessionsStore.telescopeAvailability.event_reason)
+
+let intervalId = null
 
 const availabilityReason = computed(() => {
   let message
@@ -114,6 +118,11 @@ const siteFlag = computed(() => {
   return null
 })
 
+const updateImage = () => {
+  const baseUrl = `https://lco.global/camera/data/${selectedSession.site}/allsky/lastsnap.jpg`
+  imageSrc.value = `${baseUrl}?t=${Date.now()}` // Avoid caching by adding timestamp
+}
+
 watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
   if (newStatus === 'ACTIVE') {
     countdown()
@@ -134,6 +143,7 @@ watch(() => realTimeSessionsStore.currentStatus, (newStatus, oldStatus) => {
 
 onBeforeUnmount(() => {
   realTimeSessionsStore.stopPolling()
+  clearInterval(intervalId)
 })
 
 onMounted(async () => {
@@ -149,6 +159,8 @@ onMounted(async () => {
     clearInterval(checkTimeRemaining)
     loading.value = false
   }, 100)
+  updateImage()
+  intervalId = setInterval(updateImage, 30000)
 })
 </script>
 
@@ -188,9 +200,11 @@ onMounted(async () => {
                   <FontAwesomeIcon icon="fa-regular fa-location-dot"  />
                 </span>
                 <span>{{ site }}</span>
+                <span><img :src="siteFlag" alt="Site Flag" class="site-flag-sm" />
+                </span>
               </div>
-
-              <img :src="siteFlag" alt="Site Flag" class="site-flag"/>
+              <h3>All Sky Site View</h3>
+              <img :src="imageSrc" alt="Site all sky camera" class="site-all-sky-camera" />
 
             </div>
             <div class="column is-6">
