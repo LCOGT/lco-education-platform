@@ -1,32 +1,32 @@
 {
     "cpt": {
         "name": "Sutherland, South Africa",
-        "lat": -33.9258,
-        "lon": 18.4232
+        "lat": -32.38,
+        "lon": 20.81
     },
     "elp": {
         "name": "McDonald Observatory, Texas",
-        "lat": 31.8072,
-        "lon": -106.3776
+        "lat": 30.67,
+        "lon": -104.02
     },
     "ogg": {
         "name": "Maui, Hawaii",
-        "lat": 21.4389,
-        "lon": -158.0001
+        "lat": 20.7075,
+        "lon": -156.256111
     },
     "coj": {
         "name": "Siding Spring, Australia",
-        "lat": -37.8136,
-        "lon": 144.9631
+        "lat": -31.273333,
+        "lon": 149.071111
     },
     "lsc": {
         "name": "Cerro Tololo, Chile",
-        "lat": -29.9027,
-        "lon": -71.2519
+        "lat": -30.1675,
+        "lon": -70.804722
     },
     "tfn": {
         "name": "Tenerife, Canary Islands",
-        "lat": 28.4827,
-        "lon": -16.3416
+        "lat": 28.3,
+        "lon": -16.509722
     }
 }
