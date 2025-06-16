@@ -34,7 +34,7 @@ const iframeSrc = computed(() => {
 
 <style scoped>
 .windy-container {
-height: 80vh;
+height: 50vh;
 width: 100%;
 }
 </style>

@@ -226,6 +226,10 @@ h1.site-name {
     width: 100%;
 }
 
+.icon-text {
+    font-size:1.2em;
+}
+
 .icon-highlight {
     font-size: 3rem;
     padding: 0.5em 0;
@@ -276,6 +280,19 @@ h1.site-name {
             width: 50%;
         }
     }
+}
+
+.real-time-table {
+    display: table; 
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.2rem;
+    img.site-flag {
+        max-width: 50px;
+    }
+}
+img.site-flag-sm {
+    max-width: 30px;
 }
 
 .content .icon-text-list ul {

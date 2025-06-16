@@ -219,7 +219,7 @@ onMounted(() => {
       <ProposalDropdown v-if="hasManyProposals" :isItRealTime="false" @selectionsComplete="handleProposalSelection" />
     </div>
     <div v-if="currentStep > 1" class="navigation-buttons">
-      <p v-if="selectedProposal">Selected Proposal: {{ selectedProposal }}</p>
+      <p v-if="selectedProposal">Project: {{ selectedProposal }}</p>
     </div>
     <Calendar v-if="selectedProposal && currentStep === 2" @updateDateRange="handleDateRangeUpdate" />
     <div v-if="currentStep === 3 && categories && categories.length > 0" class="content">

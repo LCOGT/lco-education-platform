@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const emit = defineEmits(['selectionsComplete'])
 
@@ -34,8 +35,9 @@ onMounted(() => {
 <template>
   <!-- Only rendering if there is more than one proposal, otherwise it's automatically selected -->
   <template v-if="proposals.length > 1">
+    <h3>Select your project</h3>
     <div class="field">
-      <label for="proposalSelect">Select the project you would like to use</label>
+      <label for="proposalSelect">We have found multiple projects on your account. Please select the one to use for these observations.</label>
         <div class="control">
         <div class="select">
           <select
@@ -52,8 +54,13 @@ onMounted(() => {
     </div>
   </template>
   <template v-else-if="!proposals.length">
-    <div>
-      <p>No proposals found. Please create a proposal <a href="https://observe.lco.global/apply">here</a></p>
+      <div class="notification is-warning">
+        <div class="icon-text">
+        <span class="icon">
+          <font-awesome-icon icon="fa-solid fa-exclamation-triangle" />
+        </span>
+        <span>You are not a member of any projects.</span>
+      </div>
     </div>
   </template>
 </template>
