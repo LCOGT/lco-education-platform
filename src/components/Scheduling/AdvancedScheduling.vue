@@ -10,7 +10,7 @@ const proposalStore = useProposalStore()
 const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
-const selectedProposal = ref()
+const selectedProposal = ref('hello')
 const step = ref(1)
 
 const handleProposalSelection = (proposal) => {
