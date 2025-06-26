@@ -93,13 +93,14 @@ const handleDisplay = (display) => {
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
+    step.value = 2
   }
 })
 </script>
 
 <template>
   <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <SchedulingSettings v-if="!hasManyProposals || step!==1"
+  <SchedulingSettings v-if="selectedProposal && step!==1"
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
