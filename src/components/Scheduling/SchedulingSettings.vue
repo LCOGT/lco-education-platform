@@ -159,9 +159,7 @@ const formatExposures = (exposures) => {
 }
 
 const nextStep = () => {
-  if (currentStep.value === 1) {
-    currentStep.value = 2
-  } else if (currentStep.value === 2) {
+  if (currentStep.value === 2) {
     currentStep.value = 3
   } else if (currentStep.value === 3) {
     currentStep.value = 4

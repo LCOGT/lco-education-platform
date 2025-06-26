@@ -100,14 +100,14 @@ onMounted(() => {
 
 <template>
   <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <SchedulingSettings v-if="selectedProposal && step!==1"
+  <SchedulingSettings v-if="selectedProposal && step!== 1"
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
   />
-  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===3"/>
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===4"/>
 </template>
 
 <style scoped>
