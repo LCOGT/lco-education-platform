@@ -1,9 +1,9 @@
 <script setup>
 import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
+import { useProposalStore } from '../../stores/proposalManagement.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { de } from 'date-fns/locale'
 
 const props = defineProps({
   showProjectField: {
@@ -29,13 +29,18 @@ const props = defineProps({
 const emits = defineEmits(['exposuresUpdated', 'targetUpdated', 'updateDisplay'])
 
 const configurationStore = useConfigurationStore()
+const proposalStore = useProposalStore()
+
+const hasManyProposals = () => {
+  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
+}
 
 const targetList = ref([{ name: '', exposures: [], ra: '', dec: '' }])
 const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
 const filterList = ref([])
-const currentStep = ref(1)
+const currentStep = ref(2)
 
 const targetInput = reactive({
   name: '',
@@ -145,7 +150,7 @@ const addTarget = () => {
   targetInput.dec = ''
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
-  currentStep.value = 1
+  currentStep.value = 2
 }
 
 // Function to display exposures for a target as a concatenated string
@@ -154,34 +159,36 @@ const formatExposures = (exposures) => {
 }
 
 const nextStep = () => {
-  if (currentStep.value === 1) {
-    currentStep.value = 2
-  } else if (currentStep.value === 2) {
+  if (currentStep.value === 2) {
     currentStep.value = 3
+  } else if (currentStep.value === 3) {
+    currentStep.value = 4
   }
   emits('updateDisplay', currentStep.value)
 }
 
 const previousStep = () => {
-  if (currentStep.value === 2) {
+  if (currentStep.value === 2 && hasManyProposals()) {
     currentStep.value = 1
   } else if (currentStep.value === 3) {
     currentStep.value = 2
+  } else if (currentStep.value === 4) {
+    currentStep.value = 3
   }
   emits('updateDisplay', currentStep.value)
 }
 
 const disableNextStep = computed(() => {
-  if (currentStep.value === 1) {
+  if (currentStep.value === 2) {
     return !targetInput.ra || !targetInput.dec
-  } else if (currentStep.value === 2) {
+  } else if (currentStep.value === 3) {
     return !targetList.value[activeTargetIndex.value].exposures.length
   }
   return false
 })
 
 const buttonVisibility = computed(() => {
-  return props.showProjectField && currentStep.value !== 3
+  return props.showProjectField && currentStep.value !== 4
 })
 
 function editTarget (index) {
@@ -194,7 +201,7 @@ function editTarget (index) {
   isTargetConfirmed.value = true
   targetError.value = ''
   // Moving back to step one so user can edit target
-  currentStep.value = 1
+  currentStep.value = 2
 }
 
 function deleteExposure (targetIndex, exposureIndex) {
@@ -214,7 +221,7 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <div v-if="currentStep === 2 || props.target">
+      <div v-if="currentStep === 3 || props.target">
         <div
           v-for="(target, tIndex) in filteredTargets"
           :key="tIndex"
@@ -252,7 +259,7 @@ onMounted(async () => {
         </div>
       </div>
       <!-- Target input -->
-      <div v-if="showTitleField && currentStep === 1" class="input-wrapper">
+      <div v-if="showTitleField && currentStep === 2" class="input-wrapper">
         <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label for="target-list" class="label">Target</label>
@@ -302,7 +309,7 @@ onMounted(async () => {
     <div class="column is-one-third">
 
       <!-- Exposure settings -->
-      <div v-if="props.target || currentStep === 2">
+      <div v-if="props.target || currentStep === 3">
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Filter</label>

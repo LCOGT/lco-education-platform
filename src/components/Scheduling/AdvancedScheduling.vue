@@ -10,7 +10,7 @@ const proposalStore = useProposalStore()
 const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
-const selectedProposal = ref()
+const selectedProposal = ref('')
 const step = ref(1)
 
 const handleProposalSelection = (proposal) => {
@@ -93,20 +93,21 @@ const handleDisplay = (display) => {
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
+    step.value = 2
   }
 })
 </script>
 
 <template>
   <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <SchedulingSettings v-if="step!=1"
+  <SchedulingSettings v-if="selectedProposal && step!== 1"
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
   />
-  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===3"/>
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===4"/>
 </template>
 
 <style scoped>
