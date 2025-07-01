@@ -34,20 +34,14 @@ watch(
   }
 )
 
-function updateLocation () {
-  const now = new Date().toUTCString()
-  Celestial.skyview({ date: now, location: [lat.value, lng.value] })
-  Celestial.resize({ width: 0 })
-  Celestial.redraw()
-}
-
-function initializeCelestial () {
+function initializeCelestial (lat, lng) {
   const config = {
-    width: 600,
     settimezone: false,
     projection: 'stereographic', // Projection type, see d3-celestial docs for options
     transform: 'equatorial',
     // center: [0, 0], // Center of the map in [ra, dec, rotation] format
+    geopos: [lat, lng],
+    width: 0,
     controls: false,
     orientationfixed: true,
     follow: 'zenith',
@@ -190,7 +184,8 @@ function initializeCelestial () {
     }
   }
   Celestial.display(config)
-  updateLocation()
+  Celestial.date(new Date()) // Set the current date and time
+  // updateLocation()
   setTimeout(() => {
     renderCrosshairsAtCenter()
   }, 1000)
@@ -330,12 +325,7 @@ onMounted(() => {
   if (currentSession && currentSession.site) {
     const siteInfo = sites[currentSession.site]
     if (siteInfo && Celestial) {
-      initializeCelestial()
-      lat.value = siteInfo.lat
-      lng.value = siteInfo.lon
-      setTimeout(() => {
-        initializeCelestial()
-      }, 2500)
+      initializeCelestial(siteInfo.lat, siteInfo.lon)
     }
   }
   attachClickListener()
