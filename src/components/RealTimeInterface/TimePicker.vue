@@ -31,8 +31,8 @@ const localTimes = ref([])
 const selectedProposal = ref()
 const timeInterval = 15
 const today = ref(new Date())
-const oneYearFromNow = ref(new Date())
-oneYearFromNow.value.setFullYear(oneYearFromNow.value.getFullYear() + 1)
+const oneWeekFromNow = new Date()
+oneWeekFromNow.setDate(today.value.getDate() + 7)
 const bookingInProgess = ref(null)
 
 const emits = defineEmits(['timeSelected'])
@@ -253,20 +253,6 @@ const isDateAllowed = (date) => {
   return date >= firstDate && date <= lastDate
 }
 
-const disabledDates = computed(() => {
-  if (Object.keys(availableTimes.value).length === 0) {
-    return []
-  }
-  // Calculate the number of days between today and one year from now
-  const daysCount = Math.floor((oneYearFromNow.value - today.value) / (1000 * 60 * 60 * 24))
-  // Generates an array of dates from today to one year from now to filter out the disabled dates
-  return Array.from({ length: daysCount + 1 }, (_, index) => {
-    const date = new Date(today.value)
-    date.setDate(today.value.getDate() + index)
-    return date
-  }).filter(date => !isDateAllowed(date))
-})
-
 function displaySiteName (site) {
   if (site) {
     return sites[site]?.name
@@ -335,8 +321,7 @@ onMounted(() => {
             v-model="date"
             mode="date"
             :min-date="today"
-            :disabled-dates="disabledDates"
-            :max-date="oneYearFromNow"
+            :max-date="oneWeekFromNow"
             is-required
             @update:model-value="refreshTimes"
             expanded
