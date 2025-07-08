@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - ./deploy-frontend
   - ./svc-frontend
+  - ./deploy-proxy-jpl/
+  - ./svc-proxy-jpl/
 
 labels:
   - pairs:
@@ -14,3 +16,8 @@ configMapGenerator:
   - name: app-config
     files:
      - config.json
+
+  - name: proxy-jpl-haproxy
+    files:
+      - haproxy.cfg=./proxy-jpl-haproxy.cfg
+      - cors.lua=./proxy-jpl-cors.lua
