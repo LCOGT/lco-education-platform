@@ -15,7 +15,7 @@ vi.mock('../../../utils/calendarUtils', async (importOriginal) => {
   return {
     // Include all original exports
     ...actual,
-    fetchSemesterData: vi.fn(),
+    fetchSemesterData: vi.fn().mockResolvedValue(),
     currentSemesterEnd: '2024-08-01T12:00:00Z'
   }
 })
@@ -47,12 +47,12 @@ describe('Calendar.vue', () => {
 
   it('passes the correct max-date to VDatePicker', async () => {
     await flushPromises()
+    wrapper.vm.endOfCurrentSemester = new Date(currentSemesterEnd)
+    await wrapper.vm.$nextTick()
     const datePicker = wrapper.findComponent({ name: 'VDatePicker' })
     expect(datePicker.exists()).toBe(true)
-    // Note: The prop name 'maxDate' is camel-cased instead of using 'max-date' because Vue automatically converts kebab-case prop names to camelCase
-    // when passing them in js. In templates, we use 'max-date', but when accessing props programmatically, we use 'maxDate'
     const maxDateProp = datePicker.props('maxDate')
-    const maxDateIsoString = new Date(maxDateProp).toISOString().split('.')[0] + 'Z'
-    expect(maxDateIsoString).toBe(currentSemesterEnd)
+    const endOfCurrentSemesterDate = new Date(currentSemesterEnd)
+    expect(maxDateProp).toEqual(endOfCurrentSemesterDate)
   })
 })
