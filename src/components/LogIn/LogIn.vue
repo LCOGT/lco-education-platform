@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchApiCall } from '../../utils/api'
 import { useUserDataStore } from '../../stores/userData'
@@ -21,6 +21,7 @@ const storeAPIToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
+    await nextTick()
     await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
   }
 }

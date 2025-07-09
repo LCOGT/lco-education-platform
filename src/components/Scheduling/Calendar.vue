@@ -6,13 +6,16 @@ const emits = defineEmits(['updateDateRange'])
 
 const dateRange = ref()
 const today = new Date()
+const endOfCurrentSemester = ref()
 
 watch(dateRange, (newVal) => {
   emits('updateDateRange', newVal)
 })
 
 onMounted(async () => {
-  await fetchSemesterData()
+  await fetchSemesterData().then(() => {
+    endOfCurrentSemester.value = new Date(currentSemesterEnd)
+  })
 })
 
 </script>
@@ -25,7 +28,7 @@ onMounted(async () => {
         mode="date"
         is-range
         :min-date="today"
-        :max-date="parseISOString(currentSemesterEnd)"
+        :max-date="endOfCurrentSemester"
         placeholder="Select Dates"
         is-required
         @dayclick="
