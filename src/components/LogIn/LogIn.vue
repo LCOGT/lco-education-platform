@@ -21,8 +21,13 @@ const storeAPIToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Token ${authToken}`
+    }
     await nextTick()
-    await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
+    await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', header: headers, successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
   }
 }
 
