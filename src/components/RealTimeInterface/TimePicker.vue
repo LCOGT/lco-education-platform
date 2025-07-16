@@ -303,10 +303,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <template v-if="!hasAvailableTimes">
-    <v-progress-circular indeterminate color="white" model-value="20" class="loading" />
-  </template>
-  <template v-if="hasAvailableTimes">
     <h2>Book your live observing session</h2>
     <ProposalDropdown
       v-if="!selectedProposal"
@@ -399,7 +395,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-  </template>
 </template>
 
 <style scoped>

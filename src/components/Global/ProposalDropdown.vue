@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -15,6 +15,7 @@ const props = defineProps({
 const proposalStore = useProposalStore()
 const selectedProposal = ref()
 const proposals = ref([])
+// const proposalsComputed = computed(() => { return proposals.value })
 
 // If the user is requesting a real-time observation, only show proposals with real-time allocations
 // If the user is requesting a normal-time observation, only show proposals with normal time allocations
