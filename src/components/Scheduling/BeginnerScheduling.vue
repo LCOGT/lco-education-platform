@@ -5,9 +5,10 @@ import Calendar from './Calendar.vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
+import { useConfigurationStore } from '../../stores/configuration.js'
 import { calculateSchedulableTargets } from '../../utils/visibility.js'
 import targets from '../../utils/targets.min.json'
-import { ca } from 'date-fns/locale'
+import { fetchApiCall } from '../../utils/api'
 import galaxyIcon from '@/assets/Icons/galaxy.png'
 import starClusterIcon from '@/assets/Icons/star-cluster.png'
 import supernovaIcon from '@/assets/Icons/supernova.png'
@@ -15,6 +16,7 @@ import nebulaIcon from '@/assets/Icons/nebula.png'
 
 const emits = defineEmits(['selectionsComplete', 'showButton', 'clearErrorMessage'])
 const proposalStore = useProposalStore()
+const configurationStore = useConfigurationStore()
 
 const beginner = ref()
 const dateRange = ref()
@@ -23,7 +25,6 @@ const objectSelected = ref(false)
 const targetSelection = ref('')
 const targetSelected = ref(false)
 const targetList = ref({})
-const targetsByType = ref([])
 const exposureSettings = ref([])
 const defaultSettings = ref([])
 const loading = ref(false)
@@ -33,8 +34,9 @@ const endDate = ref('')
 const selectedProposal = ref()
 const displayedTargets = ref([])
 const totalLoaded = ref(3)
-const allCategoryTargets = ref({})
 const currentStep = ref(1)
+const schemeRequest = ref('')
+const targetRequestBody = ref({})
 
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
@@ -76,27 +78,103 @@ const categories = ref([
       { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
       { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
     ]
+  },
+  {
+    location: 'Our Solar System',
+    options: [
+      { name: 'Mars', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '499', availability: null },
+      { name: 'Jupiter', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '599', availability: null },
+      { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null },
+      { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null },
+      { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null },
+      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null },
+      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null }
+    ]
   }
-  // {
-  //   location: 'Our Solar System',
-  //   options: [
-  //     { object: 'The Moon', type: 'natural' },
-  //     { object: 'Jupiter', type: 'planet' },
-  //     { object: 'Saturn', type: 'planet' },
-  //     { object: 'Mars', type: 'planet' },
-  //     { object: 'Ceres', type: 'dwarf' },
-  //     { object: 'Halley\'s Comet', type: 'short-period' }
-  //   ]
-  // }
 ])
 
-const handleObjectSelection = (shortname, name) => {
-  objectSelection.value = targetList.value[shortname]
-  objectSelected.value = name
+const createRequestBody = (response) => {
+  const epochJd = Number(response.epoch_jd)
+  const epochJulianDate = epochJd - 2400000.5
+  if (schemeRequest.value === 'JPL_MAJOR_PLANET') {
+    targetRequestBody.value = {
+      'name': response.name,
+      'type': 'ORBITAL_ELEMENTS',
+      'ra': null,
+      'dec': null,
+      'proper_motion_ra': null,
+      'proper_motion_dec': null,
+      'parallax': null,
+      'extra_params': {},
+      'scheme': schemeRequest.value,
+      'orbinc': response.inclination,
+      'longascnode': response.ascending_node,
+      'argofperih': response.argument_of_perihelion,
+      'eccentricity': response.eccentricity,
+      'meandist': response.semimajor_axis,
+      'meananom': response.mean_anomaly,
+      'perihdist': null,
+      'epochofel': epochJulianDate,
+      // DAILY MOTION: N * 86400
+      'dailymot': response.mean_daily_motion
+    }
+  }
+  else if (schemeRequest.value === 'MPC_MINOR_PLANET') {
+    targetRequestBody.value = {
+      'name': response.name,
+      'type': 'ORBITAL_ELEMENTS',
+      'ra': null,
+      'dec': null,
+      'proper_motion_ra': null,
+      'proper_motion_dec': null,
+      'parallax': null,
+      'extra_params': {},
+      'scheme': schemeRequest.value,
+      // ORBINC: IN
+      'orbinc': response.inclination,
+      // LONGASCNODE: OM
+      'longascnode': response.ascending_node,
+      // ARGOFPERIH: W
+      'argofperih': response.argument_of_perihelion,
+      // ECCENTRICITY: EC
+      'eccentricity': response.eccentricity,
+      // MEANDIST: A
+      'meandist': response.semimajor_axis,
+      // MEANANOM: MA
+      'meananom': response.mean_anomaly,
+      // PERIHDIST: QR FOR COMETS
+      'perihdist': null,
+      // EPOCHOFPERIH: Tp FOR COMETS --> MODIFIED JULIAN DATE 2400000.5
+      'epochofperih': null,
+      // EPOCHOFEL: JDTDB - 2400000.5
+      'epochofel': epochJulianDate,
+      // ONLY NEEDED FOR MAJOR PLANETS
+      'dailymot': null
+    }
+  }
+}
 
-  displayedTargets.value = objectSelection.value.slice(0, 3)
-  totalLoaded.value = 3
-  nextStep()
+const requestNonSiderealObject = async (name, scheme) => {
+  schemeRequest.value = scheme
+  await fetchApiCall({
+    url: `https://simbad2k.lco.global/${name}?target_type=NON_SIDEREAL&scheme=${scheme}`,
+    method: 'GET',
+    successCallback: (response) => {
+      createRequestBody(response)
+    }
+  })
+}
+
+const handleObjectSelection = (shortname, name, location, scheme) => {
+  if (location === 'Our Solar System') {
+    requestNonSiderealObject(name, scheme)
+  } else {
+    objectSelection.value = targetList.value[shortname]
+    objectSelected.value = name
+    displayedTargets.value = objectSelection.value.slice(0, 3)
+    totalLoaded.value = 3
+    nextStep()
+  }
 }
 
 const shuffleTargets = () => {
@@ -160,11 +238,56 @@ const getSchedulableTargets = (startDate, endDate) => {
   loading.value = false
 }
 
+const getNonSiderealAvailability = (ephemeris) => {
+  const thresholdInDegrees = 60
+  const solarSystemCategory = categories.value.find(cat => cat.location === 'Our Solar System')
+  if (!solarSystemCategory) return {}
+
+  const availabilityMap = {}
+
+  for (const [objectName, ephemerides] of Object.entries(ephemeris)) {
+    const isItschedulable = ephemerides.some(ephemeris => parseFloat(ephemeris.elong) > thresholdInDegrees)
+    availabilityMap[objectName] = isItschedulable
+    const option = solarSystemCategory.options.find(opt => opt.name === objectName)
+    if (option) {
+      option.availability = isItschedulable
+    }
+  }
+}
+
+const getNonSiderealEphemeris = async (start, end) => {
+  let nonSiderealAvailability = {}
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + `get_ephemeris/?start_date=${start}&end_date=${end}`,
+    method: 'GET',
+    successCallback: (response) => {
+      nonSiderealAvailability = getNonSiderealAvailability(response)
+    },
+    failCallback: () => {
+      const solarSystemCategory = categories.value.find(cat => cat.location === 'Our Solar System')
+      if (solarSystemCategory) {
+        solarSystemCategory.options.forEach(opt => {
+          opt.availability = false
+        })
+      }
+    }
+  })
+  return nonSiderealAvailability
+}
+
+const getSchedulableNonSiderealTargets = async (start, end) => {
+  // start and end are in YYYY-MM-DD format
+  const startDateStr = new Date(start).toISOString().split('T')[0]
+  const endDateStr = new Date(end).toISOString().split('T')[0]
+  await getNonSiderealEphemeris(startDateStr, endDateStr)
+}
+
 const handleDateRangeUpdate = (newDateRange) => {
   dateRange.value = newDateRange
+  getSchedulableTargets(newDateRange.start, newDateRange.end)
   startDate.value = newDateRange.start.toISOString().split('.')[0]
   endDate.value = newDateRange.end.toISOString().split('.')[0]
-  getSchedulableTargets(newDateRange.start, newDateRange.end)
+  getSchedulableNonSiderealTargets(startDate.value, endDate.value)
   nextStep()
 }
 
@@ -201,7 +324,21 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
-onMounted(() => {
+// JDTDB    Julian Day Number, Barycentric Dynamical Time
+// EC     Eccentricity, e
+// QR     Periapsis distance, q (km)
+// IN     Inclination w.r.t X-Y plane, i (degrees)
+// OM     Longitude of Ascending Node, OMEGA, (degrees)
+// W      Argument of Perifocus, w (degrees)
+// Tp     Time of periapsis (Julian Day Number)
+// N      Mean motion, n (degrees/sec)
+// MA     Mean anomaly, M (degrees)
+// TA     True anomaly, nu (degrees)
+// A      Semi-major axis, a (km)
+// AD     Apoapsis distance (km)
+// PR     Sidereal orbit period (sec)
+
+onMounted(async () => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
     currentStep.value = 2
@@ -228,16 +365,18 @@ onMounted(() => {
       <div v-for="category in categories" :key="category.location" class="content">
         <h4>{{ category.location }}</h4>
         <div class="buttons">
-          <a
+         <a
             v-for="option in category.options"
-            :key="option.shortname"
-            @click="handleObjectSelection(option.shortname, option.name)"
+            :key="option.shortname || option.name"
+            @click="option.availability === false ? null : handleObjectSelection(option.shortname, option.name, category.location, option.scheme)"
             class="button suggestion"
+            :class="{ 'disabled': option.availability === false }"
+            :style="option.availability === false ? 'pointer-events: none; opacity: 0.5;' : ''"
           >
-          <span>
-            <img :src=option.icon alt='icon' />
-          </span>
-          <span>{{ option.name }}</span>
+            <span>
+              <img :src="option.icon" alt="icon" />
+            </span>
+            <span>{{ option.name }}</span>
         </a>
         </div>
       </div>
@@ -343,5 +482,10 @@ onMounted(() => {
   span {
     display:block;
   }
+}
+.disabled {
+  background-color: #e0e0e0 !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
 }
 </style>
