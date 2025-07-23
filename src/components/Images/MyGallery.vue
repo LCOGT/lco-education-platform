@@ -76,7 +76,7 @@ function openDatalab (observationId, startDate, proposalId) {
     console.error('Missing required parameters:', { observationId, startDate, proposalId })
     return
   }
-  const datalabQueryUrl = `${configurationStore.datalabUrl}projects/?observationId=${observationId}&startDate=${startDate}&proposalId=${proposalId}`
+  const datalabQueryUrl = `${configurationStore.datalabUrl}projects?observation_id=${observationId}&start=${startDate}&proposal_id=${proposalId}`
   window.open(datalabQueryUrl, 'datalabWindow')
 }
 
