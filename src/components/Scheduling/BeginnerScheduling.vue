@@ -38,6 +38,30 @@ const currentStep = ref(1)
 const schemeRequest = ref('')
 const targetRequestBody = ref({})
 
+const categories = ref([
+  {
+    location: 'Deep Space',
+    options: [
+      { name: 'Galaxy', icon: galaxyIcon, shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: starClusterIcon, shortname: 'clusters' },
+      { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
+      { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
+    ]
+  },
+  {
+    location: 'Our Solar System',
+    options: [
+      { name: 'Mars', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '499', availability: null, filters: [{ exposure: 1, name: 'rp' }] },
+      { name: 'Jupiter', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '599', availability: null, filters: [{ exposure: 0.2, name: 'up' }] },
+      { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null, filters: [{ exposure: 0.5, name: 'up' }] },
+      { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
+      { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
+      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANet', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
+      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANet', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }] }
+    ]
+  }
+])
+
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
   if (currentStep.value === 1) {
@@ -62,6 +86,16 @@ const previousStep = () => {
   emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
+  // or when user goes from selecting a non-sidereal target back
+  // non-sidereal target flow follows a different flow
+  if (objectSelection.value === 'Non-sidereal target') {
+    objectSelected.value = false
+    targetSelected.value = false
+    targetSelection.value = ''
+    objectSelection.value = ''
+    displayedTargets.value = []
+    currentStep.value = 3
+  }
   if (currentStep.value === 4) {
     if (!objectSelection.value || !objectSelection.value.targets) {
       displayedTargets.value = objectSelection.value.slice(0, 3)
@@ -69,33 +103,10 @@ const previousStep = () => {
   }
 }
 
-const categories = ref([
-  {
-    location: 'Deep Space',
-    options: [
-      { name: 'Galaxy', icon: galaxyIcon, shortname: 'galaxies' },
-      { name: 'Star Cluster', icon: starClusterIcon, shortname: 'clusters' },
-      { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
-      { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
-    ]
-  },
-  {
-    location: 'Our Solar System',
-    options: [
-      { name: 'Mars', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '499', availability: null },
-      { name: 'Jupiter', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '599', availability: null },
-      { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null },
-      { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null },
-      { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null },
-      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null },
-      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null }
-    ]
-  }
-])
-
-const createRequestBody = (response) => {
+const createRequestBodyForNonSiderealRequests = (response) => {
   const epochJd = Number(response.epoch_jd)
-  const epochJulianDate = epochJd - 2400000.5
+  const julianDateMJDOffset = 2400000.5
+  const epochJulianDate = epochJd - julianDateMJDOffset
   if (schemeRequest.value === 'JPL_MAJOR_PLANET') {
     targetRequestBody.value = {
       'name': response.name,
@@ -115,7 +126,6 @@ const createRequestBody = (response) => {
       'meananom': response.mean_anomaly,
       'perihdist': null,
       'epochofel': epochJulianDate,
-      // DAILY MOTION: N * 86400
       'dailymot': response.mean_daily_motion
     }
   }
@@ -130,44 +140,44 @@ const createRequestBody = (response) => {
       'parallax': null,
       'extra_params': {},
       'scheme': schemeRequest.value,
-      // ORBINC: IN
       'orbinc': response.inclination,
-      // LONGASCNODE: OM
       'longascnode': response.ascending_node,
-      // ARGOFPERIH: W
       'argofperih': response.argument_of_perihelion,
-      // ECCENTRICITY: EC
       'eccentricity': response.eccentricity,
-      // MEANDIST: A
       'meandist': response.semimajor_axis,
-      // MEANANOM: MA
       'meananom': response.mean_anomaly,
-      // PERIHDIST: QR FOR COMETS
       'perihdist': null,
-      // EPOCHOFPERIH: Tp FOR COMETS --> MODIFIED JULIAN DATE 2400000.5
       'epochofperih': null,
-      // EPOCHOFEL: JDTDB - 2400000.5
       'epochofel': epochJulianDate,
-      // ONLY NEEDED FOR MAJOR PLANETS
       'dailymot': null
     }
   }
+  return targetRequestBody.value
 }
 
-const requestNonSiderealObject = async (name, scheme) => {
+const getNonSiderealRequestBodyDetails = async (name, scheme) => {
   schemeRequest.value = scheme
   await fetchApiCall({
     url: `https://simbad2k.lco.global/${name}?target_type=NON_SIDEREAL&scheme=${scheme}`,
     method: 'GET',
     successCallback: (response) => {
-      createRequestBody(response)
+      console.log('response from simbad2k:', response)
+      createRequestBodyForNonSiderealRequests(response)
     }
   })
 }
 
 const handleObjectSelection = (shortname, name, location, scheme) => {
   if (location === 'Our Solar System') {
-    requestNonSiderealObject(name, scheme)
+    // Find the selected option object from the options array
+    const solarSystemCategory = categories.value.find(cat => cat.location === 'Our Solar System')
+    const selectedOption = solarSystemCategory.options.find(opt => opt.name === name)
+    console.log('Selected option:', selectedOption)
+    objectSelection.value = 'Non-sidereal target'
+    objectSelected.value = true
+    getNonSiderealRequestBodyDetails(name, scheme)
+    handleTargetSelection(selectedOption)
+    currentStep.value = 5
   } else {
     objectSelection.value = targetList.value[shortname]
     objectSelected.value = name
@@ -220,6 +230,7 @@ const emitSelections = () => {
 }
 
 const handleTargetSelection = (target) => {
+  console.log('Selected target:', target)
   targetSelection.value = target
   targetSelected.value = true
   defaultSettings.value = target.filters.map(filter => ({
@@ -324,20 +335,6 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
-// JDTDB    Julian Day Number, Barycentric Dynamical Time
-// EC     Eccentricity, e
-// QR     Periapsis distance, q (km)
-// IN     Inclination w.r.t X-Y plane, i (degrees)
-// OM     Longitude of Ascending Node, OMEGA, (degrees)
-// W      Argument of Perifocus, w (degrees)
-// Tp     Time of periapsis (Julian Day Number)
-// N      Mean motion, n (degrees/sec)
-// MA     Mean anomaly, M (degrees)
-// TA     True anomaly, nu (degrees)
-// A      Semi-major axis, a (km)
-// AD     Apoapsis distance (km)
-// PR     Sidereal orbit period (sec)
-
 onMounted(async () => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
@@ -405,7 +402,7 @@ onMounted(async () => {
         <h2>
           Requesting an observation of
           <span v-if="targetSelection"> a </span>
-          <span class="selection blue">
+          <span v-if="objectSelected" class="selection blue">
             {{ objectSelected }}
             <span v-if="targetSelection"> - {{ targetSelection.name }}</span>
           </span>
