@@ -356,7 +356,6 @@ onMounted(async () => {
       </div>
       <!-- Add another target button -->
     </div>
-    <v-btn color="indigo" @click="previousStep" v-if="currentStep !==1">Go back</v-btn>
     <v-btn color="indigo" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>
 </template>
