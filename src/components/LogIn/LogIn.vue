@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchApiCall } from '../../utils/api'
 import { useUserDataStore } from '../../stores/userData'
@@ -21,20 +21,31 @@ const storeAPIToken = async (data) => {
   const authToken = data.token
   if (authToken) {
     userDataStore.authToken = authToken
-    await nextTick()
-    await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Token ${authToken}`
+    }
+    await fetchApiCall({ url: observationPortalUrl + 'profile/', method: 'GET', header: headers, successCallback: storeUser, failCallback: () => { errorMessage.value = 'Failed to retrieve user profile' } })
   }
 }
 
 const storeUser = (user) => {
   userDataStore.username = user.username
   userDataStore.profile = user
-  router.push('/dashboard')
   proposalStore.fetchProposals()
   userDataStore.lastLoginTime = Date.now()
+  router.push('/dashboard')
 }
 
 const login = async () => {
+  errorMessage.value = ''
+  userDataStore.$patch({
+    username: '',
+    authToken: '',
+    profile: Object.create(null),
+    lastLoginTime: null
+  })
   const requestBody = {
     username: username.value,
     password: password.value
@@ -42,6 +53,15 @@ const login = async () => {
   // store an auth token from login credentials
   await fetchApiCall({ url: observationPortalUrl + 'api-token-auth/', method: 'POST', body: requestBody, successCallback: storeAPIToken, failCallback: () => { errorMessage.value = 'Failed to authenticate user' } })
 }
+
+onMounted(() => {
+  userDataStore.$patch({
+    username: '',
+    authToken: '',
+    profile: Object.create(null),
+    lastLoginTime: null
+  })
+})
 </script>
 
 <template>
