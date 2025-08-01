@@ -12,6 +12,7 @@ import { fetchApiCall } from '../../utils/api'
 import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
+import { se } from 'date-fns/locale'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
@@ -52,6 +53,7 @@ const isRaFocused = ref(false)
 const isDecFocused = ref(false)
 const maxExposures = ref(3)
 const exposureSettings = ref([])
+const skychartref = ref(null)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -296,6 +298,9 @@ function setSuggestionType (type, ctype) {
   if (ctype === 'solar_system') {
     suggestionCategory.value = 'solar_system'
     selectedTarget.value = solarsystemtargets.value[type]
+    const moonCoords = skychartref.value.getMoonCoordinates()
+    selectedTarget.value.ra = moonCoords.ra
+    selectedTarget.value.dec = moonCoords.dec
     setupExposure(selectedTarget.value, false)
   } else if (Object.keys(targetList.value).length === 0) {
     getVisibleTargets()
@@ -402,7 +407,7 @@ watch(
   <div v-if="!isCapturingImages">
     <div class="columns">
       <div class="column is-two-thirds">
-          <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
+          <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" ref="skychartref"/>
       </div>
       <div class="column grey-bg">
         <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && suggestionCategory != 'solar_system') ">
