@@ -44,6 +44,7 @@ const targetList = ref({})
 const targetsByType = ref([])
 const suggestionOrManual = ref('')
 const suggestionByType = ref('')
+const suggestionCategory = ref('')
 const suggestionTargetSet = ref(false)
 const selectedTarget = ref({})
 const validTarget = ref(false)
@@ -59,13 +60,51 @@ const categories = ref([
   {
     location: 'Deep Space',
     options: [
-      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies' },
-      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
-      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
-      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
+      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies', ctype: 'deep_space' },
+      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters', ctype: 'deep_space' },
+      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae', ctype: 'deep_space' },
+      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae', ctype: 'deep_space' }
+    ]
+  },
+  {
+    location: 'Solar System',
+    options: [
+      { name: 'Moon', icon: require('@/assets/Icons/moon.png'), shortname: 'moon', ctype: 'solar_system' },
+      // { name: 'Asteroid', icon: require('@/assets/Icons/asteroid.png'), shortname: 'asteroids', ctype: 'solar_system' },
+      // { name: 'Comet', icon: require('@/assets/Icons/comet.png'), shortname: 'comets', ctype: 'solar_system' },
+      { name: 'Jupiter', icon: require('@/assets/Icons/jupiter.png'), shortname: 'jupiter', ctype: 'solar_system' },
+      { name: 'Saturn', icon: require('@/assets/Icons/saturn.png'), shortname: 'saturn', ctype: 'solar_system' }
     ]
   }
 ])
+
+const solarsystemtargets = ref({
+  moon: {
+    name: 'Moon',
+    image: require('@/assets/Icons/moon.png'),
+    filters: [
+      { name: 'up', exposure: 0.5 }
+    ]
+  },
+  jupiter: {
+    name: 'Jupiter',
+    image: require('@/assets/Icons/jupiter.png'),
+    filters: [
+      { name: 'rp', exposure: 0.01 },
+      { name: 'B', exposure: 0.02 },
+      { name: 'V', exposure: 0.01 }
+    ]
+  },
+  saturn: {
+    name: 'Saturn',
+    image: require('@/assets/Icons/saturn.png'),
+    filters: [
+      { name: 'rp', exposure: 0.05 },
+      { name: 'B', exposure: 0.15 },
+      { name: 'V', exposure: 0.07 }
+    ]
+  }
+})
 
 function getRaDecFromTargetName () {
   targeterror.value = false
@@ -124,15 +163,21 @@ function setRaDecfromTargetList (event) {
   const id = target.getAttribute('data-targetid')
   selectedTarget.value = targets[id]
   if (selectedTarget.value) {
-    ra.value = parseFloat(selectedTarget.value.ra).toFixed(5)
-    dec.value = parseFloat(selectedTarget.value.dec).toFixed(5)
-    targetName.value = selectedTarget.value.name
-    suggestionTargetSet.value = true
-    goToLocation()
-    exposureCount.value = 1
-    exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
-    selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
+    setupExposure(selectedTarget.value, true)
   }
+}
+
+function setupExposure (target, showfinder) {
+  ra.value = parseFloat(target.ra).toFixed(5)
+  dec.value = parseFloat(target.dec).toFixed(5)
+  targetName.value = target.name
+  suggestionTargetSet.value = true
+  if (showfinder === true) {
+    goToLocation()
+  }
+  exposureCount.value = 1
+  exposureTime.value = Object.values(target.filters).map(f => f.exposure)
+  selectedFilter.value = Object.values(target.filters).map(f => f.name)
 }
 
 // This function will trigger the goToRaDec method in the AladinSkyMap component
@@ -229,6 +274,7 @@ function setSuggestionsOrManual (mode) {
 function resetSuggestionOrManual () {
   suggestionOrManual.value = ''
   suggestionByType.value = ''
+  suggestionCategory.value = ''
   targetsByType.value = []
   suggestionTargetSet.value = false
   exposureError.value = ''
@@ -245,9 +291,13 @@ function getVisibleTargets () {
   targetList.value = calculateVisibleTargets(targets, siteInfo.lat, siteInfo.lon)
 }
 
-function setSuggestionType (type) {
+function setSuggestionType (type, ctype) {
   suggestionByType.value = type
-  if (Object.keys(targetList.value).length === 0) {
+  if (ctype === 'solar_system') {
+    suggestionCategory.value = 'solar_system'
+    selectedTarget.value = solarsystemtargets.value[type]
+    setupExposure(selectedTarget.value, false)
+  } else if (Object.keys(targetList.value).length === 0) {
     getVisibleTargets()
     targetsByType.value = targetList.value[type]
     targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
@@ -355,7 +405,7 @@ watch(
           <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
       </div>
       <div class="column grey-bg">
-        <div v-show="suggestionOrManual === 'manual' || suggestionTargetSet">
+        <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && suggestionCategory != 'solar_system') ">
         <AladinSkyMap ref="aladinRef" />
         </div>
         <div v-if="suggestionOrManual === ''">
@@ -366,7 +416,7 @@ watch(
           <button class="button" @click="setSuggestionsOrManual('manual')">I'll enter the details</button>
         </div>
         </div>
-        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
+        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0 && suggestionByType === ''">
           <h3>What would you like to Explore?</h3>
           <p>Choose a type of target to see suggestions</p>
           <div v-for="category in categories" :key="category.location" class="content">
@@ -375,16 +425,26 @@ watch(
             <a
               v-for="option in category.options"
               :key="option.shortname"
-              @click="setSuggestionType(option.shortname)"
+              @click="setSuggestionType(option.shortname, option.ctype)"
               class="button suggestion"
             >
             <span>
-              <img :src=option.icon alt='icon' />
+              <img :src=option.icon alt='icon' style="max-height:50px"/>
             </span>
             <span>{{ option.name }}</span>
           </a>
           </div>
         </div>
+        </div>
+        <div v-if="suggestionOrManual === 'suggestions' && suggestionCategory === 'solar_system'">
+          <h3>{{ selectedTarget.name }}</h3>
+          <p><img :src="selectedTarget.image" alt="Target Image" /></p>
+            <div class="highlight-small-region">
+            <FontAwesomeIcon icon="fa-regular fa-camera-retro"  /> <strong>Exposure settings:</strong>
+            <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
+              <li>{{ filter.name }} filter for {{ filter.exposure }} seconds</li>
+            </ul>
+          </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
           <div v-if="!suggestionTargetSet">
