@@ -35,7 +35,6 @@ const selectedProposal = ref()
 const displayedTargets = ref([])
 const totalLoaded = ref(3)
 const currentStep = ref(1)
-const targetRequestBody = ref({})
 const simbadResponse = ref({})
 const schemeRequest = ref('')
 
