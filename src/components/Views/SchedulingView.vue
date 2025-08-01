@@ -7,6 +7,7 @@ import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
 import { useConfigurationStore } from '../../stores/configuration.js'
+import { createTargetPayloadForNonSiderealRequest, createPayloadForSiderealRequests } from '../../utils/payloadForRequestedObservations.js'
 
 const configurationStore = useConfigurationStore()
 
@@ -48,7 +49,6 @@ const createRequest = (target, exposures, startDate, endDate) => ({
   'configurations': [
     {
       'type': 'EXPOSE',
-      // TO DO: allow users to select instrument type based on the time they have available for each instrument
       'instrument_type': '0M4-SCICAM-QHY600',
       'instrument_configs': createInstrumentConfigs(exposures),
       'acquisition_config': {
@@ -116,22 +116,25 @@ const sendObservationRequest = async () => {
     isSubmitting.value = true
     const requestList = []
 
-    // Handle single target
-    if (observationData.value.target) {
-      const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createRequest(target, settings, startDate, endDate))
-    }
-
-    // Handle multiple targets
     if (observationData.value.targets) {
       const { targets, startDate, endDate } = observationData.value
-      requestList.push(...targets.map(target => createRequest(target, target.exposures, startDate, endDate)))
+      requestList.push(...targets.map(target =>
+        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
+      ))
+    } else if (observationData.value.isSidereal === false) {
+      const { target, scheme, settings, startDate, endDate } = observationData.value
+      requestList.push(
+        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate)
+      )
+    } else if (observationData.value.target && observationData.value.isSidereal) {
+      const { target, settings, startDate, endDate } = observationData.value
+      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate))
     }
 
-    if (observationData.value.target || observationData.value.targets.length === 1) {
-      operatorValue.value = 'SINGLE'
-    } else if (observationData.value.targets.length > 1) {
+    if (observationData.value.targets && observationData.value.targets.length > 1) {
       operatorValue.value = 'MANY'
+    } else {
+      operatorValue.value = 'SINGLE'
     }
 
     await fetchApiCall({
@@ -158,9 +161,6 @@ const sendObservationRequest = async () => {
         for (const errorMssg of error.requests) {
           errorMessage.value = errorMssg.non_field_errors[0]
         }
-        // .map(request => request.non_field_errors)
-        // .flat()
-        // .join(', ')
       }
     })
   }
