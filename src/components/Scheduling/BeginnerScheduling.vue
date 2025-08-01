@@ -35,8 +35,9 @@ const selectedProposal = ref()
 const displayedTargets = ref([])
 const totalLoaded = ref(3)
 const currentStep = ref(1)
-const schemeRequest = ref('')
 const targetRequestBody = ref({})
+const simbadResponse = ref({})
+const schemeRequest = ref('')
 
 const categories = ref([
   {
@@ -56,8 +57,8 @@ const categories = ref([
       { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null, filters: [{ exposure: 0.5, name: 'up' }] },
       { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
       { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
-      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANet', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
-      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANet', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }] }
+      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
+      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }] }
     ]
   }
 ])
@@ -103,66 +104,14 @@ const previousStep = () => {
   }
 }
 
-const createRequestBodyForNonSiderealRequests = (response) => {
-  const epochJd = Number(response.epoch_jd)
-  const julianDateMJDOffset = 2400000.5
-  const epochJulianDate = epochJd - julianDateMJDOffset
-  if (schemeRequest.value === 'JPL_MAJOR_PLANET') {
-    targetRequestBody.value = {
-      'name': response.name,
-      'type': 'ORBITAL_ELEMENTS',
-      'ra': null,
-      'dec': null,
-      'proper_motion_ra': null,
-      'proper_motion_dec': null,
-      'parallax': null,
-      'extra_params': {},
-      'scheme': schemeRequest.value,
-      'orbinc': response.inclination,
-      'longascnode': response.ascending_node,
-      'argofperih': response.argument_of_perihelion,
-      'eccentricity': response.eccentricity,
-      'meandist': response.semimajor_axis,
-      'meananom': response.mean_anomaly,
-      'perihdist': null,
-      'epochofel': epochJulianDate,
-      'dailymot': response.mean_daily_motion
-    }
-  }
-  else if (schemeRequest.value === 'MPC_MINOR_PLANET') {
-    targetRequestBody.value = {
-      'name': response.name,
-      'type': 'ORBITAL_ELEMENTS',
-      'ra': null,
-      'dec': null,
-      'proper_motion_ra': null,
-      'proper_motion_dec': null,
-      'parallax': null,
-      'extra_params': {},
-      'scheme': schemeRequest.value,
-      'orbinc': response.inclination,
-      'longascnode': response.ascending_node,
-      'argofperih': response.argument_of_perihelion,
-      'eccentricity': response.eccentricity,
-      'meandist': response.semimajor_axis,
-      'meananom': response.mean_anomaly,
-      'perihdist': null,
-      'epochofperih': null,
-      'epochofel': epochJulianDate,
-      'dailymot': null
-    }
-  }
-  return targetRequestBody.value
-}
-
 const getNonSiderealRequestBodyDetails = async (name, scheme) => {
-  schemeRequest.value = scheme
   await fetchApiCall({
     url: `https://simbad2k.lco.global/${name}?target_type=NON_SIDEREAL&scheme=${scheme}`,
     method: 'GET',
     successCallback: (response) => {
-      console.log('response from simbad2k:', response)
-      createRequestBodyForNonSiderealRequests(response)
+      simbadResponse.value = response
+      schemeRequest.value = scheme
+      emitSelections()
     }
   })
 }
@@ -172,9 +121,8 @@ const handleObjectSelection = (shortname, name, location, scheme) => {
     // Find the selected option object from the options array
     const solarSystemCategory = categories.value.find(cat => cat.location === 'Our Solar System')
     const selectedOption = solarSystemCategory.options.find(opt => opt.name === name)
-    console.log('Selected option:', selectedOption)
     objectSelection.value = 'Non-sidereal target'
-    objectSelected.value = true
+    objectSelected.value = 'Non-sidereal target'
     getNonSiderealRequestBodyDetails(name, scheme)
     handleTargetSelection(selectedOption)
     currentStep.value = 5
@@ -221,16 +169,17 @@ const loadMoreTargets = () => {
 
 const emitSelections = () => {
   emits('selectionsComplete', {
-    target: targetSelection.value,
+    target: objectSelection.value === 'Non-sidereal target' ? simbadResponse.value : targetSelection.value,
+    scheme: objectSelection.value === 'Non-sidereal target' ? schemeRequest.value : null,
     settings: exposureSettings.value,
     startDate: startDate.value,
     endDate: endDate.value,
-    proposal: selectedProposal.value
+    proposal: selectedProposal.value,
+    isSidereal: objectSelection.value !== 'Non-sidereal target'
   })
 }
 
 const handleTargetSelection = (target) => {
-  console.log('Selected target:', target)
   targetSelection.value = target
   targetSelected.value = true
   defaultSettings.value = target.filters.map(filter => ({
@@ -239,7 +188,9 @@ const handleTargetSelection = (target) => {
     saved: true
   }))
   exposureSettings.value = [...defaultSettings.value]
-  emitSelections()
+  if (objectSelection.value !== 'Non-sidereal target') {
+    emitSelections()
+  }
   nextStep()
 }
 
