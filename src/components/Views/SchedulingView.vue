@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import { fetchApiCall } from '../../utils/api.js'
-import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
 import { useConfigurationStore } from '../../stores/configuration.js'
@@ -22,73 +21,6 @@ const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const isSubmitting = ref(false)
-
-const createInstrumentConfigs = (exposures) => {
-  const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
-
-  return exposuresArray.map(exposure => ({
-    exposure_count: exposure.count || 1,
-    exposure_time: exposure.exposureTime,
-    mode: 'central30x30',
-    rotator_mode: '',
-    extra_params: {
-      offset_ra: 0,
-      offset_dec: 0,
-      defocus: 0
-    },
-    optical_elements: {
-      filter: exposure.filter
-    }
-  }))
-}
-
-const createRequest = (target, exposures, startDate, endDate) => ({
-  'acceptability_threshold': 90,
-  'configuration_repeats': 1,
-  'optimization_type': 'TIME',
-  'configurations': [
-    {
-      'type': 'EXPOSE',
-      'instrument_type': '0M4-SCICAM-QHY600',
-      'instrument_configs': createInstrumentConfigs(exposures),
-      'acquisition_config': {
-        'mode': 'OFF',
-        'extra_params': {}
-      },
-      'guiding_config': {
-        'mode': 'ON',
-        'optional': true,
-        'extra_params': {}
-      },
-      'target': {
-        'name': target.name,
-        'type': 'ICRS',
-        'ra': Number(target.ra),
-        'dec': Number(target.dec),
-        'proper_motion_ra': null,
-        'proper_motion_dec': null,
-        'epoch': 2000,
-        'parallax': null,
-        'extra_params': {}
-      },
-      'constraints': {
-        'max_airmass': 1.6,
-        'min_lunar_distance': 30,
-        'max_lunar_phase': 1
-      }
-    }
-  ],
-  'windows': [
-    {
-      'start': formatToUTC(startDate),
-      'end': formatToUTC(endDate)
-    }
-  ],
-  'location': {
-    // TO DO: remove hardcoded 0m4 and get telescope classes from api --> allow user to select
-    'telescope_class': '0m4'
-  }
-})
 
 const getProjectName = () => {
   let targetName = ''
