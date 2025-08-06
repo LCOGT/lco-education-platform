@@ -21,7 +21,7 @@ const configurationStore = useConfigurationStore()
 const beginner = ref()
 const dateRange = ref()
 const objectSelection = ref('')
-const objectSelected = ref(false)
+const selectedCategory = ref('')
 const targetSelection = ref('')
 const targetSelected = ref(false)
 const targetList = ref({})
@@ -88,11 +88,11 @@ const previousStep = () => {
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
   // or when user goes from selecting a non-sidereal target back
   // non-sidereal target flow follows a different flow
-  if (objectSelection.value === 'Non-sidereal target') {
-    objectSelected.value = false
+  if (selectedCategory.value === 'Non-sidereal target') {
     targetSelected.value = false
     targetSelection.value = ''
     objectSelection.value = ''
+    selectedCategory.value = ''
     displayedTargets.value = []
     currentStep.value = 3
   }
@@ -120,14 +120,13 @@ const handleObjectSelection = (shortname, name, location, scheme) => {
     // Find the selected option object from the options array
     const solarSystemCategory = categories.value.find(cat => cat.location === 'Our Solar System')
     const selectedOption = solarSystemCategory.options.find(opt => opt.name === name)
-    objectSelection.value = 'Non-sidereal target'
-    objectSelected.value = 'Non-sidereal target'
+    selectedCategory.value = 'Non-sidereal target'
     getNonSiderealRequestBodyDetails(name, scheme)
     handleTargetSelection(selectedOption)
     currentStep.value = 5
   } else {
     objectSelection.value = targetList.value[shortname]
-    objectSelected.value = name
+    selectedCategory.value = name
     displayedTargets.value = objectSelection.value.slice(0, 3)
     totalLoaded.value = 3
     nextStep()
@@ -254,7 +253,7 @@ const handleDateRangeUpdate = (newDateRange) => {
 
 const resetSelections = () => {
   objectSelection.value = ''
-  objectSelected.value = false
+  selectedCategory.value = ''
   targetSelection.value = ''
   targetSelected.value = false
   beginner.value = ''
@@ -330,7 +329,7 @@ onMounted(async () => {
     </div>
 
     <div v-if="displayedTargets && currentStep === 4">
-      <h3>Requesting an Observation of a <span class="blue">{{ objectSelected }}</span></h3>
+      <h3>Requesting an Observation of a <span class="blue">{{ selectedCategory }}</span></h3>
       <div class="columns is-column-gap-3">
         <div v-for="target in displayedTargets" :key="target.name" @click="handleTargetSelection(target)" class="column">
           <div class="card target-highlight is-clickable">
@@ -348,12 +347,12 @@ onMounted(async () => {
       <button class="button" v-if="totalLoaded < selectedTargets.length && totalLoaded < 15" @click="loadMoreTargets">Load More Targets</button>
     </div>
     <div v-if="currentStep === 5">
-      <div v-if="targetSelected || (objectSelected && !objectSelection.targets)" class="content">
+      <div v-if="targetSelected || (selectedCategory && !objectSelection.targets)" class="content">
         <h2>
           Requesting an observation of
           <span v-if="targetSelection"> a </span>
-          <span v-if="objectSelected" class="selection blue">
-            {{ objectSelected }}
+          <span v-if="selectedCategory" class="selection blue">
+            {{ selectedCategory }}
             <span v-if="targetSelection"> - {{ targetSelection.name }}</span>
           </span>
         </h2>
@@ -367,7 +366,7 @@ onMounted(async () => {
           </p>
         </div>
       </div>
-      <div v-if="beginner === true && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+      <div v-if="beginner === true && (targetSelected || (selectedCategory && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <h4>Photon Ranch will schedule this for you</h4>
         <div class="columns">
           <div class="column is-half">
@@ -402,7 +401,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <div v-if="beginner === false && (targetSelected || (objectSelected && !objectSelection.targets))" class="grey-bg content px-2 py-2">
+      <div v-if="beginner === false && (targetSelected || (selectedCategory && !objectSelection.targets))" class="grey-bg content px-2 py-2">
         <SchedulingSettings
           :show-project-field="false"
           :show-title-field="false"
