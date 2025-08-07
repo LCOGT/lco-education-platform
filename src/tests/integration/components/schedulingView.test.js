@@ -35,18 +35,22 @@ describe('SchedulingView.vue', () => {
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 3600 * 1000)
 
-    // Strip milliseconds
     const formatISOWithoutMilliseconds = (date) =>
       date.toISOString().replace(/\.\d{3}Z$/, 'Z')
 
     const mockObservationData = {
-      target: { name: 'Test Target', ra: 12.0, dec: -20.0 },
+      target: {
+        name: 'Test Target',
+        ra: 12.0,
+        dec: -20.0,
+        exposures: [{ filter: 'F1', exposureTime: 300, count: 1 }]
+      },
       settings: [{ filter: 'F1', exposureTime: 300, count: 1 }],
       startDate: formatISOWithoutMilliseconds(now),
       endDate: formatISOWithoutMilliseconds(oneHourLater),
-      proposal: 'Test Proposal'
+      proposal: 'Test Proposal',
+      isSidereal: true
     }
-
     const mockRequestList = [
       {
         acceptability_threshold: 90,

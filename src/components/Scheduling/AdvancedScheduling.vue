@@ -13,6 +13,8 @@ const endDate = ref('')
 const selectedProposal = ref('')
 const step = ref(1)
 
+const emits = defineEmits(['selectionsComplete', 'showButton'])
+
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
   if (step.value === 1) {
@@ -67,9 +69,9 @@ const handleDateRangeUpdate = (dateRange) => {
   startDate.value = dateRange.start.toISOString().split('T')[0]
   endDate.value = dateRange.end.toISOString().split('T')[0]
   emitSelections()
+  emits('showButton', startDate.value && endDate.value && targetsData.value.length > 0)
 }
 
-const emits = defineEmits(['selectionsComplete'])
 const emitSelections = () => {
   if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
     emits('selectionsComplete', {
