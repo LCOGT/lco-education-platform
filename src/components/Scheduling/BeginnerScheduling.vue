@@ -13,6 +13,13 @@ import galaxyIcon from '@/assets/Icons/galaxy.png'
 import starClusterIcon from '@/assets/Icons/star-cluster.png'
 import supernovaIcon from '@/assets/Icons/supernova.png'
 import nebulaIcon from '@/assets/Icons/nebula.png'
+import marsIcon from '@/assets/Icons/mars.png'
+import jupiterIcon from '@/assets/Icons/Jupiter.png'
+import saturnIcon from '@/assets/Icons/Saturn.png'
+import uranusIcon from '@/assets/Icons/uranus.png'
+import neptuneIcon from '@/assets/Icons/neptune.png'
+import moonIcon from '@/assets/Icons/moon.png'
+import asteroidIcon from '@/assets/Icons/asteroid.png'
 
 const emits = defineEmits(['selectionsComplete', 'clearErrorMessage', 'showButton'])
 const proposalStore = useProposalStore()
@@ -51,13 +58,13 @@ const categories = ref([
   {
     location: 'Our Solar System',
     options: [
-      { name: 'Mars', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '499', availability: null, filters: [{ exposure: 1, name: 'rp' }] },
-      { name: 'Jupiter', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '599', availability: null, filters: [{ exposure: 0.2, name: 'up' }] },
-      { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null, filters: [{ exposure: 0.5, name: 'up' }] },
-      { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
-      { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
-      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }] },
-      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }] }
+      { name: 'Mars', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '499', availability: null, filters: [{ exposure: 1, name: 'rp' }], icon: marsIcon },
+      { name: 'Jupiter', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '599', availability: null, filters: [{ exposure: 0.2, name: 'up' }], icon: jupiterIcon },
+      { name: 'Saturn', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '699', availability: null, filters: [{ exposure: 0.5, name: 'up' }], icon: saturnIcon },
+      { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: uranusIcon },
+      { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: neptuneIcon },
+      { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: moonIcon },
+      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon }
     ]
   }
 ])
