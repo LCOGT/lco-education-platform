@@ -3,7 +3,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import BeginnerScheduling from '../../../components/Scheduling/BeginnerScheduling.vue'
 import { calculateSchedulableTargets } from '../../../utils/visibility.js'
 import { createTestStores } from '../../../utils/testUtils'
-import flushPromises from 'flush-promises'
 
 // Mock the calculateSchedulableTargets util
 vi.mock('../../../utils/visibility.js', () => ({
@@ -104,24 +103,24 @@ describe('BeginnerScheduling.vue', () => {
   })
 
   it('emits selectionsComplete with selectedProposal and other values', async () => {
-    // Set selected values in the component
     wrapper.vm.targetSelection = { name: 'Target 1' }
     wrapper.vm.exposureSettings = [{ filter: 'Filter 1', exposureTime: 300 }]
     wrapper.vm.startDate = '2024-11-18T00:00:00'
     wrapper.vm.endDate = '2024-11-19T00:00:00'
     wrapper.vm.selectedProposal = 'TestProposal'
+    wrapper.vm.selectedCategory = 'Galaxy'
 
-    // Call the emitSelections method
     wrapper.vm.emitSelections()
 
-    // Check if the selectionsComplete event was emitted with the correct data
     expect(wrapper.emitted().selectionsComplete).toBeTruthy()
     expect(wrapper.emitted().selectionsComplete[0][0]).toEqual({
       target: { name: 'Target 1' },
       settings: [{ filter: 'Filter 1', exposureTime: 300 }],
       startDate: '2024-11-18T00:00:00',
       endDate: '2024-11-19T00:00:00',
-      proposal: 'TestProposal'
+      proposal: 'TestProposal',
+      isSidereal: true,
+      scheme: null
     })
   })
 })
