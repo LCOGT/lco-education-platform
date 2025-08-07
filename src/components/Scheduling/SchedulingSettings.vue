@@ -354,7 +354,6 @@ onMounted(async () => {
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
       <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
       </div>
-      <!-- Add another target button -->
     </div>
     <v-btn color="indigo" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>

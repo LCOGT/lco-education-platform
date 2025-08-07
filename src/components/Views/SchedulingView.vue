@@ -15,12 +15,12 @@ const level = ref('')
 const observationData = ref(null)
 const showScheduled = ref(false)
 const operatorValue = ref('')
-const displayButton = ref(false)
 const router = useRouter()
 const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const isSubmitting = ref(false)
+const showButton = ref(false)
 
 const getProjectName = () => {
   let targetName = ''
@@ -45,7 +45,6 @@ const getProjectName = () => {
 
 const sendObservationRequest = async () => {
   if (observationData.value) {
-    isSubmitting.value = true
     const requestList = []
 
     if (observationData.value.targets) {
@@ -53,14 +52,17 @@ const sendObservationRequest = async () => {
       requestList.push(...targets.map(target =>
         createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
       ))
+      isSubmitting.value = true
     } else if (observationData.value.isSidereal === false) {
       const { target, scheme, settings, startDate, endDate } = observationData.value
       requestList.push(
         createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate)
       )
+      isSubmitting.value = true
     } else if (observationData.value.target && observationData.value.isSidereal) {
       const { target, settings, startDate, endDate } = observationData.value
       requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate))
+      isSubmitting.value = true
     }
 
     if (observationData.value.targets && observationData.value.targets.length > 1) {
@@ -102,9 +104,6 @@ const handleUserSelections = (data) => {
   observationData.value = data
 }
 
-const enableButton = computed(() => {
-  return observationData.value && observationData.value.settings.length > 0
-})
 // Clears errorMessage if the new display value is less than the previous one (i.e. going back)
 const handleDisplay = (display) => {
   if (previousDisplay.value !== null && display < previousDisplay.value) {
@@ -118,8 +117,8 @@ const resetView = () => {
   observationData.value = null
   showScheduled.value = false
   operatorValue.value = ''
-  displayButton.value = false
   errorMessage.value = ''
+  showButton.value = false
 }
 
 </script>
@@ -140,26 +139,27 @@ const resetView = () => {
     <div v-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling
           @selectionsComplete="handleUserSelections"
-          @showButton="displayButton = $event"
           @clearErrorMessage="errorMessage = ''"
+          @showButton="val => showButton = val"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="showButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
+          @showButton="val => showButton = val"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn :disabled="!observationData || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="showButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />

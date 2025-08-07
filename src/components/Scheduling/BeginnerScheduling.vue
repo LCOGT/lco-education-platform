@@ -14,7 +14,7 @@ import starClusterIcon from '@/assets/Icons/star-cluster.png'
 import supernovaIcon from '@/assets/Icons/supernova.png'
 import nebulaIcon from '@/assets/Icons/nebula.png'
 
-const emits = defineEmits(['selectionsComplete', 'showButton', 'clearErrorMessage'])
+const emits = defineEmits(['selectionsComplete', 'clearErrorMessage', 'showButton'])
 const proposalStore = useProposalStore()
 const configurationStore = useConfigurationStore()
 
@@ -82,8 +82,6 @@ const previousStep = () => {
   beginner.value = ''
   exposureSettings.value = []
   emits('clearErrorMessage')
-  // Prevents `Submit my request` button from showing when going back
-  emits('showButton', false)
   if (currentStep.value > 1) currentStep.value -= 1
   // Handles specific cases for going back: when user goes from a selected target to seeing the 3 targets
   // or when user goes from selecting a non-sidereal target back
@@ -167,13 +165,13 @@ const loadMoreTargets = () => {
 
 const emitSelections = () => {
   emits('selectionsComplete', {
-    target: objectSelection.value === 'Non-sidereal target' ? simbadResponse.value : targetSelection.value,
-    scheme: objectSelection.value === 'Non-sidereal target' ? schemeRequest.value : null,
+    target: selectedCategory.value === 'Non-sidereal target' ? simbadResponse.value : targetSelection.value,
+    scheme: selectedCategory.value === 'Non-sidereal target' ? schemeRequest.value : null,
     settings: exposureSettings.value,
     startDate: startDate.value,
     endDate: endDate.value,
     proposal: selectedProposal.value,
-    isSidereal: objectSelection.value !== 'Non-sidereal target'
+    isSidereal: selectedCategory.value !== 'Non-sidereal target'
   })
 }
 
@@ -186,7 +184,7 @@ const handleTargetSelection = (target) => {
     saved: true
   }))
   exposureSettings.value = [...defaultSettings.value]
-  if (objectSelection.value !== 'Non-sidereal target') {
+  if (selectedCategory.value !== 'Non-sidereal target') {
     emitSelections()
   }
   nextStep()
@@ -257,7 +255,6 @@ const resetSelections = () => {
   targetSelection.value = ''
   targetSelected.value = false
   beginner.value = ''
-  emits('showButton', false)
   previousStep()
 }
 
@@ -265,7 +262,7 @@ const letMeChoose = () => {
   beginner.value = false
   exposureSettings.value = []
   emitSelections()
-  emits('showButton', true)
+  emits('showButton', false)
 }
 
 const useDefaults = () => {
@@ -278,6 +275,7 @@ const useDefaults = () => {
 const handleExposuresUpdate = (exposures) => {
   exposureSettings.value = exposures
   emitSelections()
+  emits('showButton', exposures.length > 0)
 }
 
 const hasManyProposals = () => {
