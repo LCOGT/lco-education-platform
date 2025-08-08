@@ -4,7 +4,8 @@ export const useSkyCoordinatesStore = defineStore('coordinates', {
   state: () => ({
     ra: null,
     dec: null,
-    targetNameEntered: ''
+    targetNameEntered: '',
+    skyMapConfiguration: {}
   }),
   actions: {
     setCoordinates (ra, dec) {
@@ -18,6 +19,9 @@ export const useSkyCoordinatesStore = defineStore('coordinates', {
       this.ra = null
       this.dec = null
       this.targetNameEntered = ''
+    },
+    setSkyMapConfiguration (config) {
+      this.skyMapConfiguration = config
     }
   }
 })
