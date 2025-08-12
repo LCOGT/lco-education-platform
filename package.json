@@ -28,6 +28,7 @@
     "leaflet": "^1.9.4",
     "lottie-web-vue": "^2.0.7",
     "material-icons": "^1.13.12",
+    "node-fetch": "^3.3.2",
     "pinia": "^2.2.2",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sass": "^1.75.0",
@@ -76,5 +77,10 @@
     "last 2 versions",
     "not dead",
     "not ie 11"
-  ]
+  ],
+  "description": "This application is a part of the Photon Ranch Collection along with DataLab and the Education Platform.  Observe@PTR is where users, typically students, will go to request observations on the 40cm network and perform live observing.   ![Screenshot of Dashboard](./Dashboard.png)",
+  "main": ".eslintrc.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
