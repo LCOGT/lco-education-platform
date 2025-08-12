@@ -21,7 +21,7 @@ import neptuneIcon from '@/assets/Icons/neptune.png'
 import moonIcon from '@/assets/Icons/moon.png'
 import asteroidIcon from '@/assets/Icons/asteroid.png'
 
-const emits = defineEmits(['selectionsComplete', 'clearErrorMessage', 'showButton'])
+const emits = defineEmits(['selectionsComplete', 'clearErrorMessage'])
 const proposalStore = useProposalStore()
 const configurationStore = useConfigurationStore()
 
@@ -85,6 +85,7 @@ const nextStep = () => {
 }
 
 const previousStep = () => {
+  emits('selectionsComplete', { complete: false })
   loading.value = false
   beginner.value = ''
   exposureSettings.value = []
@@ -171,7 +172,7 @@ const loadMoreTargets = () => {
 }
 
 const emitSelections = () => {
-  emits('selectionsComplete', {
+  const payload = {
     target: selectedCategory.value === 'Non-sidereal target' ? simbadResponse.value : targetSelection.value,
     scheme: selectedCategory.value === 'Non-sidereal target' ? schemeRequest.value : null,
     settings: exposureSettings.value,
@@ -179,7 +180,18 @@ const emitSelections = () => {
     endDate: endDate.value,
     proposal: selectedProposal.value,
     isSidereal: selectedCategory.value !== 'Non-sidereal target'
-  })
+  }
+
+  const hasDates = !!startDate.value && !!endDate.value
+  const hasProposal = !!selectedProposal.value
+  const hasExposures = Array.isArray(exposureSettings.value) && exposureSettings.value.length > 0
+  const hasTarget = selectedCategory.value === 'Non-sidereal target'
+    ? simbadResponse.value && Object.keys(simbadResponse.value).length > 0
+    : !!targetSelection.value
+
+  const isComplete = hasDates && hasProposal && ((hasExposures && beginner.value === false) || (beginner.value === true)) && hasTarget
+
+  emits('selectionsComplete', { ...payload, complete: isComplete })
 }
 
 const handleTargetSelection = (target) => {
@@ -269,20 +281,18 @@ const letMeChoose = () => {
   beginner.value = false
   exposureSettings.value = []
   emitSelections()
-  emits('showButton', false)
 }
 
 const useDefaults = () => {
   beginner.value = true
   exposureSettings.value.splice(0)
   exposureSettings.value.push(...defaultSettings.value)
-  emits('showButton', true)
+  emitSelections()
 }
 
 const handleExposuresUpdate = (exposures) => {
   exposureSettings.value = exposures
   emitSelections()
-  emits('showButton', exposures.length > 0)
 }
 
 const hasManyProposals = () => {

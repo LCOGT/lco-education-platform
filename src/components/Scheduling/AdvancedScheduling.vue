@@ -13,7 +13,7 @@ const endDate = ref('')
 const selectedProposal = ref('')
 const step = ref(1)
 
-const emits = defineEmits(['selectionsComplete', 'showButton'])
+const emits = defineEmits(['selectionsComplete'])
 
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
@@ -69,18 +69,31 @@ const handleDateRangeUpdate = (dateRange) => {
   startDate.value = dateRange.start.toISOString().split('T')[0]
   endDate.value = dateRange.end.toISOString().split('T')[0]
   emitSelections()
-  emits('showButton', startDate.value && endDate.value && targetsData.value.length > 0)
 }
 
+// const emitSelections = () => {
+//   if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
+//     emits('selectionsComplete', {
+//       targets: targetsData.value,
+//       startDate: startDate.value,
+//       endDate: endDate.value,
+//       proposal: selectedProposal.value
+//     })
+//   }
+// }
+
 const emitSelections = () => {
-  if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
-    emits('selectionsComplete', {
-      targets: targetsData.value,
-      startDate: startDate.value,
-      endDate: endDate.value,
-      proposal: selectedProposal.value
-    })
+  const payload = {
+    targets: targetsData.value,
+    startDate: startDate.value,
+    endDate: endDate.value,
+    proposal: selectedProposal.value
   }
+
+  const isComplete = targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value
+
+  // always emit, but include complete flag
+  emits('selectionsComplete', { ...payload, complete: isComplete })
 }
 
 const hasManyProposals = () => {

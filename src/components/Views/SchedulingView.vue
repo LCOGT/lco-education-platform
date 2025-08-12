@@ -20,7 +20,7 @@ const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const isSubmitting = ref(false)
-const showButton = ref(false)
+const displaySubmitButton = ref(false)
 
 const getProjectName = () => {
   let targetName = ''
@@ -102,13 +102,16 @@ const sendObservationRequest = async () => {
 
 const handleUserSelections = (data) => {
   observationData.value = data
+  displaySubmitButton.value = !!data?.complete
 }
 
 // Clears errorMessage if the new display value is less than the previous one (i.e. going back)
 const handleDisplay = (display) => {
   if (previousDisplay.value !== null && display < previousDisplay.value) {
     errorMessage.value = ''
+    displaySubmitButton.value = false
   }
+  displaySubmitButton.value = false
   previousDisplay.value = display
 }
 
@@ -118,7 +121,7 @@ const resetView = () => {
   showScheduled.value = false
   operatorValue.value = ''
   errorMessage.value = ''
-  showButton.value = false
+  displaySubmitButton.value = false
 }
 
 </script>
@@ -140,26 +143,24 @@ const resetView = () => {
         <BeginnerScheduling
           @selectionsComplete="handleUserSelections"
           @clearErrorMessage="errorMessage = ''"
-          @showButton="val => showButton = val"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="showButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
-          @showButton="val => showButton = val"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="showButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />
