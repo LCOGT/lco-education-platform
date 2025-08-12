@@ -105,10 +105,19 @@ describe('BeginnerScheduling.vue', () => {
   it('emits selectionsComplete with selectedProposal and other values', async () => {
     wrapper.vm.targetSelection = { name: 'Target 1' }
     wrapper.vm.exposureSettings = [{ filter: 'Filter 1', exposureTime: 300 }]
+    wrapper.vm.defaultSettings = [{ filter: 'Filter 1', exposureTime: 300 }]
     wrapper.vm.startDate = '2024-11-18T00:00:00'
     wrapper.vm.endDate = '2024-11-19T00:00:00'
     wrapper.vm.selectedProposal = 'TestProposal'
     wrapper.vm.selectedCategory = 'Galaxy'
+    wrapper.vm.currentStep = 5
+    wrapper.vm.targetSelected = true
+
+    await wrapper.vm.$nextTick()
+
+    const okDefaultsButton = wrapper.findAll('button').find(btn => btn.text() === "I'm OK with Defaults")
+    expect(okDefaultsButton).toBeTruthy()
+    await okDefaultsButton.trigger('click')
 
     wrapper.vm.emitSelections()
 
@@ -120,7 +129,8 @@ describe('BeginnerScheduling.vue', () => {
       endDate: '2024-11-19T00:00:00',
       proposal: 'TestProposal',
       isSidereal: true,
-      scheme: null
+      scheme: null,
+      complete: true
     })
   })
 })
