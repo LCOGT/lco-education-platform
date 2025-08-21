@@ -226,39 +226,52 @@ async function submitBugReport (bug, payload) {
 }
 
 const sendGoCommand = async () => {
+  if (configurationStore.demo) {
+    realTimeSessionsStore.setPreviousThumbnailCount(realTimeSessionsStore.thumbnailCount)
+  } else {
+    const sessionId = realTimeSessionsStore.currentSession.id
+    const url = configurationStore.thumbnailArchiveUrl + `thumbnails/?observation_id=${sessionId}&size=large`
+    const resp = await fetchApiCall({ url, method: 'GET' })
+    const absoluteTotal = Array.isArray(resp?.results)
+      ? resp.results.filter(r => r.url && r.url.includes('e01-large_thumbnail')).length
+      : 0
+    realTimeSessionsStore.setPreviousThumbnailCount(absoluteTotal)
+  }
+
   realTimeSessionsStore.resetProgress()
+
   loading.value = true
   exposureError.value = ''
   isExposureTimeValid.value = true
-  realTimeSessionsStore.thumbnailCount = 0
-  const token = realTimeSessionsStore.getTokenForCurrentSession
-  const headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': `${token}`
-  }
+
   let exposFilter
   let exposTime
-  // Prepare an array of filters for RGB exposures
+
   if (selectedFilter.value === 'rgb' && suggestionOrManual.value === 'manual') {
     exposFilter = ['rp', 'V', 'B']
     exposTime = [Number(exposureTime.value), Number(exposureTime.value), Number(exposureTime.value)]
-    exposureSettings.value = exposTime
-    realTimeSessionsStore.exposureCount = exposTime.length
   } else {
-  // If suggestions mode is selected, then selectedFilter and exposureTime are populated with the values from the selected target
-  // If manual mode is selected, then selectedFilter and exposureTime are populated with the values entered by the user
-  // The fill method is used to repeat the values for each exposure in the sequence as many times as the value of exposureCount
-    exposFilter = suggestionOrManual.value === 'suggestions' ? selectedFilter.value : Array(exposureCount.value).fill(selectedFilter.value)
-    exposTime = suggestionOrManual.value === 'suggestions' ? exposureTime.value : Array(exposureCount.value).fill(Number(exposureTime.value))
-    exposureSettings.value = exposTime
-    realTimeSessionsStore.exposureCount = exposTime.length
+    exposFilter = suggestionOrManual.value === 'suggestions'
+      ? selectedFilter.value
+      : Array(exposureCount.value).fill(selectedFilter.value)
+    exposTime = suggestionOrManual.value === 'suggestions'
+      ? exposureTime.value
+      : Array(exposureCount.value).fill(Number(exposureTime.value))
   }
+
+  exposureSettings.value = exposTime
+  realTimeSessionsStore.exposureCount = exposTime.length
+
+  if (realTimeSessionsStore.exposureCount > 0) {
+    realTimeSessionsStore.currentThumbnail = 1
+  }
+
+  await realTimeSessionsStore.fetchObservationParams(exposTime.map(Number))
+
   const requestBody = {
     dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
-    // Name is the target name if entered, else the coordinates in string format
     name: targetName.value || `${(Number(ra.value).toFixed(4)).toString()}_${(Number(dec.value).toFixed(4)).toString()}`,
     ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
@@ -266,11 +279,20 @@ const sendGoCommand = async () => {
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
   }
-  if (configurationStore.demo == true) {
+
+  if (configurationStore.demo === true) {
     loading.value = false
     resetValues()
     return
   }
+
+  const token = realTimeSessionsStore.getTokenForCurrentSession
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `${token}`
+  }
+
   await fetchApiCall({
     url: configurationStore.rtiBridgeUrl + 'command/go',
     method: 'POST',
