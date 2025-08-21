@@ -6,7 +6,6 @@ import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
 import { LottieAnimation } from 'lottie-web-vue'
-import BlocksJSON from '@/assets/progress-blocks-bodymovin.json'
 import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const props = defineProps({
@@ -179,7 +178,7 @@ const setSiteState = computed(() => {
                 </div>
               </div>
             </div>
-            <div v-if="exposureCount > 1" class="thumbnail-counter">
+            <div class="thumbnail-counter">
               {{ realTimeSessionsStore.currentThumbnail }} of {{ exposureCount }}
             </div>
             <div class="progress-container">

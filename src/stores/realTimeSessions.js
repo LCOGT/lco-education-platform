@@ -23,7 +23,8 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       observationTicker: null,
       exposureCount: 0,
       thumbnailCount: 0,
-      currentThumbnail: 0
+      currentThumbnail: 0,
+      previousThumbnailCount: 0
     }
   },
   persist: true,
@@ -150,21 +151,46 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       this.observationStartedAt = 0
       this.observationNow = Date.now()
       this.thumbnailCount = 0
-      this.currentThumbnail = 0
+      this.currentThumbnail = 1
     },
     initializeProgressTicker () {
-      // If already running or nothing to track, bail
       if (this.observationTicker || this.observationTotalTime === 0 || this.observationStartedAt === 0) {
         return
       }
-      // Start ticking
       this.observationTicker = setInterval(() => {
         this.observationNow = Date.now()
       }, 1000)
     },
-    countThumbnails (count) {
-      this.thumbnailCount = count
-      this.currentThumbnail = count
+    setPreviousThumbnailCount (count = 0) {
+      this.previousThumbnailCount = Number(count) || 0
+    },
+    countThumbnails (totalCount) {
+      const total = Number(totalCount) || 0
+      this.thumbnailCount = total
+
+      const prev = Number(this.previousThumbnailCount) || 0
+      const rawDelta = Math.max(0, total - prev)
+      const cappedDelta = this.exposureCount ? Math.min(rawDelta, Number(this.exposureCount)) : rawDelta
+
+      if (cappedDelta > this.currentThumbnail) {
+        this.currentThumbnail = cappedDelta
+
+        if (this.observationTotalTime > 0) {
+          this.observationStartedAt = Date.now()
+          this.observationNow = Date.now()
+          if (this.observationTicker) {
+            clearInterval(this.observationTicker)
+            this.observationTicker = null
+          }
+          this.observationTicker = setInterval(() => {
+            this.observationNow = Date.now()
+          }, 1000)
+        }
+      } else {
+        if (cappedDelta > 0) {
+          this.currentThumbnail = cappedDelta
+        }
+      }
     },
     async fetchTelescopeStatus () {
       const configurationStore = useConfigurationStore()
