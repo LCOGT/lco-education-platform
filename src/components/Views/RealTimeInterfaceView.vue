@@ -13,7 +13,6 @@ import tfnFlag from '@/assets/Icons/tfn_flag.svg'
 import cptFlag from '@/assets/Icons/cpt_flag.svg'
 import elpFlag from '@/assets/Icons/elp_flag.png'
 import lscFlag from '@/assets/Icons/lsc_flag.png'
-import LeafletMap from '../RealTimeInterface/GlobeMap/LeafletMap.vue'
 
 const configurationStore = useConfigurationStore()
 const realTimeSessionsStore = useRealTimeSessionsStore()
@@ -22,7 +21,6 @@ const timeRemaining = ref(0)
 const loading = ref(true)
 const telname = { '0m4a': 'Delta Rho 0.35m', '0m4b': 'Delta Rho 0.35m', '1m0a': '1 meter', '2m0a': '2 meter' }
 const imageSrc = ref('')
-const baseUrl = 'https://lco.global/camera/data/{}/allsky/lastsnap.jpg'
 
 const selectedSession = realTimeSessionsStore.currentSession
 const site = computed(() => sites[selectedSession.site]?.name)
