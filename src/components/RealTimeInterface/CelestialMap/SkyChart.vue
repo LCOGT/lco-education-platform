@@ -23,6 +23,18 @@ const props = defineProps({
   }
 })
 
+function getMoonCoordinates () {
+  const moon = Celestial.getPlanet('lun').ephemeris
+  return {
+    ra: moon.ra,
+    dec: moon.dec
+  }
+}
+
+defineExpose({
+  getMoonCoordinates
+})
+
 const emit = defineEmits(['update-coordinates'])
 
 watch(
