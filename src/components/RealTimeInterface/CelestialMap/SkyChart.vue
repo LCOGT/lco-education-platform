@@ -47,10 +47,12 @@ watch(
 )
 
 function updateLocation () {
-  const now = new Date().toUTCString()
+  const now = new Date()
   Celestial.skyview({ date: now, location: [lat.value, lng.value] })
+  Celestial.location([lat.value, lng.value])
   Celestial.resize({ width: 0 })
   Celestial.redraw()
+  skyCoordinatesStore.setSkyMapConfiguration(Celestial.skyview())
 }
 
 function initializeCelestial () {

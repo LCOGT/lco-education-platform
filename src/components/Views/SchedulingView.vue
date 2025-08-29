@@ -3,10 +3,10 @@ import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import { fetchApiCall } from '../../utils/api.js'
-import { formatToUTC } from '../../utils/formatTime'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
 import { useConfigurationStore } from '../../stores/configuration.js'
+import { createTargetPayloadForNonSiderealRequest, createPayloadForSiderealRequests } from '../../utils/payloadForRequestedObservations.js'
 
 const configurationStore = useConfigurationStore()
 
@@ -15,80 +15,12 @@ const level = ref('')
 const observationData = ref(null)
 const showScheduled = ref(false)
 const operatorValue = ref('')
-const displayButton = ref(false)
 const router = useRouter()
 const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const isSubmitting = ref(false)
-
-const createInstrumentConfigs = (exposures) => {
-  const exposuresArray = Array.isArray(exposures) ? exposures : [exposures]
-
-  return exposuresArray.map(exposure => ({
-    exposure_count: exposure.count || 1,
-    exposure_time: exposure.exposureTime,
-    mode: 'central30x30',
-    rotator_mode: '',
-    extra_params: {
-      offset_ra: 0,
-      offset_dec: 0,
-      defocus: 0
-    },
-    optical_elements: {
-      filter: exposure.filter
-    }
-  }))
-}
-
-const createRequest = (target, exposures, startDate, endDate) => ({
-  'acceptability_threshold': 90,
-  'configuration_repeats': 1,
-  'optimization_type': 'TIME',
-  'configurations': [
-    {
-      'type': 'EXPOSE',
-      // TO DO: allow users to select instrument type based on the time they have available for each instrument
-      'instrument_type': '0M4-SCICAM-QHY600',
-      'instrument_configs': createInstrumentConfigs(exposures),
-      'acquisition_config': {
-        'mode': 'OFF',
-        'extra_params': {}
-      },
-      'guiding_config': {
-        'mode': 'ON',
-        'optional': true,
-        'extra_params': {}
-      },
-      'target': {
-        'name': target.name,
-        'type': 'ICRS',
-        'ra': Number(target.ra),
-        'dec': Number(target.dec),
-        'proper_motion_ra': null,
-        'proper_motion_dec': null,
-        'epoch': 2000,
-        'parallax': null,
-        'extra_params': {}
-      },
-      'constraints': {
-        'max_airmass': 1.6,
-        'min_lunar_distance': 30,
-        'max_lunar_phase': 1
-      }
-    }
-  ],
-  'windows': [
-    {
-      'start': formatToUTC(startDate),
-      'end': formatToUTC(endDate)
-    }
-  ],
-  'location': {
-    // TO DO: remove hardcoded 0m4 and get telescope classes from api --> allow user to select
-    'telescope_class': '0m4'
-  }
-})
+const displaySubmitButton = ref(false)
 
 const getProjectName = () => {
   let targetName = ''
@@ -113,25 +45,30 @@ const getProjectName = () => {
 
 const sendObservationRequest = async () => {
   if (observationData.value) {
-    isSubmitting.value = true
     const requestList = []
 
-    // Handle single target
-    if (observationData.value.target) {
-      const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createRequest(target, settings, startDate, endDate))
-    }
-
-    // Handle multiple targets
     if (observationData.value.targets) {
       const { targets, startDate, endDate } = observationData.value
-      requestList.push(...targets.map(target => createRequest(target, target.exposures, startDate, endDate)))
+      requestList.push(...targets.map(target =>
+        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
+      ))
+      isSubmitting.value = true
+    } else if (observationData.value.isSidereal === false) {
+      const { target, scheme, settings, startDate, endDate } = observationData.value
+      requestList.push(
+        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate)
+      )
+      isSubmitting.value = true
+    } else if (observationData.value.target && observationData.value.isSidereal) {
+      const { target, settings, startDate, endDate } = observationData.value
+      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate))
+      isSubmitting.value = true
     }
 
-    if (observationData.value.target || observationData.value.targets.length === 1) {
-      operatorValue.value = 'SINGLE'
-    } else if (observationData.value.targets.length > 1) {
+    if (observationData.value.targets && observationData.value.targets.length > 1) {
       operatorValue.value = 'MANY'
+    } else {
+      operatorValue.value = 'SINGLE'
     }
 
     await fetchApiCall({
@@ -158,9 +95,6 @@ const sendObservationRequest = async () => {
         for (const errorMssg of error.requests) {
           errorMessage.value = errorMssg.non_field_errors[0]
         }
-        // .map(request => request.non_field_errors)
-        // .flat()
-        // .join(', ')
       }
     })
   }
@@ -168,16 +102,16 @@ const sendObservationRequest = async () => {
 
 const handleUserSelections = (data) => {
   observationData.value = data
+  displaySubmitButton.value = !!data?.complete
 }
 
-const enableButton = computed(() => {
-  return observationData.value && observationData.value.settings.length > 0
-})
 // Clears errorMessage if the new display value is less than the previous one (i.e. going back)
 const handleDisplay = (display) => {
   if (previousDisplay.value !== null && display < previousDisplay.value) {
     errorMessage.value = ''
+    displaySubmitButton.value = false
   }
+  displaySubmitButton.value = false
   previousDisplay.value = display
 }
 
@@ -186,8 +120,8 @@ const resetView = () => {
   observationData.value = null
   showScheduled.value = false
   operatorValue.value = ''
-  displayButton.value = false
   errorMessage.value = ''
+  displaySubmitButton.value = false
 }
 
 </script>
@@ -208,14 +142,13 @@ const resetView = () => {
     <div v-if="level === 'beginner' && !showScheduled">
         <BeginnerScheduling
           @selectionsComplete="handleUserSelections"
-          @showButton="displayButton = $event"
           @clearErrorMessage="errorMessage = ''"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="displayButton" :disabled="!enableButton || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -227,7 +160,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn :disabled="!observationData || isSubmitting" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />

@@ -13,10 +13,14 @@ import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
 import { se } from 'date-fns/locale'
+import { useUserDataStore } from '../../stores/userData'
+import emailjs from '@emailjs/browser'
+import { detect } from 'detect-browser'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
 const skyCoordinatesStore = useSkyCoordinatesStore()
+const userDataStore = useUserDataStore()
 
 const isCapturingImages = computed(() => {
   if (configurationStore.demo == true) {
@@ -54,6 +58,13 @@ const isDecFocused = ref(false)
 const maxExposures = ref(3)
 const exposureSettings = ref([])
 const skychartref = ref(null)
+const bugDescription = ref('')
+const showBugModal = ref(false)
+const bugError = ref(null)
+const bugPayload = ref(null)
+const showToast = ref(false)
+const toastMessage = ref('')
+const isSubmittingBug = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -205,6 +216,62 @@ const resetValues = () => {
   realTimeSessionsStore.fetchObservationParams(exposureSettings.value)
 }
 
+function getBrowserInfoSimple () {
+  const info = detect() || { name: 'unknown', version: 'unknown', os: 'unknown' }
+  return {
+    name: info.name,
+    version: info.version,
+    os: info.os,
+    screen: `${window.screen?.width || 0}x${window.screen?.height || 0}`,
+    timezone: (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : ''
+  }
+}
+
+async function confirmSubmitBug () {
+  isSubmittingBug.value = true
+  const success = await submitBugReport(bugError.value, bugPayload.value)
+  isSubmittingBug.value = false
+  showBugModal.value = false
+  bugError.value = null
+  bugPayload.value = null
+  bugDescription.value = ''
+  toastMessage.value = success
+    ? 'Thanks — your bug report has been submitted. We will look into it.'
+    : 'Sorry — we could not send your bug report. Please try again later.'
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 3500)
+}
+
+async function submitBugReport (bug, payload) {
+  const browserInfo = getBrowserInfoSimple()
+  const report = {
+    description: bugDescription.value,
+    payload: JSON.stringify(payload),
+    user: userDataStore.username,
+    site: JSON.stringify(siteInfo),
+    proposal: currentSession.proposal,
+    error: JSON.stringify(bug),
+    timestamp: new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC'),
+    browser: `Browser name: ${browserInfo.name}, version: ${browserInfo.version}, screen size: ${browserInfo.screen}, time zone:${browserInfo.timezone}`,
+    os: `${browserInfo.os}`,
+    email: userDataStore.profile.email,
+    store: JSON.stringify(skyCoordinatesStore.skyMapConfiguration)
+  }
+  try {
+    await emailjs.send(
+      'service_ywoge7h',
+      'template_f44b2gg',
+      report,
+      'VpdZaTZpic-pUL4GI'
+    )
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 const sendGoCommand = async () => {
   realTimeSessionsStore.resetProgress()
   loading.value = true
@@ -263,7 +330,9 @@ const sendGoCommand = async () => {
         isExposureTimeValid.value = false
         exposureError.value = error.errors.expTime[0]
       } else {
-        console.error('API failed with error', error)
+        bugError.value = error
+        bugPayload.value = requestBody
+        showBugModal.value = true
       }
     }
   })
@@ -576,6 +645,52 @@ watch(
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
+      <div v-if="showBugModal" class="modal is-active">
+        <div class="modal-background" @click="showBugModal = false"></div>
+        <div class="modal-card">
+          <div v-if="isSubmittingBug" class="modal-spinner-overlay" aria-hidden="true">
+      <v-progress-circular indeterminate color="white" />
+    </div>
+          <header class="modal-card-head">
+            <h3 class="modal-card-title">
+              Sorry, we cannot process your request.<br>
+              If you would like us to look into this, <br>
+              please submit a bug report below.<br>
+            </h3>
+            <button class="delete" @click="showBugModal = false"></button>
+          </header>
+          <section class="modal-card-body">
+            <textarea
+              v-model="bugDescription"
+              class="textarea"
+              rows="4"
+              placeholder="Please briefly describe your issue."
+            ></textarea>
+          </section>
+          <footer class="modal-card-foot">
+            <button
+              class="button is-danger"
+              :disabled="!bugDescription"
+              @click="confirmSubmitBug"
+            >
+              Submit Bug Report
+            </button>
+            <button class="button" @click="showBugModal = false">
+              Cancel
+            </button>
+          </footer>
+        </div>
+      </div>
+        <transition name="toast">
+          <div
+            v-if="showToast"
+            class="bug-toast"
+            role="status"
+            aria-live="polite"
+          >
+          {{ toastMessage }}
+          </div>
+        </transition>
     </div>
   </div>
   <div v-else-if="isCapturingImages">
@@ -614,5 +729,45 @@ p.mosaic {
     display: flex;
     flex-direction: column;
   }
+}
+.bug-toast {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  background: rgba(16, 185, 129, 0.98);
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(16,16,16,0.18);
+  z-index: 1200;
+  font-size: 0.95rem;
+}
+.modal-card {
+  position: relative;
+}
+.modal-spinner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 1100;
+  border-radius: 6px;
+  pointer-events: all;
+}
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.toast-enter-to,
+.toast-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
