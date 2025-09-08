@@ -30,11 +30,9 @@ const getThumbnails = async () => {
     method: 'GET',
     successCallback: (data) => {
       thumbnails.value = data.results
-        .filter(result => result.url.includes('e91-large_thumbnail'))
+        .filter(result => result.url.includes('e01-large_thumbnail'))
         .map(result => result.url)
-      if (thumbnails.value.length > 0) {
-        emits('thumbnailsFetched', thumbnails.value.length)
-      }
+      emits('thumbnailsFetched', thumbnails.value.length)
     },
     failCallback: console.error
   })
@@ -42,7 +40,7 @@ const getThumbnails = async () => {
 
 onMounted(() => {
   getThumbnails()
-  const intervalMs = configurationStore.demo ? 15000 : 3000
+  const intervalMs = configurationStore.demo ? 15000 : 1000
   pollingInterval = setInterval(getThumbnails, intervalMs)
 })
 
@@ -50,6 +48,6 @@ onMounted(() => {
 
 <template>
     <div>
-      <img :src="thumbnails[0]" />
+      <img :src="thumbnails[thumbnails.length - 1]" />
     </div>
 </template>
