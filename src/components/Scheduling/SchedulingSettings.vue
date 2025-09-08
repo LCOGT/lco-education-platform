@@ -40,7 +40,7 @@ const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
 const filterList = ref([])
-const currentStep = ref(2)
+const currentStep = ref(4)
 
 const targetInput = reactive({
   name: '',
@@ -150,45 +150,38 @@ const addTarget = () => {
   targetInput.dec = ''
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
-  currentStep.value = 2
-}
-
-// Function to display exposures for a target as a concatenated string
-const formatExposures = (exposures) => {
-  return exposures.map(exposure => `${exposure.filterName} - ${exposure.exposureTime}s x ${exposure.count}`).join(', ')
+  currentStep.value = 4
 }
 
 const nextStep = () => {
-  if (currentStep.value === 2) {
-    currentStep.value = 3
-  } else if (currentStep.value === 3) {
-    currentStep.value = 4
+  if (currentStep.value < 5) {
+    currentStep.value++
+    emits('updateDisplay', currentStep.value)
   }
-  emits('updateDisplay', currentStep.value)
 }
 
 const previousStep = () => {
-  if (currentStep.value === 2 && hasManyProposals()) {
-    currentStep.value = 1
-  } else if (currentStep.value === 3) {
-    currentStep.value = 2
-  } else if (currentStep.value === 4) {
-    currentStep.value = 3
+  if (currentStep.value > 1) {
+    if (currentStep.value === 2 && hasManyProposals()) {
+      currentStep.value = 1
+    } else {
+      currentStep.value--
+    }
+    emits('updateDisplay', currentStep.value)
   }
-  emits('updateDisplay', currentStep.value)
 }
 
 const disableNextStep = computed(() => {
-  if (currentStep.value === 2) {
+  if (currentStep.value === 4) {
     return !targetInput.ra || !targetInput.dec
-  } else if (currentStep.value === 3) {
+  } else if (currentStep.value === 5) {
     return !targetList.value[activeTargetIndex.value].exposures.length
   }
   return false
 })
 
 const buttonVisibility = computed(() => {
-  return props.showProjectField && currentStep.value !== 4
+  return props.showProjectField && currentStep.value !== 5
 })
 
 function editTarget (index) {
@@ -201,7 +194,7 @@ function editTarget (index) {
   isTargetConfirmed.value = true
   targetError.value = ''
   // Moving back to step one so user can edit target
-  currentStep.value = 2
+  currentStep.value = 4
 }
 
 function deleteExposure (targetIndex, exposureIndex) {
@@ -221,7 +214,7 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <div v-if="currentStep === 3 || props.target">
+      <div v-if="currentStep === 5 || props.target">
         <div
           v-for="(target, tIndex) in filteredTargets"
           :key="tIndex"
@@ -259,7 +252,7 @@ onMounted(async () => {
         </div>
       </div>
       <!-- Target input -->
-      <div v-if="showTitleField && currentStep === 2" class="input-wrapper">
+      <div v-if="showTitleField && currentStep === 4" class="input-wrapper">
         <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label for="target-list" class="label">Target</label>
@@ -309,7 +302,7 @@ onMounted(async () => {
     <div class="column is-one-third">
 
       <!-- Exposure settings -->
-      <div v-if="props.target || currentStep === 3">
+      <div v-if="props.target || currentStep === 5">
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Filter</label>
@@ -355,6 +348,16 @@ onMounted(async () => {
       <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
       </div>
     </div>
-    <v-btn color="indigo" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
+    <v-btn color="indigo" @click="previousStep" v-if="currentStep > 1">Previous step</v-btn>
+    <v-btn color="indigo" class="nextstep" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>
 </template>
+
+<style scoped>
+  .nextstep {
+  margin-top: 0;
+  margin-left: 1em;
+  vertical-align: middle;
+}
+
+</style>

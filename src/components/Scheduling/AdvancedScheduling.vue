@@ -69,18 +69,8 @@ const handleDateRangeUpdate = (dateRange) => {
   startDate.value = dateRange.start.toISOString().split('T')[0]
   endDate.value = dateRange.end.toISOString().split('T')[0]
   emitSelections()
+  step.value = 4
 }
-
-// const emitSelections = () => {
-//   if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
-//     emits('selectionsComplete', {
-//       targets: targetsData.value,
-//       startDate: startDate.value,
-//       endDate: endDate.value,
-//       proposal: selectedProposal.value
-//     })
-//   }
-// }
 
 const emitSelections = () => {
   const payload = {
@@ -105,6 +95,12 @@ const handleDisplay = (display) => {
   emits('updateDisplay', display)
 }
 
+const selectedObject = ref('')
+const handleObjectSelection = (object) => {
+  selectedObject.value = object
+  step.value = 3
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
@@ -114,15 +110,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <SchedulingSettings v-if="selectedProposal && step!== 1"
+  <ProposalDropdown v-if="hasManyProposals && step === 1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
+  <div v-if="step === 2" class="field is-horizontal">
+    <div class="button" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
+    <div class="button" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
+  </div>
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step === 3"/>
+  <SchedulingSettings v-if="selectedProposal && step >= 4"
     :show-project-field="true"
     :show-title-field="true"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
   />
-  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===4"/>
 </template>
 
 <style scoped>
