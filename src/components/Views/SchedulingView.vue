@@ -19,8 +19,8 @@ const router = useRouter()
 const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
+const currentDisplay = ref(null)
 const isSubmitting = ref(false)
-const displaySubmitButton = ref(false)
 
 const getProjectName = () => {
   let targetName = ''
@@ -47,7 +47,14 @@ const sendObservationRequest = async () => {
   if (observationData.value) {
     const requestList = []
 
-    if (observationData.value.targets) {
+    if (observationData.value.objectType === 'nonsidereal') {
+      const { targets, startDate, endDate } = observationData.value
+      requestList.push(...targets.map(target => {
+        const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
+        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate)
+      }))
+    }
+    else if (observationData.value.objectType === 'sidereal') {
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target =>
         createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
@@ -89,12 +96,10 @@ const sendObservationRequest = async () => {
         router.push('/dashboard')
         isSubmitting.value = false
       },
-      failCallback: (error) => {
+      failCallback: () => {
         showScheduled.value = false
         isSubmitting.value = false
-        for (const errorMssg of error.requests) {
-          errorMessage.value = errorMssg.non_field_errors[0]
-        }
+        errorMessage.value = 'At least one of the targets is not visible during this period'
       }
     })
   }
@@ -102,16 +107,32 @@ const sendObservationRequest = async () => {
 
 const handleUserSelections = (data) => {
   observationData.value = data
-  displaySubmitButton.value = !!data?.complete
 }
+
+const canSubmit = computed(() => {
+  if (level.value === 'advanced') {
+    return (
+      currentDisplay.value === 5 &&
+      observationData.value &&
+      observationData.value.targets &&
+      observationData.value.targets.every(target => target.exposures.length > 0)
+    )
+  } else if (level.value === 'beginner') {
+    return (
+      observationData.value &&
+      observationData.value.complete === true &&
+      observationData.value.settings.length > 0
+    )
+  }
+  return false
+})
 
 // Clears errorMessage if the new display value is less than the previous one (i.e. going back)
 const handleDisplay = (display) => {
+  currentDisplay.value = display
   if (previousDisplay.value !== null && display < previousDisplay.value) {
     errorMessage.value = ''
-    displaySubmitButton.value = false
   }
-  displaySubmitButton.value = false
   previousDisplay.value = display
 }
 
@@ -121,7 +142,6 @@ const resetView = () => {
   showScheduled.value = false
   operatorValue.value = ''
   errorMessage.value = ''
-  displaySubmitButton.value = false
 }
 
 </script>
@@ -148,7 +168,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -160,7 +180,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="displaySubmitButton" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />

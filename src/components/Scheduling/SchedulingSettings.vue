@@ -3,6 +3,7 @@ import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vu
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
+import { fetchApiCall } from '../../utils/api.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
@@ -23,6 +24,15 @@ const props = defineProps({
   },
   dec: {
     type: Number
+  },
+  startDate: {
+    type: String
+  },
+  endDate: {
+    type: String
+  },
+  objectType: {
+    type: String
   }
 })
 
@@ -35,27 +45,24 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
-const targetList = ref([{ name: '', exposures: [], ra: '', dec: '' }])
+const targetList = ref([{ name: '', exposures: [], ra: '', dec: '', simbadResponse: {} }])
 const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
 const filterList = ref([])
-const currentStep = ref(2)
+const currentStep = ref(4)
 
 const targetInput = reactive({
   name: '',
   ra: '',
-  dec: ''
+  dec: '',
+  simbadResponse: {}
 })
 
 const settings = reactive({
   filter: '',
   exposureTime: '',
   count: ''
-})
-
-const exposureEnabled = computed(() => {
-  return !props.showTitleField || (targetInput.ra !== '' && targetInput.dec !== '')
 })
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
@@ -70,23 +77,22 @@ function clearTargetName () {
 }
 
 function updateTarget () {
+  const isSidereal = props.objectType === 'sidereal'
+
+  targetList.value[activeTargetIndex.value].name = targetInput.name || (isSidereal ? `${targetInput.ra}_${targetInput.dec}` : '')
+  targetList.value[activeTargetIndex.value].ra = isSidereal ? targetInput.ra : null
+  targetList.value[activeTargetIndex.value].dec = isSidereal ? targetInput.dec : null
+  targetList.value[activeTargetIndex.value].simbadResponse = isSidereal ? {} : targetInput.simbadResponse
   emits('targetUpdated', {
     index: activeTargetIndex.value,
-    name: targetInput.name || `${targetInput.ra}_${targetInput.dec}`,
-    ra: targetInput.ra,
-    dec: targetInput.dec
+    name: targetList.value[activeTargetIndex.value].name,
+    ra: targetList.value[activeTargetIndex.value].ra,
+    dec: targetList.value[activeTargetIndex.value].dec,
+    simbadResponse: isSidereal ? null : targetList.value[activeTargetIndex.value].simbadResponse
   })
 }
 
-// Fetch RA and Dec based on the target name
-function getRaDecFromTargetName () {
-  const targetName = targetInput.name
-
-  if (!targetName) {
-    targetError.value = 'Please enter a target name.'
-    return
-  }
-
+function fetchSiderealTargetDetails (targetName) {
   fetch(configurationStore.targetNameUrl + `${targetName}?target_type=sidereal`)
     .then(response => response.json())
     .then(data => {
@@ -115,14 +121,71 @@ function getRaDecFromTargetName () {
     })
 }
 
+async function fetchNonSiderealTargetDetails (targetName) {
+  await fetchApiCall({
+    url: configurationStore.rtiBridgeUrl + `get_ephemeris/?start_date=${props.startDate}&end_date=${props.endDate}`,
+    method: 'GET',
+    successCallback: (response) => {
+      getNonSiderealAvailability(response, targetName)
+    }
+  })
+}
+
+const getNonSiderealAvailability = (ephemerides, target) => {
+  const targetName = target.charAt(0).toUpperCase() + target.slice(1).toLowerCase()
+  const targetEphemerides = ephemerides[targetName]
+  if (!targetEphemerides) {
+    targetError.value = 'No ephemeris data found for this target.'
+  }
+
+  const thresholdInDegrees = 60
+  const isSchedulable = targetEphemerides.some(ephemeris => Number(ephemeris.elong) > thresholdInDegrees)
+  if (isSchedulable) {
+    targetError.value = ''
+    getNonSiderealRequestBodyDetails(targetName)
+  } else {
+    targetError.value = `${targetName} is not schedulable for the selected date range.`
+    isTargetConfirmed.value = false
+  }
+}
+
+const getNonSiderealRequestBodyDetails = async (target) => {
+  await fetchApiCall({
+    url: `https://simbad2k.lco.global/${target}?target_type=NON_SIDEREAL&scheme=MPC_MINOR_PLANET`,
+    method: 'GET',
+    successCallback: (response) => {
+      targetList.value[activeTargetIndex.value].simbadResponse = response
+      targetInput.simbadResponse = response
+      targetList.value[activeTargetIndex.value].name = target
+      isTargetConfirmed.value = true
+      updateTarget()
+      nextStep()
+    }
+  })
+}
+
+// Fetch RA and Dec based on the target name
+function getTargetDetails () {
+  const targetName = targetInput.name
+
+  if (!targetName) {
+    targetError.value = 'Please enter a target name.'
+    return
+  }
+  if (props.objectType === 'sidereal') {
+    fetchSiderealTargetDetails(targetName)
+  } else if (props.objectType === 'nonsidereal') {
+    fetchNonSiderealTargetDetails(targetName)
+  }
+}
+
 // Add an exposure to the active target
 const addExposure = () => {
   if (addExposuresEnabled.value) {
-    // Commit the current input values to the targetList entry,
-    // ensuring RA/Dec are stored as numbers
-    targetList.value[activeTargetIndex.value].name = props.target || targetInput.name || `${targetInput.ra}_${targetInput.dec}`
-    targetList.value[activeTargetIndex.value].ra = targetInput.ra !== '' ? Number(targetInput.ra) : null
-    targetList.value[activeTargetIndex.value].dec = targetInput.dec !== '' ? Number(targetInput.dec) : null
+    const isSidereal = props.objectType === 'sidereal'
+    targetList.value[activeTargetIndex.value].name = props.target || targetInput.name || (isSidereal ? `${targetInput.ra}_${targetInput.dec}` : '')
+    targetList.value[activeTargetIndex.value].ra = isSidereal && targetInput.ra !== '' ? Number(targetInput.ra) : null
+    targetList.value[activeTargetIndex.value].dec = isSidereal && targetInput.dec !== '' ? Number(targetInput.dec) : null
     targetList.value[activeTargetIndex.value].exposures.push({
       filter: settings.filter,
       filterName: filterList.value.find(f => f.code === settings.filter)?.name || '',
@@ -136,59 +199,55 @@ const addExposure = () => {
     emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
     emits('targetUpdated', {
       name: targetList.value[activeTargetIndex.value].name,
-      ra: targetList.value[activeTargetIndex.value].ra,
-      dec: targetList.value[activeTargetIndex.value].dec
+      ra: isSidereal ? targetList.value[activeTargetIndex.value].ra : null,
+      dec: isSidereal ? targetList.value[activeTargetIndex.value].dec : null,
+      simbadResponse: isSidereal ? null : targetList.value[activeTargetIndex.value].simbadResponse
     })
   }
 }
 
 // Add a new target with empty exposure settings
 const addTarget = () => {
-  targetList.value.push({ name: '', exposures: [], ra: '', dec: '' })
+  targetList.value.push({ name: '', exposures: [], ra: '', dec: '', simbadResponse: {} })
   targetInput.name = ''
   targetInput.ra = ''
   targetInput.dec = ''
+  targetInput.simbadResponse = {}
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
-  currentStep.value = 2
-}
-
-// Function to display exposures for a target as a concatenated string
-const formatExposures = (exposures) => {
-  return exposures.map(exposure => `${exposure.filterName} - ${exposure.exposureTime}s x ${exposure.count}`).join(', ')
+  currentStep.value = 4
+  emits('updateDisplay', currentStep.value)
 }
 
 const nextStep = () => {
-  if (currentStep.value === 2) {
-    currentStep.value = 3
-  } else if (currentStep.value === 3) {
-    currentStep.value = 4
+  if (currentStep.value < 5) {
+    currentStep.value++
+    emits('updateDisplay', currentStep.value)
   }
-  emits('updateDisplay', currentStep.value)
 }
 
 const previousStep = () => {
-  if (currentStep.value === 2 && hasManyProposals()) {
-    currentStep.value = 1
-  } else if (currentStep.value === 3) {
-    currentStep.value = 2
-  } else if (currentStep.value === 4) {
-    currentStep.value = 3
+  if (currentStep.value > 1) {
+    if (currentStep.value === 2 && hasManyProposals()) {
+      currentStep.value = 1
+    } else {
+      currentStep.value--
+    }
+    emits('updateDisplay', currentStep.value)
   }
-  emits('updateDisplay', currentStep.value)
 }
 
 const disableNextStep = computed(() => {
-  if (currentStep.value === 2) {
+  if (currentStep.value === 4) {
     return !targetInput.ra || !targetInput.dec
-  } else if (currentStep.value === 3) {
+  } else if (currentStep.value === 5) {
     return !targetList.value[activeTargetIndex.value].exposures.length
   }
   return false
 })
 
 const buttonVisibility = computed(() => {
-  return props.showProjectField && currentStep.value !== 4
+  return props.showProjectField && currentStep.value !== 5
 })
 
 function editTarget (index) {
@@ -196,12 +255,12 @@ function editTarget (index) {
   activeTargetIndex.value = index
   // Copy the target's current values into targetInput so the form is pre-filled.
   targetInput.name = targetList.value[index].name
-  targetInput.ra = targetList.value[index].ra
-  targetInput.dec = targetList.value[index].dec
+  targetInput.ra = props.objectType === 'sidereal' ? targetList.value[index].ra : ''
+  targetInput.dec = props.objectType === 'sidereal' ? targetList.value[index].dec : ''
   isTargetConfirmed.value = true
   targetError.value = ''
-  // Moving back to step one so user can edit target
-  currentStep.value = 2
+  currentStep.value = 4
+  emits('updateDisplay', currentStep.value)
 }
 
 function deleteExposure (targetIndex, exposureIndex) {
@@ -221,7 +280,7 @@ onMounted(async () => {
     <div class="columns">
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
-      <div v-if="currentStep === 3 || props.target">
+      <div v-if="currentStep === 5 || props.target">
         <div
           v-for="(target, tIndex) in filteredTargets"
           :key="tIndex"
@@ -259,7 +318,7 @@ onMounted(async () => {
         </div>
       </div>
       <!-- Target input -->
-      <div v-if="showTitleField && currentStep === 2" class="input-wrapper">
+      <div v-if="showTitleField && currentStep === 4" class="input-wrapper">
         <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label for="target-list" class="label">Target</label>
@@ -277,10 +336,10 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
-            <v-btn color="indigo" @click="getRaDecFromTargetName">Find Target</v-btn>
+            <v-btn color="indigo" @click="() => { getTargetDetails(); updateTarget() }">Find Target</v-btn>
         </div>
         <p v-if="targetError" class="error-text">{{ targetError }}</p>
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
           <div class="field-label is-normal">
             <label class="label">RA</label>
           </div>
@@ -292,7 +351,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div class="field is-horizontal">
+        <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
           <div class="field-label is-normal">
             <label class="label">Dec</label>
           </div>
@@ -309,17 +368,17 @@ onMounted(async () => {
     <div class="column is-one-third">
 
       <!-- Exposure settings -->
-      <div v-if="props.target || currentStep === 3">
+      <div v-if="props.target || currentStep === 5">
       <div class="field is-horizontal">
         <div class="field-label is-normal">
           <label class="label">Filter</label>
         </div>
         <div class="field-body">
           <div class="field is-narrow">
-            <div class="control" :class="{ disabled: !exposureEnabled }">
+            <div class="control">
               <div class="select is-fullwidth">
-                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField && targetInput.name) || !exposureEnabled">
-                  <option disabled value="">Choose a filter</option>
+                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField && targetInput.name)">
+                  <option disabled value="">Choose a filter for {{ targetList[activeTargetIndex].name }}</option>
                     <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
                       {{ filter.name }}
                     </option>
@@ -336,7 +395,7 @@ onMounted(async () => {
         <div class="field-body">
           <div class="field is-narrow">
             <p class="control is-expanded">
-              <input id="exposureTime" type="number" min="1" class="input" v-model="settings.exposureTime" :disabled="!exposureEnabled" placeholder="Seconds">
+              <input id="exposureTime" type="number" min="1" class="input" v-model="settings.exposureTime" placeholder="Seconds">
             </p>
             <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
           </div>
@@ -345,7 +404,7 @@ onMounted(async () => {
           </div>
           <div class="field is-narrow">
             <p class="control is-expanded">
-              <input id="exposureCount" type="number" class="input" v-model="settings.count" :disabled="!exposureEnabled" min="1" placeholder="Count">
+              <input id="exposureCount" type="number" class="input" v-model="settings.count" min="1" placeholder="Count">
             </p>
           </div>
         </div>
@@ -355,6 +414,16 @@ onMounted(async () => {
       <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
       </div>
     </div>
-    <v-btn color="indigo" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
+    <v-btn color="indigo" @click="previousStep" v-if="currentStep > 1">Previous step</v-btn>
+    <v-btn color="indigo" class="nextstep" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>
 </template>
+
+<style scoped>
+  .nextstep {
+  margin-top: 0;
+  margin-left: 1em;
+  vertical-align: middle;
+}
+
+</style>

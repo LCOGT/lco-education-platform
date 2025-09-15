@@ -11,6 +11,7 @@ const targetsData = ref([])
 const startDate = ref('')
 const endDate = ref('')
 const selectedProposal = ref('')
+const selectedObject = ref('')
 const step = ref(1)
 
 const emits = defineEmits(['selectionsComplete'])
@@ -33,7 +34,8 @@ const handleTargetUpdate = (targetUpdate) => {
       ...targetsData.value[targetUpdate.index],
       name: targetUpdate.name,
       ra: targetUpdate.ra,
-      dec: targetUpdate.dec
+      dec: targetUpdate.dec,
+      simbadResponse: selectedObject.value === 'nonsidereal' ? targetUpdate.simbadResponse : {}
     }
   } else {
     // Fallback: look for an existing target with the same name and update it.
@@ -41,6 +43,7 @@ const handleTargetUpdate = (targetUpdate) => {
     if (existingTarget) {
       existingTarget.ra = targetUpdate.ra
       existingTarget.dec = targetUpdate.dec
+      existingTarget.simbadResponse = selectedObject.value === 'nonsidereal' ? targetUpdate.simbadResponse : {}
     } else {
       // If no match, push a new target.
       targetsData.value.push({
@@ -69,30 +72,26 @@ const handleDateRangeUpdate = (dateRange) => {
   startDate.value = dateRange.start.toISOString().split('T')[0]
   endDate.value = dateRange.end.toISOString().split('T')[0]
   emitSelections()
+  step.value = 4
 }
-
-// const emitSelections = () => {
-//   if (targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value) {
-//     emits('selectionsComplete', {
-//       targets: targetsData.value,
-//       startDate: startDate.value,
-//       endDate: endDate.value,
-//       proposal: selectedProposal.value
-//     })
-//   }
-// }
 
 const emitSelections = () => {
   const payload = {
     targets: targetsData.value,
     startDate: startDate.value,
     endDate: endDate.value,
-    proposal: selectedProposal.value
+    proposal: selectedProposal.value,
+    objectType: selectedObject.value
   }
 
-  const isComplete = targetsData.value.length > 0 && startDate.value && endDate.value && selectedProposal.value
+  const isComplete =
+    step.value === 5 &&
+    targetsData.value.length > 0 &&
+    startDate.value &&
+    endDate.value &&
+    selectedProposal.value &&
+    targetsData.value.every(target => target.exposures.length > 0)
 
-  // always emit, but include complete flag
   emits('selectionsComplete', { ...payload, complete: isComplete })
 }
 
@@ -102,7 +101,14 @@ const hasManyProposals = () => {
 
 const handleDisplay = (display) => {
   step.value = display
+  emitSelections()
   emits('updateDisplay', display)
+}
+
+const handleObjectSelection = (object) => {
+  selectedObject.value = object
+  step.value = 3
+  emitSelections()
 }
 
 onMounted(() => {
@@ -114,15 +120,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <ProposalDropdown v-if="hasManyProposals && step===1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <SchedulingSettings v-if="selectedProposal && step!== 1"
+  <ProposalDropdown v-if="hasManyProposals && step === 1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
+  <div v-if="step === 2" class="field is-horizontal">
+    <div class="button" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
+    <div class="button" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
+  </div>
+  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step === 3"/>
+  <SchedulingSettings v-if="selectedProposal && step >= 4"
     :show-project-field="true"
     :show-title-field="true"
+    :start-date="startDate"
+    :end-date="endDate"
+    :object-type="selectedObject"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
   />
-  <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step===4"/>
 </template>
 
 <style scoped>

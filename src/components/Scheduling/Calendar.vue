@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, defineEmits, onMounted } from 'vue'
-import { fetchSemesterData, currentSemesterEnd, parseISOString } from '../../utils/calendarUtils'
+import { fetchSemesterData, currentSemesterEnd } from '../../utils/calendarUtils'
 
 const emits = defineEmits(['updateDateRange'])
 
