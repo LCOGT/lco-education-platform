@@ -623,7 +623,7 @@ watch(
         </div>
         <div class="field">
       <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
-      <v-btn @click="suggestionOrManual = ''">go back</v-btn>
+      <v-btn @click="suggestionOrManual = ''; validTarget = false">go back</v-btn>
     </div>
         <div v-if="ra && dec && !targeterror && validTarget && !props.draftMode">
           <div class="field is-horizontal">
