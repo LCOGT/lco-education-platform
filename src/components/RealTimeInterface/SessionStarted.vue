@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, defineProps } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -29,6 +29,15 @@ const isCapturingImages = computed(() => {
     return realTimeSessionsStore.isCapturingImagesForCurrentSession
   }
 })
+
+const props = defineProps({
+  draftMode: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emits = defineEmits(['doneDrafting'])
 
 const aladinRef = ref(null)
 const ra = ref('')
@@ -65,6 +74,10 @@ const isSubmittingBug = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
+
+// This has to be computed because when the user deletes, the store updates but the frontend doesn't
+// I tested without it being computed
+const draftedTargets = computed(() => realTimeSessionsStore.draftedTargets[realTimeSessionsStore.currentSessionId])
 
 const categories = ref([
   {
@@ -109,7 +122,6 @@ function getRaDecFromTargetName () {
     })
 }
 
-// ask Edward what units this is in
 function areRaAndDecInSky () {
   if (ra.value && dec.value) {
     skyCoordinatesStore.setCoordinates(ra.value, dec.value)
@@ -143,6 +155,7 @@ function setRaDecfromTargetList (event) {
     exposureCount.value = 1
     exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
     selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
+    validTarget.value = true
   }
 }
 
@@ -412,6 +425,32 @@ function onDecBlur () {
   updateCoordinatesStore()
 }
 
+function saveTargetDetails () {
+  realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
+  resetSuggestionSettings()
+}
+
+const deleteDraftTarget = (targetName) => {
+  realTimeSessionsStore.removeDraftTarget(targetName)
+}
+
+function resetSuggestionSettings () {
+  suggestionOrManual.value = ''
+  suggestionByType.value = ''
+  targetsByType.value = []
+  suggestionTargetSet.value = false
+  validTarget.value = false
+}
+
+function populateAladinData (target) {
+  ra.value = target.raValue
+  dec.value = target.decValue
+  targetName.value = target.name
+  goToLocation()
+  suggestionOrManual.value = 'manual'
+  validTarget.value = true
+}
+
 watch(
   () => selectedFilter.value,
   (newFilter) => {
@@ -451,15 +490,41 @@ watch(
           <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
       </div>
       <div class="column grey-bg">
-        <div v-show="suggestionOrManual === 'manual' || suggestionTargetSet">
-        <AladinSkyMap ref="aladinRef" />
+        <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && !props.draftMode)">
+          <AladinSkyMap ref="aladinRef" />
         </div>
         <div v-if="suggestionOrManual === ''">
-          <h3>How would you like to select your target?</h3>
-          <p>Would you like us to give you some suggestions for what to observe, or do you already know?</p>
+          <h3 v-if="!props.draftMode">How would you like to select your target?</h3>
+          <h3 v-if="props.draftMode">Draft your targets below</h3>
+          <p v-if="!props.draftMode">Would you like us to give you some suggestions for what to observe, or do you already know?</p>
           <div class="buttons are-medium">
           <button class="button" @click="setSuggestionsOrManual('suggestions')">Target Suggestions</button>
           <button class="button" @click="setSuggestionsOrManual('manual')">I'll enter the details</button>
+          <div v-if="draftedTargets.length" class="mt-4 targets-container">
+            <h4 v-if="props.draftMode">your drafted targets</h4>
+            <h4 v-if="!props.draftMode">Select from your drafted targets</h4>
+            <div class="drafted-targets-list">
+            <div v-for="target of draftedTargets" :key="target.id">
+              <tr class="draft-target-row">
+                <td>
+                  <div class="draft-target-actions">
+                    <button
+                    class="button draft-button"
+                    @click="populateAladinData(target)"
+                    :disabled="props.draftMode"
+                    :class="{ 'unclickable': props.draftMode }"
+                    >
+                    {{ target.name }}
+                  </button>
+                    <button class="deleteButton" @click="deleteDraftTarget(target.name)">
+                      <font-awesome-icon icon="fa-solid fa-trash-can" class="icon red" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </div>
+            </div>
+          </div>
         </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
@@ -481,6 +546,7 @@ watch(
           </a>
           </div>
         </div>
+          <v-btn @click="resetSuggestionSettings()">go back</v-btn>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
           <div v-if="!suggestionTargetSet">
@@ -501,8 +567,8 @@ watch(
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                    <div class="highlight-small-region">
-                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"  /> <strong>Exposure settings:</strong>
+                    <div class="highlight-small-region" v-if="!props.draftMode">
+                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"/> <strong>Exposure settings:</strong>
                       <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
                         <li>{{ filter.name }} filter for {{ filter.exposure }} seconds</li>
                       </ul>
@@ -538,7 +604,7 @@ watch(
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false" @focus="isRaFocused = true" @blur="onRaBlur">
+                <input class="input" v-model="ra" placeholder="Right Ascension" @input="validTarget = false" @focus="isRaFocused = true" @blur="onRaBlur">
               </p>
             </div>
           </div>
@@ -550,15 +616,16 @@ watch(
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false" @focus="isDecFocused = true" @blur="onDecBlur" >
+                <input class="input" v-model="dec" placeholder="Declination" @input="validTarget = false" @focus="isDecFocused = true" @blur="onDecBlur" >
               </p>
             </div>
           </div>
         </div>
         <div class="field">
       <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
+      <v-btn @click="suggestionOrManual = ''">go back</v-btn>
     </div>
-        <div v-if="ra && dec && !targeterror && validTarget">
+        <div v-if="ra && dec && !targeterror && validTarget && !props.draftMode">
           <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Filter</label>
@@ -601,9 +668,12 @@ watch(
           </div>
         </div>
         <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
-        <div class="buttons are-medium" v-if="suggestionOrManual != ''">
+        <div class="buttons are-medium" v-if="suggestionOrManual != '' && !props.draftMode">
           <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
           <button class="button" @click="resetSuggestionOrManual">Start Again</button>
+        </div>
+        <div v-if="props.draftMode && validTarget">
+          <v-btn class="help is-danger" @click="saveTargetDetails()">save target</v-btn>
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
       </div>
@@ -654,6 +724,7 @@ watch(
           </div>
         </transition>
     </div>
+    <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
   </div>
   <div v-else-if="isCapturingImages">
     <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :exposure-time="exposureTime" :exposure-settings="exposureSettings" :selected-filter="selectedFilter" :target-name="targetName" :field-of-view="fieldOfView"/>
@@ -731,5 +802,43 @@ p.mosaic {
 .toast-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+.draft-btn {
+  position: absolute;
+  top: 10%;
+  right: 2%;
+}
+.draft-target-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.draft-target-row td {
+  padding: 0.5em 0;
+}
+
+.targets-container {
+  width: 100%;
+}
+
+.drafted-targets-list {
+  max-height: 45vh;
+  overflow-y: scroll;
+  margin-bottom: 1em;
+  border-radius: 6px;
+  background-color: rgb(102, 107, 112);
+  padding: 0.5em;
+}
+
+.draft-button {
+  border: transparent;
+}
+.unclickable {
+  pointer-events: none;
+  opacity: 1 !important;
+  cursor: default !important;
+  border: none;
 }
 </style>

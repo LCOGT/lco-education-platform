@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { raToDegrees, decToDegrees } from '@/utils/convertRaDec'
 
 export const useSkyCoordinatesStore = defineStore('coordinates', {
   state: () => ({
@@ -9,8 +10,8 @@ export const useSkyCoordinatesStore = defineStore('coordinates', {
   }),
   actions: {
     setCoordinates (ra, dec) {
-      this.ra = ra
-      this.dec = dec
+      this.ra = Number(ra) ? ra : raToDegrees(ra)
+      this.dec = Number(dec) ? dec : decToDegrees(dec)
     },
     setTargetNameEntered (value) {
       this.targetNameEntered = value
