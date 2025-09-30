@@ -4,5 +4,5 @@
     "rtiBridgeUrl": "https://lco-edu-rti-bridge.lco.global/",
     "targetNameUrl": "https://simbad2k.lco.global/",
     "datalabUrl": "https://datalab.lco.global/",
-    "demo": true
+    "demo": false
 }
