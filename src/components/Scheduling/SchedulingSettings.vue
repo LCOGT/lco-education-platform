@@ -1,9 +1,10 @@
 <script setup>
-import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, reactive, computed, defineProps, defineEmits, onMounted, watch } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { fetchApiCall } from '../../utils/api.js'
+import { raToDegrees, decToDegrees } from '../../utils/convertRaDec.js'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
@@ -45,7 +46,7 @@ const hasManyProposals = () => {
   return proposalStore.proposalsWithNormalTimeAllocation.length > 1
 }
 
-const targetList = ref([{ name: '', exposures: [], ra: '', dec: '', simbadResponse: {} }])
+const targetList = ref([{ name: '', exposures: [], ra: '', dec: '', raInput: '', decInput: '', simbadResponse: {} }])
 const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
@@ -76,12 +77,34 @@ function clearTargetName () {
   targetInput.name = ''
 }
 
+function convertRaToDeg (ra) {
+  const isSidereal = props.objectType === 'sidereal'
+  if (isSidereal && !Number(ra)) {
+    return raToDegrees(ra)
+  }
+  return ra
+}
+
+function convertDecToDeg (dec) {
+  const isSidereal = props.objectType === 'sidereal'
+  if (isSidereal && !Number(dec)) {
+    return decToDegrees(dec)
+  }
+  return dec
+}
+
 function updateTarget () {
   const isSidereal = props.objectType === 'sidereal'
 
+  if (isSidereal && !targetInput.name && targetInput.ra && targetInput.dec) {
+    isTargetConfirmed.value = true
+  }
+
   targetList.value[activeTargetIndex.value].name = targetInput.name || (isSidereal ? `${targetInput.ra}_${targetInput.dec}` : '')
-  targetList.value[activeTargetIndex.value].ra = isSidereal ? targetInput.ra : null
-  targetList.value[activeTargetIndex.value].dec = isSidereal ? targetInput.dec : null
+  targetList.value[activeTargetIndex.value].raInput = targetInput.ra
+  targetList.value[activeTargetIndex.value].decInput = targetInput.dec
+  targetList.value[activeTargetIndex.value].ra = isSidereal ? convertRaToDeg(targetInput?.ra) : null
+  targetList.value[activeTargetIndex.value].dec = isSidereal ? convertDecToDeg(targetInput?.dec) : null
   targetList.value[activeTargetIndex.value].simbadResponse = isSidereal ? {} : targetInput.simbadResponse
   emits('targetUpdated', {
     index: activeTargetIndex.value,
@@ -207,7 +230,7 @@ const addExposure = () => {
 }
 
 // Add a new target with empty exposure settings
-const addTarget = () => {
+const addAnotherTarget = () => {
   targetList.value.push({ name: '', exposures: [], ra: '', dec: '', simbadResponse: {} })
   targetInput.name = ''
   targetInput.ra = ''
@@ -253,10 +276,10 @@ const buttonVisibility = computed(() => {
 function editTarget (index) {
   // Set the selected target as the active one for editing
   activeTargetIndex.value = index
-  // Copy the target's current values into targetInput so the form is pre-filled.
   targetInput.name = targetList.value[index].name
-  targetInput.ra = props.objectType === 'sidereal' ? targetList.value[index].ra : ''
-  targetInput.dec = props.objectType === 'sidereal' ? targetList.value[index].dec : ''
+  targetInput.ra = props.objectType === 'sidereal' ? targetList.value[index].raInput : ''
+  targetInput.dec = props.objectType === 'sidereal' ? targetList.value[index].decInput : ''
+
   isTargetConfirmed.value = true
   targetError.value = ''
   currentStep.value = 4
@@ -274,6 +297,7 @@ function deleteExposure (targetIndex, exposureIndex) {
 onMounted(async () => {
   filterList.value = await getFilterList()
 })
+
 </script>
 
 <template>
@@ -346,7 +370,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="number" v-model="targetInput.ra" @input="() => { clearTargetName(); updateTarget() }" class="scheduling-inputs input"/>
+                <input v-model="targetInput.ra" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertRaToDeg(targetInput.ra) }" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -358,7 +382,7 @@ onMounted(async () => {
           <div class="field-body">
             <div class="field">
               <div class="control">
-                <input type="number" v-model="targetInput.dec" @input="() => { clearTargetName(); updateTarget() }" class="scheduling-inputs input"/>
+                <input v-model="targetInput.dec" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertDecToDeg(targetInput.dec) }" class="scheduling-inputs input"/>
               </div>
             </div>
           </div>
@@ -411,7 +435,7 @@ onMounted(async () => {
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
-      <v-btn v-if="props.showTitleField" @click="addTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+      <v-btn v-if="props.showTitleField" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
       </div>
     </div>
     <v-btn color="indigo" @click="previousStep" v-if="currentStep > 1">Previous step</v-btn>
