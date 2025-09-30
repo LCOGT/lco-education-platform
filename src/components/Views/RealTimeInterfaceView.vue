@@ -58,6 +58,10 @@ const statusSessionNotActive = computed(() => {
   }
 })
 
+const statusSessionInactive = computed(() => {
+  return realTimeSessionsStore.currentStatus === 'INACTIVE'
+})
+
 const updateTimeRemaining = () => {
   if (statusNotExpired.value) {
     timeRemaining.value = calculateSessionCountdown(selectedSession)
@@ -224,7 +228,7 @@ onMounted(async () => {
 
             </div>
             <div class="column is-6">
-              <v-btn class="blue-bg" @click="draftTargetsMode = true">Draft Targets</v-btn>
+              <v-btn class="blue-bg" @click="draftTargetsMode = true" v-if="statusSessionInactive">Draft Targets</v-btn>
               <SessionPending/>
             </div>
           </div>
