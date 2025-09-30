@@ -24,7 +24,8 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       exposureCount: 0,
       thumbnailCount: 0,
       currentThumbnail: 0,
-      previousThumbnailCount: 0
+      previousThumbnailCount: 0,
+      draftedTargets: {}
     }
   },
   persist: true,
@@ -50,6 +51,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       const elapsed = (state.observationNow - state.observationStartedAt) / 1000
       const percent = total > 0 ? Math.min((elapsed / total) * 100, 100) : 0
       // If the countdown is finished but no new thumbnail yet, linger at 95%
+      // THIS IS WHERE I NEED TO ADD TO THE STATE THE BUTTON FROM REAL TIME AND IF THE BUTTON BECOMES ENABLED, THEN CHANGE LOGIC!
       if (state.currentThumbnail < state.exposureCount && percent >= 100) {
         return 95
       }
@@ -211,6 +213,23 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
           console.error('Error fetching telescope status:', error)
         }
       })
+    },
+    addDraftTarget (targetName, ra, dec) {
+      if (!this.draftedTargets[this.currentSessionId]) {
+        this.draftedTargets[this.currentSessionId] = []
+      }
+      if (!targetName) {
+        targetName = `${ra}_${dec}`
+      }
+      this.draftedTargets[this.currentSessionId].push({ name: targetName, raValue: ra, decValue: dec })
+    },
+    removeDraftTarget (targetName) {
+      console.log('removing!')
+      this.draftedTargets[this.currentSessionId] = this.draftedTargets[this.currentSessionId].filter(target => target.name !== targetName)
+      console.log(this.draftedTargets)
+    },
+    getDraftTargetsForCurrentSession () {
+      return this.draftedTargets[this.currentSessionId]
     }
   }
 })
