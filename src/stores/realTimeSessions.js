@@ -218,15 +218,12 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
       if (!this.draftedTargets[this.currentSessionId]) {
         this.draftedTargets[this.currentSessionId] = []
       }
-      if (!targetName) {
-        targetName = `${ra}_${dec}`
-      }
       this.draftedTargets[this.currentSessionId].push({ name: targetName, raValue: ra, decValue: dec })
     },
-    removeDraftTarget (targetName) {
-      console.log('removing!')
-      this.draftedTargets[this.currentSessionId] = this.draftedTargets[this.currentSessionId].filter(target => target.name !== targetName)
-      console.log(this.draftedTargets)
+    removeDraftTargetByIndex (index) {
+      if (this.draftedTargets[this.currentSessionId]) {
+        this.draftedTargets[this.currentSessionId].splice(index, 1)
+      }
     },
     getDraftTargetsForCurrentSession () {
       return this.draftedTargets[this.currentSessionId]

@@ -425,13 +425,43 @@ function onDecBlur () {
   updateCoordinatesStore()
 }
 
+const showNamePrompt = ref(false)
+const tempTargetName = ref('')
+let pendingSave = false
+
+// function saveTargetDetails () {
+//   if (targetName.value === '') {
+//     // logic here
+//   }
+//   realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
+//   resetSuggestionSettings()
+// }
+
 function saveTargetDetails () {
+  if (!targetName.value) {
+    showNamePrompt.value = true
+    tempTargetName.value = ''
+    pendingSave = true
+    return
+  }
   realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
   resetSuggestionSettings()
+  targetName.value = ''
+  ra.value = ''
+  dec.value = ''
+  pendingSave = false
+}
+function confirmTargetName () {
+  if (!tempTargetName.value) return
+  targetName.value = tempTargetName.value
+  showNamePrompt.value = false
+  if (pendingSave) {
+    saveTargetDetails()
+  }
 }
 
-const deleteDraftTarget = (targetName) => {
-  realTimeSessionsStore.removeDraftTarget(targetName)
+const deleteDraftTarget = (index) => {
+  realTimeSessionsStore.removeDraftTargetByIndex(index)
 }
 
 function resetSuggestionSettings () {
@@ -504,7 +534,7 @@ watch(
             <h4 v-if="props.draftMode">your drafted targets</h4>
             <h4 v-if="!props.draftMode">Select from your drafted targets</h4>
             <div class="drafted-targets-list">
-            <div v-for="target of draftedTargets" :key="target.id">
+            <div v-for="(target, idx) of draftedTargets" :key="idx">
               <tr class="draft-target-row">
                 <td>
                   <div class="draft-target-actions">
@@ -516,7 +546,7 @@ watch(
                     >
                     {{ target.name }}
                   </button>
-                    <button class="deleteButton" @click="deleteDraftTarget(target.name)">
+                    <button class="deleteButton" @click="deleteDraftTarget(idx)">
                       <font-awesome-icon icon="fa-solid fa-trash-can" class="icon red" />
                     </button>
                   </div>
@@ -677,6 +707,32 @@ watch(
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
         <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
+        <div v-if="showNamePrompt" class="modal is-active">
+      <div class="modal-background" @click="showNamePrompt = false; pendingSave = false"></div>
+      <div class="modal-card small-modal">
+        <header class="modal-card-head">
+          <h2 class="modal-card-title">Give your target a name</h2>
+          <button class="delete" @click="showNamePrompt = false; pendingSave = false"></button>
+        </header>
+        <section class="modal-card-body">
+          <input
+            class="input"
+            v-model="tempTargetName"
+            placeholder="Enter a name for your target"
+            @keyup.enter="confirmTargetName"
+            autofocus
+          />
+          <div class="modal-buttons">
+            <button
+              class="button is-success"
+              :disabled="!tempTargetName"
+              @click="confirmTargetName"
+            >Save</button>
+            <button class="button" @click="showNamePrompt = false; pendingSave = false">Cancel</button>
+          </div>
+        </section>
+      </div>
+    </div>
       </div>
       <div v-if="showBugModal" class="modal is-active">
         <div class="modal-background" @click="showBugModal = false"></div>
@@ -756,6 +812,41 @@ p.mosaic {
 }
 .go-button {
   margin-top: 1.25em;
+}
+.small-modal {
+  max-width: 30vw;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 6px;
+}
+
+.modal-card-head {
+  box-shadow: none !important;
+  border-bottom: none;
+  justify-content: center;
+}
+
+.modal-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+
+.modal-card-body {
+  box-shadow: none !important;
+  padding-bottom: 0.5em;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75em;
+  margin-top: 1em;
+}
+
+.modal-card-foot {
+  display: none !important;
 }
 @media (max-width: 900px) {
   .maps-container {
