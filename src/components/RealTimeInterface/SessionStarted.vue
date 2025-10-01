@@ -676,6 +676,7 @@ watch(
           <v-btn class="help is-danger" @click="saveTargetDetails()">save target</v-btn>
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
+        <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
       </div>
       <div v-if="showBugModal" class="modal is-active">
         <div class="modal-background" @click="showBugModal = false"></div>
@@ -724,7 +725,6 @@ watch(
           </div>
         </transition>
     </div>
-    <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
   </div>
   <div v-else-if="isCapturingImages">
     <SessionImageCapture @updateRenderGallery="updateRenderGallery" :ra="ra" :dec="dec" :exposure-count="exposureCount" :exposure-time="exposureTime" :exposure-settings="exposureSettings" :selected-filter="selectedFilter" :target-name="targetName" :field-of-view="fieldOfView"/>
@@ -804,9 +804,9 @@ p.mosaic {
   transform: translateY(0);
 }
 .draft-btn {
-  position: absolute;
-  top: 10%;
-  right: 2%;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  align-self: flex-start;
 }
 .draft-target-actions {
   display: flex;
