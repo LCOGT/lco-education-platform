@@ -80,17 +80,17 @@ function clearTargetName () {
 function convertRaToDeg (ra) {
   const isSidereal = props.objectType === 'sidereal'
   if (isSidereal && !Number(ra)) {
-    return raToDegrees(ra)
+    targetList.value[activeTargetIndex.value].ra = raToDegrees(ra)
+    console.log('ra:', targetList.value[activeTargetIndex.value].ra)
   }
-  return ra
 }
 
 function convertDecToDeg (dec) {
   const isSidereal = props.objectType === 'sidereal'
   if (isSidereal && !Number(dec)) {
-    return decToDegrees(dec)
+    targetList.value[activeTargetIndex.value].dec = decToDegrees(dec)
+    console.log('dec:', targetList.value[activeTargetIndex.value].dec)
   }
-  return dec
 }
 
 function updateTarget () {
@@ -103,9 +103,6 @@ function updateTarget () {
   targetList.value[activeTargetIndex.value].name = targetInput.name || (isSidereal ? `${targetInput.ra}_${targetInput.dec}` : '')
   targetList.value[activeTargetIndex.value].raInput = targetInput.ra
   targetList.value[activeTargetIndex.value].decInput = targetInput.dec
-  targetList.value[activeTargetIndex.value].ra = isSidereal ? convertRaToDeg(targetInput?.ra) : null
-  targetList.value[activeTargetIndex.value].dec = isSidereal ? convertDecToDeg(targetInput?.dec) : null
-  targetList.value[activeTargetIndex.value].simbadResponse = isSidereal ? {} : targetInput.simbadResponse
   emits('targetUpdated', {
     index: activeTargetIndex.value,
     name: targetList.value[activeTargetIndex.value].name,
@@ -206,9 +203,6 @@ function getTargetDetails () {
 const addExposure = () => {
   if (addExposuresEnabled.value) {
     const isSidereal = props.objectType === 'sidereal'
-    targetList.value[activeTargetIndex.value].name = props.target || targetInput.name || (isSidereal ? `${targetInput.ra}_${targetInput.dec}` : '')
-    targetList.value[activeTargetIndex.value].ra = isSidereal && targetInput.ra !== '' ? Number(targetInput.ra) : null
-    targetList.value[activeTargetIndex.value].dec = isSidereal && targetInput.dec !== '' ? Number(targetInput.dec) : null
     targetList.value[activeTargetIndex.value].exposures.push({
       filter: settings.filter,
       filterName: filterList.value.find(f => f.code === settings.filter)?.name || '',
@@ -218,7 +212,6 @@ const addExposure = () => {
     settings.filter = ''
     settings.exposureTime = ''
     settings.count = ''
-
     emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
     emits('targetUpdated', {
       name: targetList.value[activeTargetIndex.value].name,
@@ -296,6 +289,10 @@ function deleteExposure (targetIndex, exposureIndex) {
 
 onMounted(async () => {
   filterList.value = await getFilterList()
+})
+
+watch(targetInput.ra, (newValue) => {
+  console.log('Target input changed:', newValue)
 })
 
 </script>
