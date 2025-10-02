@@ -31,22 +31,6 @@
         "type": "github"
       }
     },
-    "deploy-repo-template": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1725037657,
-        "narHash": "sha256-p1ZfPG60DqmcUGJX8rkCVFr0Wh7ZVLCn/BoM6IGTbOo=",
-        "ref": "refs/heads/main",
-        "rev": "82058b4c22070bdb386e13b0edadb45742dc3b2e",
-        "revCount": 17,
-        "type": "git",
-        "url": "https://github.com/LCOGT/deploy-repo-template.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://github.com/LCOGT/deploy-repo-template.git"
-      }
-    },
     "devenv": {
       "inputs": {
         "cachix": "cachix",
@@ -71,8 +55,8 @@
     },
     "devenv-k8s": {
       "inputs": {
-        "deploy-repo-template": "deploy-repo-template",
         "devenv": "devenv",
+        "devenv-root": "devenv-root",
         "flake-parts": "flake-parts_2",
         "kpt": "kpt",
         "mk-shell-bin": "mk-shell-bin",
@@ -82,20 +66,33 @@
         "skaffold": "skaffold"
       },
       "locked": {
-        "lastModified": 1734551686,
-        "narHash": "sha256-IxmCMEqpB6yf5UeHcKkTvBckJGK2VHpOn2RtC6XUXlw=",
+        "lastModified": 1754519935,
+        "narHash": "sha256-v86wZsc5EcHm65UnmC+F3MrvmChAtYEdYfQ7Zd6Td20=",
         "owner": "LCOGT",
         "repo": "devenv-k8s",
-        "rev": "28044f408813518ade197b53fcce9197cb2274b8",
+        "rev": "1c84d8a0b0bed74206285ca438e277f4cb78583d",
         "type": "github"
       },
       "original": {
         "owner": "LCOGT",
+        "ref": "v1",
         "repo": "devenv-k8s",
         "type": "github"
       }
     },
     "devenv-root": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-d6xi4mKdjkX2JFicDIv5niSzpyI0m/Hnm8GGAIU04kY=",
+        "type": "file",
+        "url": "file:///dev/null"
+      },
+      "original": {
+        "type": "file",
+        "url": "file:///dev/null"
+      }
+    },
+    "devenv-root_2": {
       "flake": false,
       "locked": {
         "narHash": "sha256-d6xi4mKdjkX2JFicDIv5niSzpyI0m/Hnm8GGAIU04kY=",
@@ -517,7 +514,7 @@
     "root": {
       "inputs": {
         "devenv-k8s": "devenv-k8s",
-        "devenv-root": "devenv-root",
+        "devenv-root": "devenv-root_2",
         "flake-parts": [
           "devenv-k8s",
           "flake-parts"
