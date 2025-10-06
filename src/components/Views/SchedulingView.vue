@@ -150,10 +150,15 @@ const resetView = () => {
   <section class="section highlight">
   <div class="container">
     <h2>Schedule an Observation</h2>
+    <div class="content">
     <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
-      <p>What level are you?</p>
-      <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
-      <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
+      <p>You can have Explore guide you through the process of scheduling an observation with <strong>Suggestions</strong> mode.</p>
+      <p>Or, if you know what you want, you can use <strong>Manual</strong> mode to set everything yourself.</p>
+      <div class="buttons">
+      <button @click="level = 'beginner'" class="button red-bg">Suggestions</button>
+      <button @click="level = 'advanced'" class="button red-bg">Manual</button>
+      </div>
+    </div>
     </div>
   </div>
   </section>
