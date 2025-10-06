@@ -71,6 +71,8 @@ const bugPayload = ref(null)
 const showToast = ref(false)
 const toastMessage = ref('')
 const isSubmittingBug = ref(false)
+let pendingSave = false
+const nameYourTargetHint = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -425,23 +427,9 @@ function onDecBlur () {
   updateCoordinatesStore()
 }
 
-const showNamePrompt = ref(false)
-const tempTargetName = ref('')
-let pendingSave = false
-
-// function saveTargetDetails () {
-//   if (targetName.value === '') {
-//     // logic here
-//   }
-//   realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
-//   resetSuggestionSettings()
-// }
-
 function saveTargetDetails () {
   if (!targetName.value) {
-    showNamePrompt.value = true
-    tempTargetName.value = ''
-    pendingSave = true
+    nameYourTargetHint.value = true
     return
   }
   realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
@@ -450,14 +438,6 @@ function saveTargetDetails () {
   ra.value = ''
   dec.value = ''
   pendingSave = false
-}
-function confirmTargetName () {
-  if (!tempTargetName.value) return
-  targetName.value = tempTargetName.value
-  showNamePrompt.value = false
-  if (pendingSave) {
-    saveTargetDetails()
-  }
 }
 
 const deleteDraftTarget = (index) => {
@@ -530,7 +510,7 @@ watch(
           <div class="buttons are-medium">
           <button class="button" @click="setSuggestionsOrManual('suggestions')">Target Suggestions</button>
           <button class="button" @click="setSuggestionsOrManual('manual')">I'll enter the details</button>
-          <div v-if="draftedTargets.length" class="mt-4 targets-container">
+          <div v-if="draftedTargets && draftedTargets.length" class="mt-4 targets-container">
             <h4 v-if="props.draftMode">your drafted targets</h4>
             <h4 v-if="!props.draftMode">Select from your drafted targets</h4>
             <div class="drafted-targets-list">
@@ -610,12 +590,20 @@ watch(
           <h3>Enter Target Details</h3>
           <div class="field is-horizontal">
             <div class="field-label is-normal">
-                <label class="label">Target</label>
+                <label class="label">Target Name</label>
             </div>
             <div class="field-body">
               <div class="field has-addons">
                   <div class="control">
-                    <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
+                    <input
+                      class="input"
+                      type="text"
+                      placeholder="e.g. NGC891"
+                      v-model="targetName"
+                      @input="nameYourTargetHint = false"
+                      :class="{ 'highlight-border': nameYourTargetHint }"
+                    >
+                      <small v-if="nameYourTargetHint" class="name-hint">Give your target a name</small>
                   </div>
                   <div class="control">
                     <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
@@ -707,32 +695,6 @@ watch(
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
         <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
-        <div v-if="showNamePrompt" class="modal is-active">
-      <div class="modal-background" @click="showNamePrompt = false; pendingSave = false"></div>
-      <div class="modal-card small-modal">
-        <header class="modal-card-head">
-          <h2 class="modal-card-title">Give your target a name</h2>
-          <button class="delete" @click="showNamePrompt = false; pendingSave = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <input
-            class="input"
-            v-model="tempTargetName"
-            placeholder="Enter a name for your target"
-            @keyup.enter="confirmTargetName"
-            autofocus
-          />
-          <div class="modal-buttons">
-            <button
-              class="button is-success"
-              :disabled="!tempTargetName"
-              @click="confirmTargetName"
-            >Save</button>
-            <button class="button" @click="showNamePrompt = false; pendingSave = false">Cancel</button>
-          </div>
-        </section>
-      </div>
-    </div>
       </div>
       <div v-if="showBugModal" class="modal is-active">
         <div class="modal-background" @click="showBugModal = false"></div>
@@ -813,40 +775,40 @@ p.mosaic {
 .go-button {
   margin-top: 1.25em;
 }
-.small-modal {
-  max-width: 30vw;
-  width: 100%;
-  margin: 0 auto;
-  border-radius: 6px;
+
+.highlight-border {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.85);
+  animation: fadeOutBorder 3s forwards;
+  transition: box-shadow 0.7s cubic-bezier(.4,0,.2,1);
 }
 
-.modal-card-head {
-  box-shadow: none !important;
-  border-bottom: none;
-  justify-content: center;
+@keyframes fadeOutBorder {
+  0% { box-shadow: 0 0 0 3px rgba(255,255,255,0.85); }
+  70% { box-shadow: 0 0 0 3px rgba(255,255,255,0.85); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }
 
-.modal-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-align: center;
-  width: 100%;
+.name-hint {
+  color: #fff;
+  font-size: 0.8em;
+  margin-top: 2px;
+  margin-left: 2px;
 }
 
-.modal-card-body {
-  box-shadow: none !important;
-  padding-bottom: 0.5em;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.75em;
-  margin-top: 1em;
-}
-
-.modal-card-foot {
-  display: none !important;
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 @media (max-width: 900px) {
   .maps-container {
