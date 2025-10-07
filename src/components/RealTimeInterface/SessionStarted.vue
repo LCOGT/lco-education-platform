@@ -700,7 +700,7 @@ watch([ra, dec], () => {
           <button class="button" @click="resetSuggestionOrManual">Start Again</button>
         </div>
         <div v-if="props.draftMode && validTarget">
-          <v-btn class="help is-danger" @click="saveTargetDetails()">save target</v-btn>
+          <v-btn color="green-lighten-1" @click="saveTargetDetails()">save target</v-btn>
         </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
         <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
