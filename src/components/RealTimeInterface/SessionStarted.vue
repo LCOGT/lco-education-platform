@@ -15,6 +15,7 @@ import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
 import { useUserDataStore } from '../../stores/userData'
 import emailjs from '@emailjs/browser'
 import { detect } from 'detect-browser'
+import debounce from 'lodash.debounce'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
@@ -104,8 +105,8 @@ function getRaDecFromTargetName () {
       } else {
         const lat = siteInfo.lat
         const lon = siteInfo.lon
-        ra.value = parseFloat(data.ra_d).toFixed(5)
-        dec.value = parseFloat(data.dec_d).toFixed(5)
+        ra.value = parseFloat(data.ra_d)
+        dec.value = parseFloat(data.dec_d)
         skyCoordinatesStore.setTargetNameEntered(targetName.value)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
@@ -127,8 +128,8 @@ function getRaDecFromTargetName () {
 function areRaAndDecInSky () {
   if (ra.value && dec.value) {
     skyCoordinatesStore.setCoordinates(ra.value, dec.value)
-    ra.value = parseFloat(ra.value).toFixed(5)
-    dec.value = parseFloat(dec.value).toFixed(5)
+    ra.value = parseFloat(ra.value)
+    dec.value = parseFloat(dec.value)
     const vals = calcAltAz(ra.value, dec.value, siteInfo.lat, siteInfo.lon)
     if (vals[1] < 30.0) {
       targeterror.value = true
@@ -403,14 +404,15 @@ onMounted(async () => {
 })
 
 function handleUpdateCoordinates ({ ra: newRa, dec: newDec }) {
-  ra.value = parseFloat(newRa).toFixed(5)
-  dec.value = parseFloat(newDec).toFixed(5)
+  ra.value = parseFloat(newRa)
+  dec.value = parseFloat(newDec)
+  areRaAndDecInSky()
 }
 
 function updateCoordinatesStore () {
   if (ra.value && dec.value) {
-    const parsedRa = parseFloat(ra.value).toFixed(5)
-    const parsedDec = parseFloat(dec.value).toFixed(5)
+    const parsedRa = parseFloat(ra.value)
+    const parsedDec = parseFloat(dec.value)
     ra.value = parsedRa
     dec.value = parsedDec
     skyCoordinatesStore.setCoordinates(parsedRa, parsedDec)
@@ -478,7 +480,7 @@ watch(
   () => skyCoordinatesStore.ra,
   (newRa) => {
     if (!isRaFocused.value && newRa !== null) {
-      ra.value = parseFloat(newRa).toFixed(5)
+      ra.value = parseFloat(newRa)
     }
   }
 )
@@ -487,19 +489,22 @@ watch(
   () => skyCoordinatesStore.dec,
   (newDec) => {
     if (!isDecFocused.value && newDec !== null) {
-      dec.value = parseFloat(newDec).toFixed(5)
+      dec.value = parseFloat(newDec)
     }
   }
 )
 
-watch(
-  [ra, dec],
-  ([newRa, newDec], [oldRa, oldDec]) => {
-    if (newRa && newDec) {
-      areRaAndDecInSky()
-    }
+const debouncedCheck = debounce(() => {
+  if (ra.value && dec.value) {
+    areRaAndDecInSky()
   }
-)
+}, 500)
+
+watch([ra, dec], () => {
+  if (isRaFocused.value || isDecFocused.value) {
+    debouncedCheck()
+  }
+})
 </script>
 
 <template>
@@ -645,7 +650,7 @@ watch(
           </div>
         </div>
         <div class="field">
-      <v-btn @click="suggestionOrManual = ''; validTarget = false">go back</v-btn>
+      <v-btn v-if="props.draftMode" @click="suggestionOrManual = ''; validTarget = false">go back</v-btn>
     </div>
         <div v-if="ra && dec && !targeterror && validTarget && !props.draftMode">
           <div class="field is-horizontal">
