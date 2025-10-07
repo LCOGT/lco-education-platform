@@ -100,7 +100,7 @@ function getRaDecFromTargetName () {
     .then(data => {
       if (data.error) {
         targeterror.value = true
-        targeterrorMsg.value = 'Target not found. Enter coordinates or try a different target.'
+        targeterrorMsg.value = 'Target not found. Try a different target or coordinates.'
       } else {
         const lat = siteInfo.lat
         const lon = siteInfo.lon
@@ -110,7 +110,7 @@ function getRaDecFromTargetName () {
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
           targeterror.value = true
-          targeterrorMsg.value = 'Target not visible. Try a different target.'
+          targeterrorMsg.value = 'Target not visible. Try a different target or coordinates.'
         } else {
           validTarget.value = true
         }
@@ -119,8 +119,8 @@ function getRaDecFromTargetName () {
       goToLocation()
     })
     .catch(error => {
-      console.error('Error:', error)
       targeterror.value = true
+      targeterrorMsg.value = error
     })
 }
 
@@ -132,7 +132,7 @@ function areRaAndDecInSky () {
     const vals = calcAltAz(ra.value, dec.value, siteInfo.lat, siteInfo.lon)
     if (vals[1] < 30.0) {
       targeterror.value = true
-      targeterrorMsg.value = 'Target not visible. Try a different target.'
+      targeterrorMsg.value = 'Target not visible. Try a different target or coordinates.'
       validTarget.value = false
     } else {
       targeterror.value = false
@@ -166,7 +166,7 @@ function goToLocation () {
   if (aladinRef.value && ra.value && dec.value) {
     aladinRef.value.goToRaDec(ra.value, dec.value)
   } else {
-    console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
+    targeterrorMsg.value = 'AladinSkyMap component not fully loaded or goToRaDec method not exposed'
   }
 }
 
@@ -428,7 +428,7 @@ function onDecBlur () {
 }
 
 function saveTargetDetails () {
-  if (!targetName.value) {
+  if (!targetName.value && props.draftMode) {
     nameYourTargetHint.value = true
     return
   }
@@ -488,6 +488,15 @@ watch(
   (newDec) => {
     if (!isDecFocused.value && newDec !== null) {
       dec.value = parseFloat(newDec).toFixed(5)
+    }
+  }
+)
+
+watch(
+  [ra, dec],
+  ([newRa, newDec], [oldRa, oldDec]) => {
+    if (newRa && newDec) {
+      areRaAndDecInSky()
     }
   }
 )
@@ -600,15 +609,11 @@ watch(
                       type="text"
                       placeholder="e.g. NGC891"
                       v-model="targetName"
+                      @blur="getRaDecFromTargetName"
                       @input="nameYourTargetHint = false"
-                      :class="{ 'highlight-border': nameYourTargetHint }"
+                      :class="{ 'highlight-border': nameYourTargetHint && props.draftMode }"
                     >
-                      <small v-if="nameYourTargetHint" class="name-hint">Give your target a name</small>
-                  </div>
-                  <div class="control">
-                    <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                      Find coordinates
-                    </button>
+                      <small v-if="nameYourTargetHint && props.draftMode" class="name-hint">Give your target a name</small>
                   </div>
                 </div>
               </div>
@@ -640,7 +645,6 @@ watch(
           </div>
         </div>
         <div class="field">
-      <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
       <v-btn @click="suggestionOrManual = ''; validTarget = false">go back</v-btn>
     </div>
         <div v-if="ra && dec && !targeterror && validTarget && !props.draftMode">
