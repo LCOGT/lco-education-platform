@@ -21,6 +21,7 @@ const timeRemaining = ref(0)
 const loading = ref(true)
 const telname = { '0m4a': 'Delta Rho 0.35m', '0m4b': 'Delta Rho 0.35m', '1m0a': '1 meter', '2m0a': '2 meter' }
 const imageSrc = ref('')
+const draftTargetsMode = ref(false)
 
 const selectedSession = realTimeSessionsStore.currentSession
 const site = computed(() => sites[selectedSession.site]?.name)
@@ -55,6 +56,10 @@ const statusSessionNotActive = computed(() => {
   } else {
     return ((realTimeSessionsStore.currentStatus === 'INACTIVE' || realTimeSessionsStore.currentStatus === 'UNEXPIRED') && timeRemaining.value >= 0)
   }
+})
+
+const statusSessionInactive = computed(() => {
+  return realTimeSessionsStore.currentStatus === 'INACTIVE'
 })
 
 const updateTimeRemaining = () => {
@@ -166,6 +171,23 @@ onMounted(async () => {
   <template v-if="loading">
     <v-progress-circular indeterminate color="white" model-value="20" class="loading"/>
   </template>
+  <template v-if="draftTargetsMode">
+    <section>
+      <div class="container">
+       <div v-if="statusSessionNotActive" class="content">
+          <h2>Session Not Started</h2>
+          <div class="columns">
+            <div class="column is-6">
+              <p><span class="blue-bg px-2 py-2">Session starts in {{ formatCountdown(timeRemaining) }}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="draft-targets">
+      <SessionStarted :draft-mode="true" @doneDrafting="draftTargetsMode = false"/>
+    </div>
+  </template>
   <template v-else-if="!realTimeSessionsStore.isTelescopeAvailable && realTimeSessionsStore.currentStatus === 'ACTIVE'">
     <section>
       <div class="container">
@@ -206,6 +228,9 @@ onMounted(async () => {
 
             </div>
             <div class="column is-6">
+              <v-btn class="blue-bg" @click="draftTargetsMode = true" v-if="statusSessionInactive">Draft Targets</v-btn>
+              <!-- <v-btn class="blue-bg" @click="draftTargetsMode = true">Draft Targets</v-btn> -->
+
               <SessionPending/>
             </div>
           </div>
@@ -225,7 +250,7 @@ onMounted(async () => {
       </div>
     </section>
   </template>
-</template>
+  </template>
 
 <style scoped>
 .loading {

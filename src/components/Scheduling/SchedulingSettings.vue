@@ -81,7 +81,6 @@ function convertRaToDeg (ra) {
   const isSidereal = props.objectType === 'sidereal'
   if (isSidereal && !Number(ra)) {
     targetList.value[activeTargetIndex.value].ra = raToDegrees(ra)
-    console.log('ra:', targetList.value[activeTargetIndex.value].ra)
   }
 }
 
@@ -89,7 +88,6 @@ function convertDecToDeg (dec) {
   const isSidereal = props.objectType === 'sidereal'
   if (isSidereal && !Number(dec)) {
     targetList.value[activeTargetIndex.value].dec = decToDegrees(dec)
-    console.log('dec:', targetList.value[activeTargetIndex.value].dec)
   }
 }
 
@@ -289,10 +287,6 @@ function deleteExposure (targetIndex, exposureIndex) {
 
 onMounted(async () => {
   filterList.value = await getFilterList()
-})
-
-watch(targetInput.ra, (newValue) => {
-  console.log('Target input changed:', newValue)
 })
 
 </script>
