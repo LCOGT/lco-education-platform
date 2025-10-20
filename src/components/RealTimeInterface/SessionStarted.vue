@@ -264,7 +264,6 @@ const checkTargetInNeox = async (name_str) => {
   // Although the target came from NeoExchange, we need to check if it exists in their database because
   // the list actually came from JPL's SBObs which has more objects than NeoExchange
   // The idea is to update the asteroid list with ones we can actually look up ephemeris for
-  
   console.log('Checking NeoExchange for target: ' + name_str)
   let names = []
   const availablenames = []
@@ -285,7 +284,6 @@ const checkTargetInNeox = async (name_str) => {
   }
   return availablenames
 }
-
 
 const fetchEphemerisNeox = async () => {
 // Look up the targets ephemeris for today to see if it's observable and get RA and Dec
