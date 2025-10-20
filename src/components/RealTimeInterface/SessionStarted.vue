@@ -240,30 +240,32 @@ async function submitBugReport (bug, payload) {
 const fetchAsteroids = async () => {
   // Fetching the list of asteroids observable today from NeoExchange which is just a proxy to NASA JPL's SBObs
   // https://ssd.jpl.nasa.gov/tools/sbdb_query.html
-  let details
+  // checking each target to see if it's in NeoExchange's database
+  // The table is not updated in Explore. I don't know why
+  const details = []
   const today = new Date()
   const year = today.getFullYear()
   const month = String(today.getMonth() + 1).padStart(2, '0')
   const day = String(today.getDate()).padStart(2, '0')
   const url = `https://neoexchange.lco.global/ptrneos/site/${mpccode}/date/${year}-${month}-${day}/?format=json`
-  try {
-    const response = await fetch(url)
-    const data = await response.json()
-    for (const item of data.data) {
-      // Limit to magnitude 18 for now
-      details = await checkTargetInNeox(item[1])
-      console.log(details)
+  const response = await fetch(url)
+  const data = await response.json()
+  for (const item of data.data) {
+    const res = await checkTargetInNeox(item[1])
+    if (res.length > 0) {
+      details.push(item)
     }
-    return details
-  } catch (err) {
-    console.error('Error: ' + err.message)
   }
+  console.log(details)
+  return details
 }
 
 const checkTargetInNeox = async (name_str) => {
-  // Although the target came from NeoExchange, we need to check if it exists in their database because 
+  // Although the target came from NeoExchange, we need to check if it exists in their database because
   // the list actually came from JPL's SBObs which has more objects than NeoExchange
-  // NOT WORKING YET
+  // The idea is to update the asteroid list with ones we can actually look up ephemeris for
+  
+  console.log('Checking NeoExchange for target: ' + name_str)
   let names = []
   const availablenames = []
   if (name_str.includes('(')) {
@@ -275,16 +277,15 @@ const checkTargetInNeox = async (name_str) => {
   for (let name of names) {
     name = name.replace('//g', '').replace(')', '')
     const url = configurationStore.neoexchangeUrl + `search/?q=${name}&format=json`
-    fetch(url).then(response => {
-      response.json().then(data => {
-        availablenames.push(data)
-      })
-    }).catch(err => {
-      console.error('Error: ' + err.message)
-    })
+    const response = await fetch(url)
+    const data = await response.json()
+    if (data.length > 0) {
+      availablenames.push(data[0])
+    }
   }
   return availablenames
 }
+
 
 const fetchEphemerisNeox = async () => {
 // Look up the targets ephemeris for today to see if it's observable and get RA and Dec
@@ -420,14 +421,13 @@ function getVisibleTargets () {
   targetList.value = calculateVisibleTargets(targets, siteInfo.lat, siteInfo.lon)
 }
 
-function setSuggestionType (type, locationcode) {
+async function setSuggestionType (type, locationcode) {
   suggestionByType.value = type
   if (locationcode === 'solar-system') {
     suggestionSidereal.value = false
-    fetchAsteroids().then(data => {
-      targetsByType.value = data.data
-      suggestionTargetSet.value = false
-    })
+    const data = await fetchAsteroids()
+    targetsByType.value = data?.data || []
+    suggestionTargetSet.value = false
   } else {
     suggestionSidereal.value = true
     if (Object.keys(targetList.value).length === 0) {
@@ -608,7 +608,7 @@ watch(
                   <th>Magnitude</th>
                 </tr>
               </thead>
-                <tr v-for="target in targetsByType" :key="target['name']">
+                <tr v-for="target in targetsByType" :key="target[1]">
                   <td>
                     <button class="link" @click="setRaDecfromTargetList" :data-targetid="target.id">
                       {{ target[1] }}
