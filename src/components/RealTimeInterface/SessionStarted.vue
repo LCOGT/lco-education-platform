@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import axios from 'axios'
+
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
 import SessionImageCapture from '../RealTimeInterface/SessionImageCapture.vue'
@@ -49,6 +51,7 @@ const targetsByType = ref([])
 const suggestionOrManual = ref('')
 const suggestionByType = ref('')
 const suggestionTargetSet = ref(false)
+const suggestionSidereal = ref(true)
 const selectedTarget = ref({})
 const validTarget = ref(false)
 const isRaFocused = ref(false)
@@ -65,6 +68,7 @@ const isSubmittingBug = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
+const mpccode = sites[currentSession.site].mpc_codes['0m4']
 
 const categories = ref([
   {
@@ -74,7 +78,15 @@ const categories = ref([
       { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
       { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
       { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
-    ]
+    ],
+    locationcode: 'deep-space'
+  },
+  {
+    location: 'Solar System',
+    options: [
+      { name: 'Asteroids', icon: require('@/assets/Icons/asteroid.png'), shortname: 'asteroids' }
+    ],
+    locationcode: 'solar-system'
   }
 ])
 
@@ -225,6 +237,73 @@ async function submitBugReport (bug, payload) {
   }
 }
 
+const fetchAsteroids = async () => {
+  // Fetching the list of asteroids observable today from NeoExchange which is just a proxy to NASA JPL's SBObs
+  // https://ssd.jpl.nasa.gov/tools/sbdb_query.html
+  let details
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  const url = `https://neoexchange.lco.global/ptrneos/site/${mpccode}/date/${year}-${month}-${day}/?format=json`
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+    for (const item of data.data) {
+      // Limit to magnitude 18 for now
+      details = await checkTargetInNeox(item[1])
+      console.log(details)
+    }
+    return details
+  } catch (err) {
+    console.error('Error: ' + err.message)
+  }
+}
+
+const checkTargetInNeox = async (name_str) => {
+  // Although the target came from NeoExchange, we need to check if it exists in their database because 
+  // the list actually came from JPL's SBObs which has more objects than NeoExchange
+  // NOT WORKING YET
+  let names = []
+  const availablenames = []
+  if (name_str.includes('(')) {
+    names = name_str.split('(')
+  } else {
+    names = name_str.split('')
+  }
+
+  for (let name of names) {
+    name = name.replace('//g', '').replace(')', '')
+    const url = configurationStore.neoexchangeUrl + `search/?q=${name}&format=json`
+    fetch(url).then(response => {
+      response.json().then(data => {
+        availablenames.push(data)
+      })
+    }).catch(err => {
+      console.error('Error: ' + err.message)
+    })
+  }
+  return availablenames
+}
+
+const fetchEphemerisNeox = async () => {
+// Look up the targets ephemeris for today to see if it's observable and get RA and Dec
+// Very incomplete
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  const url = configurationStore.neoexchangeUrl + `ephemeris/?target=2013+VX4&utc_date=${year}-${month}-${day}&site_code=Q58&alt_limit=30.0&format=json`
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+    console.log(data)
+    return data
+  } catch (err) {
+    console.error('Error: ' + err.message)
+  }
+}
+
 const sendGoCommand = async () => {
   if (configurationStore.demo) {
     realTimeSessionsStore.setPreviousThumbnailCount(realTimeSessionsStore.thumbnailCount)
@@ -341,15 +420,24 @@ function getVisibleTargets () {
   targetList.value = calculateVisibleTargets(targets, siteInfo.lat, siteInfo.lon)
 }
 
-function setSuggestionType (type) {
+function setSuggestionType (type, locationcode) {
   suggestionByType.value = type
-  if (Object.keys(targetList.value).length === 0) {
-    getVisibleTargets()
-    targetsByType.value = targetList.value[type]
-    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+  if (locationcode === 'solar-system') {
+    suggestionSidereal.value = false
+    fetchAsteroids().then(data => {
+      targetsByType.value = data.data
+      suggestionTargetSet.value = false
+    })
   } else {
-    targetsByType.value = targetList.value[type]
-    targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+    suggestionSidereal.value = true
+    if (Object.keys(targetList.value).length === 0) {
+      getVisibleTargets()
+      targetsByType.value = targetList.value[type]
+      targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+    } else {
+      targetsByType.value = targetList.value[type]
+      targetsByType.value = targetsByType.value.sort(() => 0.5 - Math.random()).slice(0, 5)
+    }
   }
 }
 
@@ -471,7 +559,7 @@ watch(
             <a
               v-for="option in category.options"
               :key="option.shortname"
-              @click="setSuggestionType(option.shortname)"
+              @click="setSuggestionType(option.shortname, category.locationcode)"
               class="button suggestion"
             >
             <span>
@@ -482,7 +570,8 @@ watch(
           </div>
         </div>
         </div>
-        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
+        <div v-if="suggestionOrManual === 'suggestions'">
+         <div v-if="suggestionSidereal && targetsByType.length > 0">
           <div v-if="!suggestionTargetSet">
             <h3>Target Suggestions</h3>
             <p>Here are a random selection of 5 <strong>{{ suggestionByType }}</strong> from our list.</p>
@@ -510,6 +599,26 @@ watch(
                   </div>
             </div>
           </div>
+          <div v-else-if="!suggestionSidereal">
+            <h3>Asteroid Target Suggestions</h3>
+            <table class="table is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Target Name</th>
+                  <th>Magnitude</th>
+                </tr>
+              </thead>
+                <tr v-for="target in targetsByType" :key="target['name']">
+                  <td>
+                    <button class="link" @click="setRaDecfromTargetList" :data-targetid="target.id">
+                      {{ target[1] }}
+                    </button>
+                    </td>
+                    <td>{{ target[8] }}</td>
+                </tr>
+              </table>
+            </div>
+        </div>
         <div class="content observe-form mt-2" v-if="suggestionOrManual === 'manual'">
           <h3>Enter Target Details</h3>
           <div class="field is-horizontal">
