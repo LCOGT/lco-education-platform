@@ -121,7 +121,6 @@ const handleObjectSelection = (object) => {
 }
 
 const handleCadencePayload = (payload) => {
-  console.log('cadence payload received:', payload)
   cadencePayload.value = payload
   emitSelections()
 }
