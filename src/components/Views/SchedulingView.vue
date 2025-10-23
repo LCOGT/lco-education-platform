@@ -47,6 +47,7 @@ const getProjectName = () => {
 
 const makeCadenceRequest = (cadenceResponse) => {
   cadencePayload.value = cadenceResponse
+  observationData.value.isCadenceRequest = false
   sendObservationRequestOrBuildCadencePayload()
 }
 
