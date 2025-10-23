@@ -34,6 +34,10 @@ const props = defineProps({
   },
   objectType: {
     type: String
+  },
+  canAddAnotherTarget: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -432,7 +436,7 @@ watch(targetInput.ra, (newValue) => {
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
-      <v-btn v-if="props.showTitleField" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+      <v-btn v-if="props.showTitleField && props.canAddAnotherTarget" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
       </div>
     </div>
     <v-btn color="indigo" @click="previousStep" v-if="currentStep > 1">Previous step</v-btn>

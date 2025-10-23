@@ -21,6 +21,8 @@ const errorMessage = ref('')
 const previousDisplay = ref(null)
 const currentDisplay = ref(null)
 const isSubmitting = ref(false)
+const cadencePayload = ref({})
+const showGenerateCadence = ref(false)
 
 const getProjectName = () => {
   let targetName = ''
@@ -43,32 +45,40 @@ const getProjectName = () => {
   return `${targetName}_${formattedDate}`
 }
 
-const sendObservationRequest = async () => {
+const makeCadenceRequest = (cadenceResponse) => {
+  cadencePayload.value = cadenceResponse
+  sendObservationRequestOrBuildCadencePayload()
+}
+
+const sendObservationRequestOrBuildCadencePayload = async () => {
+  let reqBody
+  const isCadence = observationData.value.isCadenceRequest === true
+  const cadenceObj = isCadence ? observationData.value.cadence : null
+
   if (observationData.value) {
     const requestList = []
-
     if (observationData.value.objectType === 'nonsidereal') {
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target => {
         const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
-        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate)
+        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
       }))
     }
     else if (observationData.value.objectType === 'sidereal') {
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target =>
-        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
+        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
       ))
       isSubmitting.value = true
     } else if (observationData.value.isSidereal === false) {
       const { target, scheme, settings, startDate, endDate } = observationData.value
       requestList.push(
-        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate)
+        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
       )
       isSubmitting.value = true
     } else if (observationData.value.target && observationData.value.isSidereal) {
       const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate))
+      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj))
       isSubmitting.value = true
     }
 
@@ -77,11 +87,16 @@ const sendObservationRequest = async () => {
     } else {
       operatorValue.value = 'SINGLE'
     }
-
-    await fetchApiCall({
-      url: `${configurationStore.observationPortalUrl}requestgroups/`,
-      method: 'POST',
-      body: {
+    let requestUrl = ''
+    if (isCadence) {
+      requestUrl = `${configurationStore.observationPortalUrl}requestgroups/cadence/`
+    } else {
+      requestUrl = `${configurationStore.observationPortalUrl}requestgroups/`
+    }
+    if (cadencePayload.value && Object.keys(cadencePayload.value).length > 0) {
+      reqBody = cadencePayload.value
+    } else {
+      reqBody = {
         // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
         // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
         'name': getProjectName(),
@@ -90,16 +105,29 @@ const sendObservationRequest = async () => {
         'operator': operatorValue.value,
         'observation_type': 'NORMAL',
         'requests': requestList
+      }
+    }
+    await fetchApiCall({
+      url: requestUrl,
+      method: 'POST',
+      body: reqBody,
+      successCallback: (response) => {
+        if (observationData.value.isCadenceRequest === true) {
+          makeCadenceRequest(response)
+        } else {
+          showScheduled.value = true
+          router.push('/dashboard')
+          isSubmitting.value = false
+        }
       },
-      successCallback: () => {
-        showScheduled.value = true
-        router.push('/dashboard')
-        isSubmitting.value = false
-      },
-      failCallback: () => {
-        showScheduled.value = false
-        isSubmitting.value = false
-        errorMessage.value = 'At least one of the targets is not visible during this period'
+      failCallback: (error) => {
+        if (observationData.value.isCadenceRequest === true) {
+          errorMessage.value = error.errors
+        } else {
+          showScheduled.value = false
+          isSubmitting.value = false
+          errorMessage.value = 'At least one of the targets is not visible during this period'
+        }
       }
     })
   }
@@ -168,19 +196,28 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
+          @showGenerateCadence="showGenerateCadence = $event"
         />
+        <v-btn
+          v-if="showGenerateCadence"
+          color="indigo"
+          class="cadence-btn"
+          @click="sendObservationRequestOrBuildCadencePayload"
+        >
+          Generate Cadence
+        </v-btn>
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />
