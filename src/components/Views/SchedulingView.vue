@@ -23,6 +23,8 @@ const currentDisplay = ref(null)
 const isSubmitting = ref(false)
 const cadencePayload = ref({})
 const showGenerateCadence = ref(false)
+const isCadenceValid = ref(false)
+const cadenceSelection = ref('none')
 
 const getProjectName = () => {
   let targetName = ''
@@ -205,20 +207,23 @@ const resetView = () => {
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
           @showGenerateCadence="showGenerateCadence = $event"
+          @cadenceValid="isCadenceValid = $event"
+          @cadenceSelection="cadenceSelection = $event"
         />
-        <v-btn
-          v-if="showGenerateCadence"
-          color="indigo"
-          class="cadence-btn"
-          @click="sendObservationRequestOrBuildCadencePayload"
-        >
-          Generate Cadence
-        </v-btn>
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit && (!showGenerateCadence || cadenceSelection === 'none')" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request</v-btn>
+                <v-btn
+          v-if="showGenerateCadence && cadenceSelection === 'simple-period'"
+          color="indigo"
+          class="cadence-btn"
+          :disabled="!isCadenceValid"
+          @click="sendObservationRequestOrBuildCadencePayload"
+        >
+          submit my request
+        </v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />

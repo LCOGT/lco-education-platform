@@ -15,10 +15,13 @@ const selectedProposal = ref('')
 const selectedObject = ref('')
 const step = ref(1)
 const cadencePayload = ref(null)
+const isCadenceValid = ref(false)
+const cadenceSelection = ref('none')
+
 const canAddCadence = computed(() => targetsData.value.length === 1 && step.value === 5)
 const canAddAnotherTarget = computed(() => !cadencePayload.value)
 
-const emits = defineEmits(['selectionsComplete'])
+const emits = defineEmits(['selectionsComplete', 'cadenceValid'])
 
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
@@ -129,6 +132,16 @@ watch(canAddCadence, (val) => {
   emits('showGenerateCadence', val)
 })
 
+const handleCadenceSelection = (val) => {
+  cadenceSelection.value = val
+  emits('cadenceSelection', val)
+  if (val === 'none') {
+    cadencePayload.value = null
+    isCadenceValid.value = false
+    emitSelections()
+  }
+}
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
@@ -160,6 +173,9 @@ onMounted(() => {
     :start-date="startDate"
     :end-date="endDate"
     @buildCadencePayload="handleCadencePayload"
+    @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
+    @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
+
   />
 </template>
 

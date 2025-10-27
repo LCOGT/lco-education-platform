@@ -16,7 +16,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['buildCadencePayload'])
+const emit = defineEmits(['buildCadencePayload', 'cadenceValid', 'cadenceSelection'])
 
 watch([period, jitter], ([newPeriod, newJitter]) => {
   if (cadenceSelection.value === 'simple-period') {
@@ -26,7 +26,14 @@ watch([period, jitter], ([newPeriod, newJitter]) => {
       period: newPeriod,
       jitter: newJitter
     })
+    emit('cadenceValid', !!newPeriod && !!newJitter)
+  } else {
+    emit('cadenceValid', false)
   }
+})
+
+watch(cadenceSelection, (val) => {
+  emit('cadenceSelection', val)
 })
 
 </script>
