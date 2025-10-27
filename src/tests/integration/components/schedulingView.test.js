@@ -121,7 +121,7 @@ describe('SchedulingView.vue', () => {
 
     wrapper.vm.observationData = mockObservationData
 
-    await wrapper.vm.sendObservationRequest()
+    await wrapper.vm.sendObservationRequestOrBuildCadencePayload()
     await flushPromises()
     const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
