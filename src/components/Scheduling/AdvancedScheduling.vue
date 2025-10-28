@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed, watch } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
+import CadenceSettings from './CadenceSettings.vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 
 const proposalStore = useProposalStore()
@@ -13,8 +14,14 @@ const endDate = ref('')
 const selectedProposal = ref('')
 const selectedObject = ref('')
 const step = ref(1)
+const cadencePayload = ref(null)
+const isCadenceValid = ref(false)
+const cadenceSelection = ref('none')
 
-const emits = defineEmits(['selectionsComplete'])
+const canAddCadence = computed(() => targetsData.value.length === 1 && step.value === 5)
+const canAddAnotherTarget = computed(() => !cadencePayload.value)
+
+const emits = defineEmits(['selectionsComplete', 'cadenceValid'])
 
 const handleProposalSelection = (proposal) => {
   // Only advance step if still on step 1
@@ -76,12 +83,17 @@ const handleDateRangeUpdate = (dateRange) => {
 }
 
 const emitSelections = () => {
+  let isThisACadenceRequest = false
   const payload = {
     targets: targetsData.value,
     startDate: startDate.value,
     endDate: endDate.value,
     proposal: selectedProposal.value,
     objectType: selectedObject.value
+  }
+  if (cadencePayload.value) {
+    payload.cadence = cadencePayload.value
+    isThisACadenceRequest = true
   }
 
   const isComplete =
@@ -92,7 +104,7 @@ const emitSelections = () => {
     selectedProposal.value &&
     targetsData.value.every(target => target.exposures.length > 0)
 
-  emits('selectionsComplete', { ...payload, complete: isComplete })
+  emits('selectionsComplete', { ...payload, complete: isComplete, isCadenceRequest: isThisACadenceRequest })
 }
 
 const hasManyProposals = () => {
@@ -109,6 +121,25 @@ const handleObjectSelection = (object) => {
   selectedObject.value = object
   step.value = 3
   emitSelections()
+}
+
+const handleCadencePayload = (payload) => {
+  cadencePayload.value = payload
+  emitSelections()
+}
+
+watch(canAddCadence, (val) => {
+  emits('showGenerateCadence', val)
+})
+
+const handleCadenceSelection = (val) => {
+  cadenceSelection.value = val
+  emits('cadenceSelection', val)
+  if (val === 'none') {
+    cadencePayload.value = null
+    isCadenceValid.value = false
+    emitSelections()
+  }
 }
 
 onMounted(() => {
@@ -132,9 +163,19 @@ onMounted(() => {
     :start-date="startDate"
     :end-date="endDate"
     :object-type="selectedObject"
+    :can-add-another-target="canAddAnotherTarget"
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
+  />
+  <CadenceSettings
+    v-if="canAddCadence"
+    :start-date="startDate"
+    :end-date="endDate"
+    @buildCadencePayload="handleCadencePayload"
+    @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
+    @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
+
   />
 </template>
 

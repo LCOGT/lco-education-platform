@@ -1,3 +1,4 @@
+/* eslint-disable object-shorthand */
 import { formatToUTC } from './formatTime.js'
 
 function createInstrumentConfigs (exposures) {
@@ -18,8 +19,8 @@ function createInstrumentConfigs (exposures) {
   }))
 }
 
-function createBasePayload (exposures, startDate, endDate) {
-  return {
+function createBasePayload (exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
+  const payload = {
     acceptability_threshold: 90,
     configuration_repeats: 1,
     optimization_type: 'TIME',
@@ -42,14 +43,22 @@ function createBasePayload (exposures, startDate, endDate) {
         max_lunar_phase: 1
       }
     }],
-    windows: [{
-      start: formatToUTC(startDate),
-      end: formatToUTC(endDate)
-    }],
+    windows: isCadenceRequest
+      ? []
+      : [{
+          start: formatToUTC(startDate),
+          end: formatToUTC(endDate)
+        }],
     location: {
       telescope_class: '0m4'
     }
   }
+
+  if (isCadenceRequest && cadenceObj) {
+    payload.cadence = { ...cadenceObj }
+  }
+
+  return payload
 }
 
 function createSiderealTarget (target) {
@@ -101,14 +110,14 @@ function createNonSiderealTarget (simbadResponse, schemeRequest) {
   return baseTarget
 }
 
-export function createPayloadForSiderealRequests (target, exposures, startDate, endDate) {
-  const payload = createBasePayload(exposures, startDate, endDate)
+export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, jitter = null, period = null, isCadenceRequest, cadenceObj)
   payload.configurations[0].target = createSiderealTarget(target)
   return payload
 }
 
-export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate) {
-  const payload = createBasePayload(exposures, startDate, endDate)
+export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, jitter = null, period = null, isCadenceRequest, cadenceObj)
   payload.configurations[0].target = createNonSiderealTarget(simbadResponse, schemeRequest)
   return payload
 }
