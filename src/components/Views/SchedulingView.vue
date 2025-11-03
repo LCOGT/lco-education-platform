@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import { fetchApiCall } from '../../utils/api.js'
@@ -143,6 +143,7 @@ const handleUserSelections = (data) => {
 const canSubmit = computed(() => {
   if (level.value === 'advanced') {
     return (
+      cadenceSelection.value === 'none' &&
       currentDisplay.value === 5 &&
       observationData.value &&
       observationData.value.targets &&
@@ -198,7 +199,7 @@ const resetView = () => {
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <v-btn color="indigo" @click="resetView"> Restart</v-btn>
+        <button class=" button red-bg restart-btn" @click="resetView">RESTART</button>
         <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
     </div>
 
@@ -213,8 +214,8 @@ const resetView = () => {
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="canSubmit && (!showGenerateCadence || cadenceSelection === 'none')" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request</v-btn>
+        <button class="button red-bg restart-btn" @click="resetView">RESTART</button>
+        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request</v-btn>
                 <v-btn
           v-if="showGenerateCadence && cadenceSelection === 'simple-period'"
           color="indigo"
@@ -234,10 +235,17 @@ const resetView = () => {
 
 <style scoped>
 .level-buttons-wrapper {
-  margin: 1em;
+  margin-top: 1em;
   gap: 1em;
 }
 .level-btns {
   margin: 1em;
+}
+.restart-btn {
+  position: absolute;
+  margin-top: 12%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 </style>
