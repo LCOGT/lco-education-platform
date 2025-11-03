@@ -4,6 +4,7 @@ import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
 import CadenceSettings from './CadenceSettings.vue'
+import StepNavigation from '../Global/StepNavigation.vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
 
 const proposalStore = useProposalStore()
@@ -142,22 +143,33 @@ const handleCadenceSelection = (val) => {
   }
 }
 
+const disableNextStepBtn = computed(() => {
+  if (step.value === 1 && !selectedProposal.value) return true
+  if (step.value === 2 && !selectedObject.value) return true
+  if (step.value === 3 && (!startDate.value || !endDate.value)) return true
+  if (step.value === 4 && targetsData.value.length === 0) return true
+  if (step.value === 5) return true
+  return false
+})
+
 onMounted(() => {
   if (proposalStore.proposalsWithNormalTimeAllocation.length === 1) {
     selectedProposal.value = proposalStore.proposalsWithNormalTimeAllocation[0].id
     step.value = 2
   }
 })
+
 </script>
 
 <template>
   <ProposalDropdown v-if="hasManyProposals && step === 1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
   <div v-if="step === 2" class="field is-horizontal">
-    <div class="button" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
-    <div class="button" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
+    <div class="button btn" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
+    <div class="button btn" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
   </div>
   <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step === 3"/>
   <SchedulingSettings v-if="selectedProposal && step >= 4"
+    :current-step="step"
     :show-project-field="true"
     :show-title-field="true"
     :start-date="startDate"
@@ -177,10 +189,20 @@ onMounted(() => {
     @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
 
   />
+  <StepNavigation
+  :show-previous="step >= 2"
+  :show-next="step >= 3 && step < 5"
+  :disable-next-step-btn="disableNextStepBtn"
+  @previous="handleDisplay(step - 1)"
+  @next="handleDisplay(step + 1)"
+
+  />
 </template>
 
 <style scoped>
-
+.btn {
+  margin: 0.5em;
+}
 .p-text {
   margin-right: 1em;
   font-size: 1.2em;
