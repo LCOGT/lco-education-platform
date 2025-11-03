@@ -57,25 +57,25 @@ watch(cadenceSelection, (val) => {
         <div v-if="cadenceSelection === 'simple-period'">
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
-                    <label class="label">Period in decimal hours
+                    <label class="label">Period
                     </label>
                 </div>
                 <div class="field-body">
                     <div class="field">
                         <div class="control">
-                            <input v-model="period" class="input" type="number" min="0"/>
+                            <input v-model="period" class="input" type="number" min="0" placeholder="hours"/>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
-                    <label class="label">Jitter in decimal hours</label>
+                    <label class="label">Jitter</label>
                 </div>
             <div class="field-body">
                 <div class="field">
                     <div class="control">
-                        <input v-model="jitter" class="input" type="number" min="0"/>
+                        <input v-model="jitter" class="input" type="number" min="0" placeholder="hours"/>
                     </div>
                     </div>
                 </div>
