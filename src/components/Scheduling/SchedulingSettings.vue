@@ -1,7 +1,6 @@
 <script setup>
-import { ref, reactive, computed, defineProps, defineEmits, onMounted, watch } from 'vue'
+import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { useProposalStore } from '../../stores/proposalManagement.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { fetchApiCall } from '../../utils/api.js'
 import { raToDegrees, decToDegrees } from '../../utils/convertRaDec.js'
@@ -38,24 +37,22 @@ const props = defineProps({
   canAddAnotherTarget: {
     type: Boolean,
     default: true
+  },
+  currentStep: {
+    type: Number,
+    required: true
   }
 })
 
 const emits = defineEmits(['exposuresUpdated', 'targetUpdated', 'updateDisplay'])
 
 const configurationStore = useConfigurationStore()
-const proposalStore = useProposalStore()
-
-const hasManyProposals = () => {
-  return proposalStore.proposalsWithNormalTimeAllocation.length > 1
-}
 
 const targetList = ref([{ name: '', exposures: [], ra: '', dec: '', raInput: '', decInput: '', simbadResponse: {} }])
 const activeTargetIndex = ref(0)
 const targetError = ref('')
 const isTargetConfirmed = ref(false)
 const filterList = ref([])
-const currentStep = ref(4)
 
 const targetInput = reactive({
   name: '',
@@ -71,7 +68,7 @@ const settings = reactive({
 })
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
-const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0)
+const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0 || disableFilterList.value === true)
 
 const filteredTargets = computed(() => {
   return targetList.value.filter(target => target.exposures.length > 0)
@@ -233,40 +230,14 @@ const addAnotherTarget = () => {
   targetInput.simbadResponse = {}
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
-  currentStep.value = 4
-  emits('updateDisplay', currentStep.value)
+  emits('updateDisplay', props.currentStep - 1)
 }
 
 const nextStep = () => {
-  if (currentStep.value < 5) {
-    currentStep.value++
-    emits('updateDisplay', currentStep.value)
+  if (props.currentStep < 5) {
+    emits('updateDisplay', props.currentStep + 1)
   }
 }
-
-const previousStep = () => {
-  if (currentStep.value > 1) {
-    if (currentStep.value === 2 && hasManyProposals()) {
-      currentStep.value = 1
-    } else {
-      currentStep.value--
-    }
-    emits('updateDisplay', currentStep.value)
-  }
-}
-
-const disableNextStep = computed(() => {
-  if (currentStep.value === 4) {
-    return !targetInput.ra || !targetInput.dec
-  } else if (currentStep.value === 5) {
-    return !targetList.value[activeTargetIndex.value].exposures.length
-  }
-  return false
-})
-
-const buttonVisibility = computed(() => {
-  return props.showProjectField && currentStep.value !== 5
-})
 
 function editTarget (index) {
   // Set the selected target as the active one for editing
@@ -277,17 +248,45 @@ function editTarget (index) {
 
   isTargetConfirmed.value = true
   targetError.value = ''
-  currentStep.value = 4
-  emits('updateDisplay', currentStep.value)
+  emits('updateDisplay', props.currentStep - 1)
 }
 
 function deleteExposure (targetIndex, exposureIndex) {
   targetList.value[targetIndex].exposures.splice(exposureIndex, 1)
-  // Check if the deleted exposure belongs to the active target, then emit updated exposures
-  if (targetIndex === activeTargetIndex.value) {
+  // If the target has no exposures, remove the target entirely
+  if (targetList.value[targetIndex].exposures.length === 0) {
+    targetList.value.splice(targetIndex, 1)
+    if (activeTargetIndex.value >= targetList.value.length) {
+      activeTargetIndex.value = targetList.value.length - 1
+    }
+  }
+  // Only emit if the target still exists
+  if (targetList.value[targetIndex]) {
     emits('exposuresUpdated', targetList.value[targetIndex].exposures)
+    emits('targetUpdated', {
+      index: targetIndex,
+      name: targetList.value[targetIndex].name,
+      ra: targetList.value[targetIndex].ra,
+      dec: targetList.value[targetIndex].dec,
+      simbadResponse: targetList.value[targetIndex].simbadResponse
+    })
+  } else {
+    console.log('no exposures left')
+    // If no targets left, emit empty values
+    emits('exposuresUpdated', [])
+    emits('targetUpdated', {
+      index: -1,
+      name: '',
+      ra: '',
+      dec: '',
+      simbadResponse: {}
+    })
   }
 }
+
+const disableFilterList = computed(() => {
+  return (!isTargetConfirmed.value && props.showProjectField) || targetList.value.length === 0
+})
 
 onMounted(async () => {
   filterList.value = await getFilterList()
@@ -300,6 +299,9 @@ onMounted(async () => {
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
       <div v-if="currentStep === 5 || props.target">
+        <div v-if="disableFilterList" class="notification is-warning warning-box">
+          Please add a target before selecting exposure settings.
+        </div>
         <div
           v-for="(target, tIndex) in filteredTargets"
           :key="tIndex"
@@ -396,10 +398,10 @@ onMounted(async () => {
           <div class="field is-narrow">
             <div class="control">
               <div class="select is-fullwidth">
-                <select id="filter" v-model="settings.filter" :disabled="(!isTargetConfirmed && props.showProjectField && targetInput.name)">
-                  <option disabled value="">Choose a filter for {{ targetList[activeTargetIndex].name }}</option>
+                <select id="filter" v-model="settings.filter" :disabled="disableFilterList">
+                  <option disabled value="">Choose a filter for {{ targetList[activeTargetIndex]?.name }}</option>
                     <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
-                      {{ filter.name }}
+                      {{ filter?.name }}
                     </option>
                 </select>
               </div>
@@ -430,19 +432,72 @@ onMounted(async () => {
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
-      <v-btn v-if="props.showTitleField && props.canAddAnotherTarget" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target">Add Another Target</v-btn>
+      <v-btn v-if="props.showTitleField && props.canAddAnotherTarget" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target" :class="{ 'highlight-border': disableFilterList }">Add Another Target</v-btn>
       </div>
     </div>
-    <v-btn color="indigo" @click="previousStep" v-if="currentStep > 1">Previous step</v-btn>
-    <v-btn color="indigo" class="nextstep" @click="nextStep" v-if="buttonVisibility" :disabled="disableNextStep">Next step</v-btn>
     </div>
 </template>
 
 <style scoped>
-  .nextstep {
-  margin-top: 0;
-  margin-left: 1em;
-  vertical-align: middle;
+.step-btns {
+  display: flex;
+  gap: 1em;
+  margin-top: 2em;
+}
+
+.input-wrapper .field-label {
+  min-width: 80px;
+  text-align: left;
+  padding-right: 1em;
+}
+
+.input-wrapper .field-body .input,
+.input-wrapper .field-body input {
+  width: 100%;
+  max-width:250px;
+}
+
+.input-wrapper .field.is-horizontal {
+  align-items: center;
+}
+
+.input-wrapper .field-label,
+.input-wrapper .field-body {
+  align-items: center;
+  display: flex;
+}
+
+.add-target, .add-exposure {
+  margin: 0.5em;
+}
+
+@keyframes borderFadeOnce {
+  0% {
+    border: 2px solid rgba(255,255,255,0);
+    box-shadow: 0 0 0 0 rgba(255,255,255,0);
+  }
+  20% {
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 0 8px 2px rgba(255,255,255,0.15);
+  }
+  80% {
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 0 8px 2px rgba(255,255,255,0.15);
+  }
+  100% {
+    border: 2px solid rgba(255,255,255,0);
+    box-shadow: 0 0 0 0 rgba(255,255,255,0);
+  }
+}
+
+.add-target {
+  border: 2px solid rgba(255,255,255,0);
+  box-shadow: 0 0 0 0 rgba(255,255,255,0);
+  transition: border 0.7s, box-shadow 0.7s;
+}
+
+.highlight-border {
+  animation: borderFadeOnce 2.2s forwards;
 }
 
 </style>
