@@ -200,7 +200,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <button class=" button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="sendObservationRequestOrBuildCadencePayload">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -215,11 +215,11 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <button class="button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequestOrBuildCadencePayload">Submit my request</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="sendObservationRequestOrBuildCadencePayload">Submit my request</v-btn>
                 <v-btn
           v-if="showGenerateCadence && cadenceSelection === 'simple-period'"
           color="indigo"
-          class="cadence-btn"
+          class="cadence-btn submit-btn"
           :disabled="!isCadenceValid"
           @click="sendObservationRequestOrBuildCadencePayload"
         >
@@ -247,5 +247,8 @@ const resetView = () => {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+}
+.submit-btn {
+  margin-top: 2.5em;
 }
 </style>
