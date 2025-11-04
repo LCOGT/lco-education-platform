@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import AdvancedScheduling from '../Scheduling/AdvancedScheduling.vue'
 import BeginnerScheduling from '../Scheduling/BeginnerScheduling.vue'
 import { fetchApiCall } from '../../utils/api.js'

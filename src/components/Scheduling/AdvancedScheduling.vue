@@ -28,10 +28,6 @@ const canAddCadence = computed(() =>
 )
 const canAddAnotherTarget = computed(() => targetsData.value.length === 0 || cadenceSelection.value === 'none' || cadenceSelection.value === null || canAddCadence.value === false)
 
-watch(canAddCadence, (val) => {
-  console.log('canAddCadence changed:', val)
-})
-
 const emits = defineEmits(['selectionsComplete', 'cadenceValid'])
 
 const handleProposalSelection = (proposal) => {
@@ -147,7 +143,6 @@ const handleCadenceSelection = (val) => {
   cadenceSelection.value = val
   emits('cadenceSelection', val)
   if (val === 'none' || targetsData.value.length === 0) {
-    console.log('Clearing cadencePayload and isCadenceValid due to cadenceSelection change')
     cadencePayload.value = null
     isCadenceValid.value = false
     emitSelections()

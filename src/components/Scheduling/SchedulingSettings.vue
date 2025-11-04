@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, defineProps, defineEmits, onMounted, watch } from 'vue'
+import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { fetchApiCall } from '../../utils/api.js'
@@ -65,10 +65,6 @@ const settings = reactive({
   filter: '',
   exposureTime: '',
   count: ''
-})
-
-watch(() => props.canAddAnotherTarget, (newVal) => {
-  console.log('canAddAnotherTarget changed:', newVal)
 })
 
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
