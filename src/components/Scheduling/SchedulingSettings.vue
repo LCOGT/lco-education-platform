@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, reactive, computed, defineProps, defineEmits, onMounted, watch } from 'vue'
 import { useConfigurationStore } from '../../stores/configuration.js'
 import { getFilterList } from '../../utils/populateInstrumentsUtils.js'
 import { fetchApiCall } from '../../utils/api.js'
@@ -67,8 +67,12 @@ const settings = reactive({
   count: ''
 })
 
+watch(() => props.canAddAnotherTarget, (newVal) => {
+  console.log('canAddAnotherTarget changed:', newVal)
+})
+
 const addExposuresEnabled = computed(() => settings.filter && settings.exposureTime && settings.count)
-const addTargetEnabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length > 0 || disableFilterList.value === true)
+const addTargetBtnDisabled = computed(() => targetList.value[activeTargetIndex.value]?.exposures.length === 0 || props.canAddAnotherTarget === false)
 
 const filteredTargets = computed(() => {
   return targetList.value.filter(target => target.exposures.length > 0)
@@ -232,6 +236,9 @@ const addAnotherTarget = () => {
   isTargetConfirmed.value = false
   emits('updateDisplay', props.currentStep - 1)
   emits('targetListUpdated', targetList.value)
+  if (targetList.value.length === 1) {
+    emits('cadenceSelection', 'none')
+  }
 }
 
 const nextStep = () => {
@@ -252,40 +259,6 @@ function editTarget (index) {
   emits('updateDisplay', props.currentStep - 1)
   emits('targetListUpdated', targetList.value)
 }
-
-// function deleteExposure (targetIndex, exposureIndex) {
-//   targetList.value[targetIndex].exposures.splice(exposureIndex, 1)
-//   // If the target has no exposures, remove the target entirely
-//   if (targetList.value[targetIndex].exposures.length === 0) {
-//     targetList.value.splice(targetIndex, 1)
-//     if (activeTargetIndex.value >= targetList.value.length) {
-//       activeTargetIndex.value = targetList.value.length - 1
-//     }
-//   }
-//   // Only emit if the target still exists
-//   if (targetList.value[targetIndex]) {
-//     emits('exposuresUpdated', targetList.value[targetIndex].exposures)
-//     emits('targetUpdated', {
-//       index: targetIndex,
-//       name: targetList.value[targetIndex].name,
-//       ra: targetList.value[targetIndex].ra,
-//       dec: targetList.value[targetIndex].dec,
-//       simbadResponse: targetList.value[targetIndex].simbadResponse
-//     })
-//     emits('targetListUpdated', targetList.value)
-//   } else {
-//     // If no targets left, emit empty values
-//     emits('exposuresUpdated', [])
-//     emits('targetUpdated', {
-//       index: -1,
-//       name: '',
-//       ra: '',
-//       dec: '',
-//       simbadResponse: {}
-//     })
-//     emits('targetListUpdated', targetList.value)
-//   }
-// }
 
 function deleteExposure (targetIndex, exposureIndex) {
   // Remove the exposure from the correct target
@@ -471,7 +444,7 @@ onMounted(async () => {
       </div>
       <!-- Add exposure button -->
       <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
-      <v-btn v-if="props.showTitleField && props.canAddAnotherTarget" @click="addAnotherTarget" color="indigo" :disabled="!addTargetEnabled" class="add-target" :class="{ 'highlight-border': disableFilterList }">Add Another Target</v-btn>
+      <v-btn v-if="props.showTitleField" @click="addAnotherTarget" color="indigo" :disabled="addTargetBtnDisabled" class="add-target" :class="{ 'highlight-border': disableFilterList }">Add Another Target</v-btn>
       </div>
     </div>
     </div>

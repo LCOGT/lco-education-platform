@@ -26,7 +26,7 @@ const canAddCadence = computed(() =>
   targetsData.value[0].exposures &&
   targetsData.value[0].exposures.length > 0
 )
-const canAddAnotherTarget = computed(() => !cadencePayload.value)
+const canAddAnotherTarget = computed(() => targetsData.value.length === 0 || cadenceSelection.value === 'none' || cadenceSelection.value === null || canAddCadence.value === false)
 
 watch(canAddCadence, (val) => {
   console.log('canAddCadence changed:', val)
@@ -146,7 +146,8 @@ watch(canAddCadence, (val) => {
 const handleCadenceSelection = (val) => {
   cadenceSelection.value = val
   emits('cadenceSelection', val)
-  if (val === 'none') {
+  if (val === 'none' || targetsData.value.length === 0) {
+    console.log('Clearing cadencePayload and isCadenceValid due to cadenceSelection change')
     cadencePayload.value = null
     isCadenceValid.value = false
     emitSelections()
@@ -190,6 +191,7 @@ onMounted(() => {
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
     @targetListUpdated="targetsData = [...$event]"
+    @cadenceSelection="handleCadenceSelection"
   />
   <CadenceSettings
     v-if="canAddCadence"
