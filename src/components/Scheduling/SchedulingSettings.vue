@@ -44,7 +44,7 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits(['exposuresUpdated', 'targetUpdated', 'updateDisplay'])
+const emits = defineEmits(['exposuresUpdated', 'targetUpdated', 'updateDisplay', 'targetListUpdated'])
 
 const configurationStore = useConfigurationStore()
 
@@ -231,6 +231,7 @@ const addAnotherTarget = () => {
   activeTargetIndex.value = targetList.value.length - 1
   isTargetConfirmed.value = false
   emits('updateDisplay', props.currentStep - 1)
+  emits('targetListUpdated', targetList.value)
 }
 
 const nextStep = () => {
@@ -249,29 +250,67 @@ function editTarget (index) {
   isTargetConfirmed.value = true
   targetError.value = ''
   emits('updateDisplay', props.currentStep - 1)
+  emits('targetListUpdated', targetList.value)
 }
 
+// function deleteExposure (targetIndex, exposureIndex) {
+//   targetList.value[targetIndex].exposures.splice(exposureIndex, 1)
+//   // If the target has no exposures, remove the target entirely
+//   if (targetList.value[targetIndex].exposures.length === 0) {
+//     targetList.value.splice(targetIndex, 1)
+//     if (activeTargetIndex.value >= targetList.value.length) {
+//       activeTargetIndex.value = targetList.value.length - 1
+//     }
+//   }
+//   // Only emit if the target still exists
+//   if (targetList.value[targetIndex]) {
+//     emits('exposuresUpdated', targetList.value[targetIndex].exposures)
+//     emits('targetUpdated', {
+//       index: targetIndex,
+//       name: targetList.value[targetIndex].name,
+//       ra: targetList.value[targetIndex].ra,
+//       dec: targetList.value[targetIndex].dec,
+//       simbadResponse: targetList.value[targetIndex].simbadResponse
+//     })
+//     emits('targetListUpdated', targetList.value)
+//   } else {
+//     // If no targets left, emit empty values
+//     emits('exposuresUpdated', [])
+//     emits('targetUpdated', {
+//       index: -1,
+//       name: '',
+//       ra: '',
+//       dec: '',
+//       simbadResponse: {}
+//     })
+//     emits('targetListUpdated', targetList.value)
+//   }
+// }
+
 function deleteExposure (targetIndex, exposureIndex) {
+  // Remove the exposure from the correct target
   targetList.value[targetIndex].exposures.splice(exposureIndex, 1)
-  // If the target has no exposures, remove the target entirely
+  // If the target now has no exposures, remove just that target
   if (targetList.value[targetIndex].exposures.length === 0) {
     targetList.value.splice(targetIndex, 1)
+    // Adjust activeTargetIndex if needed
     if (activeTargetIndex.value >= targetList.value.length) {
-      activeTargetIndex.value = targetList.value.length - 1
+      activeTargetIndex.value = Math.max(0, targetList.value.length - 1)
     }
   }
-  // Only emit if the target still exists
-  if (targetList.value[targetIndex]) {
-    emits('exposuresUpdated', targetList.value[targetIndex].exposures)
+  // Always emit the updated target list
+  emits('targetListUpdated', targetList.value)
+  // If there are still targets, emit exposures/targetUpdated for the active target
+  if (targetList.value.length > 0 && targetList.value[activeTargetIndex.value]) {
+    emits('exposuresUpdated', targetList.value[activeTargetIndex.value].exposures)
     emits('targetUpdated', {
-      index: targetIndex,
-      name: targetList.value[targetIndex].name,
-      ra: targetList.value[targetIndex].ra,
-      dec: targetList.value[targetIndex].dec,
-      simbadResponse: targetList.value[targetIndex].simbadResponse
+      index: activeTargetIndex.value,
+      name: targetList.value[activeTargetIndex.value].name,
+      ra: targetList.value[activeTargetIndex.value].ra,
+      dec: targetList.value[activeTargetIndex.value].dec,
+      simbadResponse: targetList.value[activeTargetIndex.value].simbadResponse
     })
   } else {
-    console.log('no exposures left')
     // If no targets left, emit empty values
     emits('exposuresUpdated', [])
     emits('targetUpdated', {

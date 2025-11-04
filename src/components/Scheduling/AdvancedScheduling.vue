@@ -19,8 +19,18 @@ const cadencePayload = ref(null)
 const isCadenceValid = ref(false)
 const cadenceSelection = ref('none')
 
-const canAddCadence = computed(() => targetsData.value.length === 1 && step.value === 5)
+// const canAddCadence = computed(() => targetsData.value.length === 1 && step.value === 5)
+const canAddCadence = computed(() =>
+  step.value === 5 &&
+  targetsData.value.length === 1 &&
+  targetsData.value[0].exposures &&
+  targetsData.value[0].exposures.length > 0
+)
 const canAddAnotherTarget = computed(() => !cadencePayload.value)
+
+watch(canAddCadence, (val) => {
+  console.log('canAddCadence changed:', val)
+})
 
 const emits = defineEmits(['selectionsComplete', 'cadenceValid'])
 
@@ -179,6 +189,7 @@ onMounted(() => {
     @targetUpdated="handleTargetUpdate"
     @exposuresUpdated="handleExposuresUpdate"
     @updateDisplay="handleDisplay"
+    @targetListUpdated="targetsData = [...$event]"
   />
   <CadenceSettings
     v-if="canAddCadence"
