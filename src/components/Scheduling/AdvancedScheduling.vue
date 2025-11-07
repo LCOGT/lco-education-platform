@@ -188,15 +188,14 @@ onMounted(() => {
     @targetListUpdated="targetsData = [...$event]"
     @cadenceSelection="handleCadenceSelection"
   />
-  <CadenceSettings
-    v-if="canAddCadence"
-    :start-date="startDate"
-    :end-date="endDate"
-    @buildCadencePayload="handleCadencePayload"
-    @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
-    @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
-
-  />
+    <CadenceSettings
+      v-if="canAddCadence"
+      :start-date="startDate"
+      :end-date="endDate"
+      @buildCadencePayload="handleCadencePayload"
+      @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
+      @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
+    />
   <StepNavigation
   :show-previous="step >= 2"
   :show-next="step >= 3 && step < 5"
