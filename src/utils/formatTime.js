@@ -19,24 +19,20 @@ function formatToUTC (dateTime) {
 }
 
 function formatCountdown (seconds) {
-  if (seconds > 23 * 3600) {
-    const days = Math.floor(seconds / 86400)
+  const secondsInMinute = 60
+  const secondsInHour = 60 * secondsInMinute
+  const secondsInDay = 24 * secondsInHour
+  if (seconds >= secondsInDay) {
+    const days = Math.floor(seconds / secondsInDay)
     return `${days} day${days !== 1 ? 's' : ''}`
-  } else if (seconds > 1.5 * 3600) {
-    const hours = Math.floor(seconds / 3600)
-    return `${hours} hour${hours !== 1 ? 's' : ''}`
-  } else if (seconds > 15 * 60) {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    return `${hours}h ${minutes}m`
-  } else if (seconds > 15 * 60) {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    return `${hours}h ${minutes}m`
+  } else if (seconds >= secondsInHour) {
+    const hours = Math.floor(seconds / secondsInHour)
+    const minutes = Math.floor((seconds % secondsInHour) / secondsInMinute)
+    return `${String(hours).padStart(2, '0')} hours and ${String(minutes).padStart(2, '0')} minutes`
   } else {
-    const minutes = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    const minutes = Math.floor(seconds / secondsInMinute)
+    const secs = seconds % secondsInMinute
+    return `${String(minutes).padStart(2, '0')} minutes and ${String(secs).padStart(2, '0')} seconds`
   }
 }
 
