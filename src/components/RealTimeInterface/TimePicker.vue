@@ -29,7 +29,7 @@ const selectedSite = ref(null)
 const availableTimes = ref({})
 const localTimes = ref([])
 const selectedProposal = ref()
-const timeInterval = 15
+const timeInterval = 30
 const today = ref(new Date())
 const oneWeekFromNow = new Date()
 oneWeekFromNow.setDate(today.value.getDate() + 7)
@@ -41,13 +41,13 @@ const emits = defineEmits(['timeSelected'])
 const hasAvailableTimes = computed(() => {
   return Object.keys(availableTimes.value).length > 0
 })
-// Rounds times from the obs portal to the nearest 15 minutes (for now) because they are in time ranges
+// Rounds times from the obs portal to the nearest 30 minutes (for now) because they are in time ranges
 function roundToNearestMinutes (date, direction = 'up', minutes = timeInterval) {
   const ms = 1000 * 60 * minutes
   const roundedDate = new Date(Math[direction === 'up' ? 'ceil' : 'floor'](date.getTime() / ms) * ms)
   return roundedDate
 }
-// Because we get availability in ranges, we need to generate all the 15 minute intervals within those ranges
+// Because we get availability in ranges, we need to generate all the 30 minute intervals within those ranges
 function generateTimeIntervals (startDate, endDate) {
   const intervals = []
   let current = new Date(startDate)
