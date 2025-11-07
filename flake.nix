@@ -2,7 +2,7 @@
   description = "Description for the project";
 
   inputs = {
-    devenv-k8s.url = "github:LCOGT/devenv-k8s";
+    devenv-k8s.url = "github:LCOGT/devenv-k8s/v1";
 
     nixpkgs.follows = "devenv-k8s/nixpkgs";
     flake-parts.follows = "devenv-k8s/flake-parts";
