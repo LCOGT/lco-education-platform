@@ -28,11 +28,11 @@ function formatCountdown (seconds) {
   } else if (seconds >= secondsInHour) {
     const hours = Math.floor(seconds / secondsInHour)
     const minutes = Math.floor((seconds % secondsInHour) / secondsInMinute)
-    return `${String(hours).padStart(2, '0')} hours and ${String(minutes).padStart(2, '0')} minutes`
+    return `${String(hours).padStart(2, '0')} hour${hours === 1 ? '' : 's'} and ${String(minutes).padStart(2, '0')} minute${minutes === 1 ? '' : 's'}`
   } else {
     const minutes = Math.floor(seconds / secondsInMinute)
     const secs = seconds % secondsInMinute
-    return `${String(minutes).padStart(2, '0')} minutes and ${String(secs).padStart(2, '0')} seconds`
+    return `${String(minutes).padStart(2, '0')} minute${minutes === 1 ? '' : 's'} and ${String(secs).padStart(2, '0')} second${secs === 1 ? '' : 's'}`
   }
 }
 
