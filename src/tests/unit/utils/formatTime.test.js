@@ -58,15 +58,15 @@ describe('formatUtils.js', () => {
     })
 
     it('formats seconds into hours', () => {
-      expect(formatCountdown(3600 * 3)).toBe('3 hours')
+      expect(formatCountdown(3600 * 3)).toBe('03 hours and 00 minutes')
     })
 
     it('formats seconds into hours and minutes', () => {
-      expect(formatCountdown(5400)).toBe('1h 30m')
+      expect(formatCountdown(5400)).toBe('01 hour and 30 minutes')
     })
 
     it('formats seconds into minutes and seconds', () => {
-      expect(formatCountdown(90)).toBe('01:30')
+      expect(formatCountdown(90)).toBe('01 minute and 30 seconds')
     })
   })
 
