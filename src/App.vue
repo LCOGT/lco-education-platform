@@ -68,6 +68,7 @@ onMounted(async () => {
       configurationStore.thumbnailArchiveUrl = config.thumbnailArchiveUrl
       configurationStore.targetNameUrl = config.targetNameUrl
       configurationStore.datalabUrl = config.datalabUrl
+      configurationStore.neoexchangeUrl = config.neoexchangeUrl
       configurationStore.demo = config.demo
       configurationStore.isConfigLoaded = true
     }
