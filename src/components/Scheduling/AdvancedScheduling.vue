@@ -135,10 +135,6 @@ const handleCadencePayload = (payload) => {
   emitSelections()
 }
 
-watch(canAddCadence, (val) => {
-  emits('showGenerateCadence', val)
-})
-
 const handleCadenceSelection = (val) => {
   cadenceSelection.value = val
   emits('cadenceSelection', val)

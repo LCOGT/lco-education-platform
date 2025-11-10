@@ -22,9 +22,12 @@ const previousDisplay = ref(null)
 const currentDisplay = ref(null)
 const isSubmitting = ref(false)
 const cadencePayload = ref({})
-const showGenerateCadence = ref(false)
 const isCadenceValid = ref(false)
 const cadenceSelection = ref('none')
+
+const showGenerateCadence = computed(() => {
+  return observationData.value && observationData.value.isCadenceRequest === true
+})
 
 const getProjectName = () => {
   let targetName = ''
@@ -207,7 +210,6 @@ const resetView = () => {
         <AdvancedScheduling
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
-          @showGenerateCadence="showGenerateCadence = $event"
           @cadenceValid="isCadenceValid = $event"
           @cadenceSelection="cadenceSelection = $event"
         />
