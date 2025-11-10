@@ -67,24 +67,24 @@ const sendObservationRequestOrBuildCadencePayload = async () => {
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target => {
         const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
-        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
+        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate, isCadence, cadenceObj)
       }))
     }
     else if (observationData.value.objectType === 'sidereal') {
       const { targets, startDate, endDate } = observationData.value
       requestList.push(...targets.map(target =>
-        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
+        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate, isCadence, cadenceObj)
       ))
       isSubmitting.value = true
     } else if (observationData.value.isSidereal === false) {
       const { target, scheme, settings, startDate, endDate } = observationData.value
       requestList.push(
-        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj)
+        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate, isCadence, cadenceObj)
       )
       isSubmitting.value = true
     } else if (observationData.value.target && observationData.value.isSidereal) {
       const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate, cadenceObj?.period, cadenceObj?.jitter, isCadence, cadenceObj))
+      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate, isCadence, cadenceObj))
       isSubmitting.value = true
     }
 
