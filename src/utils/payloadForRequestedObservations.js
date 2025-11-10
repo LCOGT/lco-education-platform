@@ -19,7 +19,7 @@ function createInstrumentConfigs (exposures) {
   }))
 }
 
-function createBasePayload (exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
+function createBasePayload (exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
   const payload = {
     acceptability_threshold: 90,
     configuration_repeats: 1,
@@ -110,14 +110,14 @@ function createNonSiderealTarget (simbadResponse, schemeRequest) {
   return baseTarget
 }
 
-export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, jitter = null, period = null, isCadenceRequest, cadenceObj)
+export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, isCadenceRequest, cadenceObj)
   payload.configurations[0].target = createSiderealTarget(target)
   return payload
 }
 
-export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, period = null, jitter = null, isCadenceRequest = false, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, jitter = null, period = null, isCadenceRequest, cadenceObj)
+export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, isCadenceRequest, cadenceObj)
   payload.configurations[0].target = createNonSiderealTarget(simbadResponse, schemeRequest)
   return payload
 }
