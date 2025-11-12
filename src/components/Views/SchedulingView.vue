@@ -63,28 +63,37 @@ const sendObservationRequestOrBuildCadencePayload = async () => {
 
   if (observationData.value) {
     const requestList = []
-    if (observationData.value.objectType === 'nonsidereal') {
-      const { targets, startDate, endDate } = observationData.value
+    if (observationData.value.objectType === 'nonsidereal' || observationData.value.isSidereal === false) {
+      const targets = observationData.value.targets || [observationData.value.target]
+      const { startDate, endDate } = observationData.value
       requestList.push(...targets.map(target => {
-        const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
-        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate, isCadence, cadenceObj)
+        const schemeRequest = target.simbadResponse?.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
+        const exposures = target.exposures || observationData.value.settings
+        return createTargetPayloadForNonSiderealRequest(
+          target.simbadResponse || target,
+          schemeRequest || observationData.value.scheme,
+          exposures,
+          startDate,
+          endDate,
+          isCadence,
+          cadenceObj
+        )
       }))
-    }
-    else if (observationData.value.objectType === 'sidereal') {
-      const { targets, startDate, endDate } = observationData.value
-      requestList.push(...targets.map(target =>
-        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate, isCadence, cadenceObj)
-      ))
       isSubmitting.value = true
-    } else if (observationData.value.isSidereal === false) {
-      const { target, scheme, settings, startDate, endDate } = observationData.value
-      requestList.push(
-        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate, isCadence, cadenceObj)
-      )
-      isSubmitting.value = true
-    } else if (observationData.value.target && observationData.value.isSidereal) {
-      const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate, isCadence, cadenceObj))
+    } else if (observationData.value.objectType === 'sidereal' || observationData.value.isSidereal) {
+      const targets = observationData.value.targets || [observationData.value.target]
+      const { startDate, endDate } = observationData.value
+      requestList.push(...targets.map(target => {
+        const exposures = target.exposures || observationData.value.settings
+        return createPayloadForSiderealRequests(
+          target,
+          exposures,
+          startDate,
+          endDate,
+          isCadence,
+          cadenceObj
+        )
+      }))
       isSubmitting.value = true
     }
 
