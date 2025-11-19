@@ -121,7 +121,7 @@ describe('SchedulingView.vue', () => {
 
     wrapper.vm.observationData = mockObservationData
 
-    await wrapper.vm.sendObservationRequestOrBuildCadencePayload()
+    await wrapper.vm.buildPayload()
     await flushPromises()
     const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
@@ -141,7 +141,7 @@ describe('SchedulingView.vue', () => {
 
     expect(wrapper.vm.showScheduled).toBe(true)
   })
-  it('calls fetchApiCall with cadence payload when cadence is selected and valid', async () => {
+  it('calls fetchApiCall with cadence payload when cadence is selected and then calls submitRequest', async () => {
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 3600 * 1000)
     const formatISOWithoutMilliseconds = (date) =>
@@ -232,16 +232,21 @@ describe('SchedulingView.vue', () => {
       }
     ]
 
-    fetchApiCall.mockImplementationOnce(({ successCallback }) => {
-      successCallback({ cadence: 'mockCadenceResponse' })
-    })
+    // First call: cadence endpoint/ Second call: submitRequest
+    fetchApiCall
+      .mockImplementationOnce(({ successCallback }) => {
+        successCallback({ cadence: 'mockCadenceResponse', requests: [{ foo: 'bar' }] })
+      })
+      .mockImplementationOnce(({ successCallback }) => {
+        successCallback()
+      })
 
     wrapper.vm.observationData = mockObservationData
     wrapper.vm.showGenerateCadence = true
     wrapper.vm.cadenceSelection = 'simple-period'
     wrapper.vm.isCadenceValid = true
 
-    await wrapper.vm.sendObservationRequestOrBuildCadencePayload()
+    await wrapper.vm.buildPayload()
     await flushPromises()
 
     const YYYYMMDD = new Date().toISOString().split('T')[0]
@@ -259,6 +264,16 @@ describe('SchedulingView.vue', () => {
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
     })
+    expect(fetchApiCall).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      url: expect.stringContaining('/requestgroups/'),
+      method: 'POST',
+      body: expect.objectContaining({
+        cadence: 'mockCadenceResponse',
+        requests: [{ foo: 'bar' }]
+      }),
+      successCallback: expect.any(Function),
+      failCallback: expect.any(Function)
+    }))
   })
 
   it('calls fetchApiCall with normal payload after switching cadence back to none', async () => {
@@ -354,7 +369,7 @@ describe('SchedulingView.vue', () => {
     wrapper.vm.cadenceSelection = 'none'
     wrapper.vm.isCadenceValid = false
 
-    await wrapper.vm.sendObservationRequestOrBuildCadencePayload()
+    await wrapper.vm.buildPayload()
     await flushPromises()
     const YYYYMMDD = new Date().toISOString().split('T')[0]
     expect(fetchApiCall).toHaveBeenCalledWith({
