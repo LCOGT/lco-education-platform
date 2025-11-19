@@ -19,7 +19,7 @@ function createInstrumentConfigs (exposures) {
   }))
 }
 
-function createBasePayload (exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
+function createBasePayload (exposures, startDate, endDate, cadenceObj = null) {
   const payload = {
     acceptability_threshold: 90,
     configuration_repeats: 1,
@@ -43,7 +43,7 @@ function createBasePayload (exposures, startDate, endDate, isCadenceRequest = fa
         max_lunar_phase: 1
       }
     }],
-    windows: isCadenceRequest
+    windows: cadenceObj
       ? []
       : [{
           start: formatToUTC(startDate),
@@ -54,7 +54,7 @@ function createBasePayload (exposures, startDate, endDate, isCadenceRequest = fa
     }
   }
 
-  if (isCadenceRequest && cadenceObj) {
+  if (cadenceObj) {
     payload.cadence = { ...cadenceObj }
   }
 
@@ -110,14 +110,14 @@ function createNonSiderealTarget (simbadResponse, schemeRequest) {
   return baseTarget
 }
 
-export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, isCadenceRequest, cadenceObj)
+export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, cadenceObj)
   payload.configurations[0].target = createSiderealTarget(target)
   return payload
 }
 
-export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, isCadenceRequest = false, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, isCadenceRequest, cadenceObj)
+export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, cadenceObj = null) {
+  const payload = createBasePayload(exposures, startDate, endDate, cadenceObj)
   payload.configurations[0].target = createNonSiderealTarget(simbadResponse, schemeRequest)
   return payload
 }
