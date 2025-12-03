@@ -6,7 +6,7 @@ import { fetchApiCall } from '../../utils/api.js'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { createTargetPayloadForNonSiderealRequest, createPayloadForSiderealRequests } from '../../utils/payloadForRequestedObservations.js'
+import { createTargetPayload } from '../../utils/payloadForRequestedObservations.js'
 
 const configurationStore = useConfigurationStore()
 
@@ -49,52 +49,41 @@ const getProjectName = () => {
   return `${targetName}_${formattedDate}`
 }
 
-const buildPayload = () => {
-  const isNonsidereal = observationData.value.objectType === 'nonsidereal' || observationData.value.isSidereal === false
-  const isSidereal = observationData.value.objectType === 'sidereal' || observationData.value.isSidereal
+const onSubmit = async () => {
+  // fix this
   const targets = observationData.value.targets || [observationData.value.target]
   const { startDate, endDate } = observationData.value
   const cadenceObj = observationData.value.cadence ? observationData.value.cadence : null
   let requestList = []
-
-  if (isNonsidereal) {
-    requestList = targets.map(target => {
-      const schemeRequest = target.simbadResponse?.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
-      const exposures = target.exposures || observationData.value.settings
-      return createTargetPayloadForNonSiderealRequest(
-        target.simbadResponse || target,
-        schemeRequest || observationData.value.scheme,
-        exposures,
-        startDate,
-        endDate,
-        cadenceObj
-      )
-    })
-    isSubmitting.value = true
-  } else if (isSidereal) {
-    requestList = targets.map(target => {
-      const exposures = target.exposures || observationData.value.settings
-      return createPayloadForSiderealRequests(
-        target,
-        exposures,
-        startDate,
-        endDate,
-        cadenceObj
-      )
-    })
-    isSubmitting.value = true
+  requestList = targets.map(target => {
+    const exposures = target.exposures || observationData.value.settings
+    return createTargetPayload(
+      target,
+      exposures,
+      startDate,
+      endDate
+    )
+  })
+  if (cadenceObj) {
+    requestList = await requestExpansion(requestList, cadenceObj)
   }
-  cadenceObj ? getPayloadFromCadenceEndpoint(requestList) : submitRequest(requestList)
+  isSubmitting.value = true
+  submitRequest(requestList)
 }
 
-const getPayloadFromCadenceEndpoint = (payload) => {
+const requestExpansion = async (payload, cadenceObj) => {
+  let expandedRequest = []
+  if (cadenceObj) {
+    payload[0].cadence = { ...cadenceObj }
+    payload[0].windows = []
+  }
   const requestUrl = `${configurationStore.observationPortalUrl}requestgroups/cadence/`
   if (observationData.value.targets && observationData.value.targets.length > 1) {
     operatorValue.value = 'MANY'
   } else {
     operatorValue.value = 'SINGLE'
   }
-  fetchApiCall({
+  await fetchApiCall({
     url: requestUrl,
     method: 'POST',
     body: {
@@ -108,13 +97,14 @@ const getPayloadFromCadenceEndpoint = (payload) => {
       'requests': payload
     },
     successCallback: (data) => {
-      submitRequest(data)
+      expandedRequest = data
     },
     failCallback: () => {
       isSubmitting.value = false
       errorMessage.value = 'Failed to generate cadence requests. Please check your cadence settings.'
     }
   })
+  return expandedRequest
 }
 
 const submitRequest = async (payload) => {
@@ -215,7 +205,7 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <button class=" button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="buildPayload">Submit my request!</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="onSubmit">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -229,13 +219,13 @@ const resetView = () => {
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
         <button class="button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="buildPayload">Submit my request</v-btn>
+        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="onSubmit">Submit my request</v-btn>
                 <v-btn
           v-if="showGenerateCadence && cadenceSelection === 'simple-period'"
           color="indigo"
           class="cadence-btn submit-btn"
           :disabled="!isCadenceValid"
-          @click="buildPayload"
+          @click="onSubmit"
         >
           submit my request
         </v-btn>

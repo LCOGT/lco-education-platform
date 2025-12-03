@@ -19,7 +19,7 @@ function createInstrumentConfigs (exposures) {
   }))
 }
 
-function createBasePayload (exposures, startDate, endDate, cadenceObj = null) {
+function createBasePayload (exposures, startDate, endDate) {
   const payload = {
     acceptability_threshold: 90,
     configuration_repeats: 1,
@@ -43,21 +43,14 @@ function createBasePayload (exposures, startDate, endDate, cadenceObj = null) {
         max_lunar_phase: 1
       }
     }],
-    windows: cadenceObj
-      ? []
-      : [{
-          start: formatToUTC(startDate),
-          end: formatToUTC(endDate)
-        }],
+    windows: [{
+      start: formatToUTC(startDate),
+      end: formatToUTC(endDate)
+    }],
     location: {
       telescope_class: '0m4'
     }
   }
-
-  if (cadenceObj) {
-    payload.cadence = { ...cadenceObj }
-  }
-
   return payload
 }
 
@@ -110,14 +103,13 @@ function createNonSiderealTarget (simbadResponse, schemeRequest) {
   return baseTarget
 }
 
-export function createPayloadForSiderealRequests (target, exposures, startDate, endDate, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, cadenceObj)
-  payload.configurations[0].target = createSiderealTarget(target)
-  return payload
-}
-
-export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate, cadenceObj = null) {
-  const payload = createBasePayload(exposures, startDate, endDate, cadenceObj)
-  payload.configurations[0].target = createNonSiderealTarget(simbadResponse, schemeRequest)
+export function createTargetPayload (target, exposures, startDate, endDate) {
+  const payload = createBasePayload(exposures, startDate, endDate)
+  if (target.ra && target.dec) {
+    payload.configurations[0].target = createSiderealTarget(target)
+  } else {
+    const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
+    payload.configurations[0].target = createNonSiderealTarget(target.simbadResponse, schemeRequest)
+  }
   return payload
 }
