@@ -19,7 +19,6 @@ const cadencePayload = ref(null)
 const isCadenceValid = ref(false)
 const cadenceSelection = ref('none')
 
-// const canAddCadence = computed(() => targetsData.value.length === 1 && step.value === 5)
 const canAddCadence = computed(() =>
   step.value === 5 &&
   targetsData.value.length === 1 &&

@@ -32,26 +32,19 @@ const getProjectName = () => {
   let targetName = ''
   const today = new Date()
   const formattedDate = today.toISOString().split('T')[0]
-  if (observationData.value.target) {
-    targetName = observationData.value.target.name || ''
-  } else if (observationData.value.targets && observationData.value.targets.length) {
-    targetName = observationData.value.targets[0].name || ''
+  if (observationData.value.targets) {
+    targetName = observationData.value.targets[0].name || observationData.value.targets[0].simbadResponse.name
   }
   if (!targetName) {
-    const ra = observationData.value.target
-      ? observationData.value.target.ra
-      : observationData.value.targets[0].ra
-    const dec = observationData.value.target
-      ? observationData.value.target.dec
-      : observationData.value.targets[0].dec
+    const ra = observationData.value.targets[0].ra
+    const dec = observationData.value.targets[0].dec
     targetName = `${ra}_${dec}`
   }
   return `${targetName}_${formattedDate}`
 }
 
 const onSubmit = async () => {
-  // fix this
-  const targets = observationData.value.targets || [observationData.value.target]
+  const targets = observationData.value.targets
   const { startDate, endDate } = observationData.value
   const cadenceObj = observationData.value.cadence ? observationData.value.cadence : null
   let requestList = []
