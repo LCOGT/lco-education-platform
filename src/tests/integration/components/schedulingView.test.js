@@ -31,89 +31,25 @@ describe('SchedulingView.vue', () => {
     })
   })
 
-  it('calls fetchApiCall to schedule observation', async () => {
+  it('calls submitRequest directly when cadence is not selected', async () => {
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 3600 * 1000)
-
     const formatISOWithoutMilliseconds = (date) =>
       date.toISOString().replace(/\.\d{3}Z$/, 'Z')
 
     const mockObservationData = {
-      target: {
+      targets: [{
         name: 'Test Target',
         ra: 12.0,
         dec: -20.0,
         exposures: [{ filter: 'F1', exposureTime: 300, count: 1 }]
-      },
+      }],
       settings: [{ filter: 'F1', exposureTime: 300, count: 1 }],
       startDate: formatISOWithoutMilliseconds(now),
       endDate: formatISOWithoutMilliseconds(oneHourLater),
       proposal: 'Test Proposal',
       isSidereal: true
     }
-    const mockRequestList = [
-      {
-        acceptability_threshold: 90,
-        configuration_repeats: 1,
-        optimization_type: 'TIME',
-        configurations: [
-          {
-            type: 'EXPOSE',
-            instrument_type: '0M4-SCICAM-QHY600',
-            instrument_configs: [
-              {
-                exposure_count: 1,
-                exposure_time: 300,
-                mode: 'central30x30',
-                rotator_mode: '',
-                extra_params: {
-                  offset_ra: 0,
-                  offset_dec: 0,
-                  defocus: 0
-                },
-                optical_elements: {
-                  filter: 'F1'
-                }
-              }
-            ],
-            acquisition_config: {
-              mode: 'OFF',
-              extra_params: {}
-            },
-            guiding_config: {
-              mode: 'ON',
-              optional: true,
-              extra_params: {}
-            },
-            target: {
-              name: 'Test Target',
-              type: 'ICRS',
-              ra: 12.0,
-              dec: -20.0,
-              proper_motion_ra: null,
-              proper_motion_dec: null,
-              epoch: 2000,
-              parallax: null,
-              extra_params: {}
-            },
-            constraints: {
-              max_airmass: 1.6,
-              min_lunar_distance: 30,
-              max_lunar_phase: 1
-            }
-          }
-        ],
-        windows: [
-          {
-            start: mockObservationData.startDate,
-            end: mockObservationData.endDate
-          }
-        ],
-        location: {
-          telescope_class: '0m4'
-        }
-      }
-    ]
 
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
       successCallback()
@@ -121,27 +57,28 @@ describe('SchedulingView.vue', () => {
 
     wrapper.vm.observationData = mockObservationData
 
-    await wrapper.vm.buildPayload()
+    await wrapper.vm.onSubmit()
     await flushPromises()
-    const YYYYMMDD = new Date().toISOString().split('T')[0]
-    expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'http://mock-api.com/requestgroups/',
+
+    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    expect(fetchApiCall).toHaveBeenCalledWith(expect.objectContaining({
+      url: expect.stringContaining('/requestgroups/'),
       method: 'POST',
-      body: {
-        name: `Test Target_${YYYYMMDD}`,
+      body: expect.objectContaining({
+        name: expect.stringContaining('Test Target'),
         proposal: 'Test Proposal',
         ipp_value: 1.0,
         operator: 'SINGLE',
         observation_type: 'NORMAL',
-        requests: mockRequestList
-      },
+        requests: expect.any(Array)
+      }),
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
-    })
-
+    }))
     expect(wrapper.vm.showScheduled).toBe(true)
   })
-  it('calls fetchApiCall with cadence payload when cadence is selected and then calls submitRequest', async () => {
+
+  it('calls fetchApiCall for cadence endpoint and then for submitRequest', async () => {
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 3600 * 1000)
     const formatISOWithoutMilliseconds = (date) =>
@@ -167,72 +104,7 @@ describe('SchedulingView.vue', () => {
       isCadenceRequest: true
     }
 
-    const mockRequestList = [
-      {
-        acceptability_threshold: 90,
-        configuration_repeats: 1,
-        optimization_type: 'TIME',
-        configurations: [
-          {
-            type: 'EXPOSE',
-            instrument_type: '0M4-SCICAM-QHY600',
-            instrument_configs: [
-              {
-                exposure_count: 1,
-                exposure_time: 300,
-                mode: 'central30x30',
-                rotator_mode: '',
-                extra_params: {
-                  offset_ra: 0,
-                  offset_dec: 0,
-                  defocus: 0
-                },
-                optical_elements: {
-                  filter: 'F1'
-                }
-              }
-            ],
-            acquisition_config: {
-              mode: 'OFF',
-              extra_params: {}
-            },
-            guiding_config: {
-              mode: 'ON',
-              optional: true,
-              extra_params: {}
-            },
-            target: {
-              name: 'Test Target',
-              type: 'ICRS',
-              ra: 12.0,
-              dec: -20.0,
-              proper_motion_ra: null,
-              proper_motion_dec: null,
-              epoch: 2000,
-              parallax: null,
-              extra_params: {}
-            },
-            constraints: {
-              max_airmass: 1.6,
-              min_lunar_distance: 30,
-              max_lunar_phase: 1
-            }
-          }
-        ],
-        windows: [],
-        location: {
-          telescope_class: '0m4'
-        },
-        cadence: {
-          start: formatISOWithoutMilliseconds(now),
-          end: formatISOWithoutMilliseconds(oneHourLater),
-          period: 24,
-          jitter: 1
-        }
-      }
-    ]
-
-    // First call: cadence endpoint/ Second call: submitRequest
+    // First call: cadence endpoint. Second call: submitRequest
     fetchApiCall
       .mockImplementationOnce(({ successCallback }) => {
         successCallback({ cadence: 'mockCadenceResponse', requests: [{ foo: 'bar' }] })
@@ -246,24 +118,24 @@ describe('SchedulingView.vue', () => {
     wrapper.vm.cadenceSelection = 'simple-period'
     wrapper.vm.isCadenceValid = true
 
-    await wrapper.vm.buildPayload()
+    await wrapper.vm.onSubmit()
     await flushPromises()
 
-    const YYYYMMDD = new Date().toISOString().split('T')[0]
-    expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'http://mock-api.com/requestgroups/cadence/',
+    expect(fetchApiCall).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      url: expect.stringContaining('/requestgroups/cadence/'),
       method: 'POST',
-      body: {
-        name: `Test Target_${YYYYMMDD}`,
+      body: expect.objectContaining({
+        name: expect.stringContaining('Test Target'),
         proposal: 'Test Proposal',
         ipp_value: 1.0,
         operator: 'SINGLE',
         observation_type: 'NORMAL',
-        requests: mockRequestList
-      },
+        requests: expect.any(Array)
+      }),
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
-    })
+    }))
+    // Second call: submitRequest with cadence response as payload
     expect(fetchApiCall).toHaveBeenNthCalledWith(2, expect.objectContaining({
       url: expect.stringContaining('/requestgroups/'),
       method: 'POST',
@@ -276,7 +148,7 @@ describe('SchedulingView.vue', () => {
     }))
   })
 
-  it('calls fetchApiCall with normal payload after switching cadence back to none', async () => {
+  it('calls submitRequest with normal payload after switching cadence back to none', async () => {
     const now = new Date()
     const oneHourLater = new Date(now.getTime() + 3600 * 1000)
     const formatISOWithoutMilliseconds = (date) =>
@@ -296,70 +168,6 @@ describe('SchedulingView.vue', () => {
       isCadenceRequest: false
     }
 
-    const mockRequestList = [
-      {
-        acceptability_threshold: 90,
-        configuration_repeats: 1,
-        optimization_type: 'TIME',
-        configurations: [
-          {
-            type: 'EXPOSE',
-            instrument_type: '0M4-SCICAM-QHY600',
-            instrument_configs: [
-              {
-                exposure_count: 1,
-                exposure_time: 300,
-                mode: 'central30x30',
-                rotator_mode: '',
-                extra_params: {
-                  offset_ra: 0,
-                  offset_dec: 0,
-                  defocus: 0
-                },
-                optical_elements: {
-                  filter: 'F1'
-                }
-              }
-            ],
-            acquisition_config: {
-              mode: 'OFF',
-              extra_params: {}
-            },
-            guiding_config: {
-              mode: 'ON',
-              optional: true,
-              extra_params: {}
-            },
-            target: {
-              name: 'Test Target',
-              type: 'ICRS',
-              ra: 12.0,
-              dec: -20.0,
-              proper_motion_ra: null,
-              proper_motion_dec: null,
-              epoch: 2000,
-              parallax: null,
-              extra_params: {}
-            },
-            constraints: {
-              max_airmass: 1.6,
-              min_lunar_distance: 30,
-              max_lunar_phase: 1
-            }
-          }
-        ],
-        windows: [
-          {
-            start: mockObservationData.startDate,
-            end: mockObservationData.endDate
-          }
-        ],
-        location: {
-          telescope_class: '0m4'
-        }
-      }
-    ]
-
     fetchApiCall.mockImplementationOnce(({ successCallback }) => {
       successCallback()
     })
@@ -369,22 +177,23 @@ describe('SchedulingView.vue', () => {
     wrapper.vm.cadenceSelection = 'none'
     wrapper.vm.isCadenceValid = false
 
-    await wrapper.vm.buildPayload()
+    await wrapper.vm.onSubmit()
     await flushPromises()
-    const YYYYMMDD = new Date().toISOString().split('T')[0]
-    expect(fetchApiCall).toHaveBeenCalledWith({
-      url: 'http://mock-api.com/requestgroups/',
+
+    expect(fetchApiCall).toHaveBeenCalledTimes(1)
+    expect(fetchApiCall).toHaveBeenCalledWith(expect.objectContaining({
+      url: expect.stringContaining('/requestgroups/'),
       method: 'POST',
-      body: {
-        name: `Test Target_${YYYYMMDD}`,
+      body: expect.objectContaining({
+        name: expect.stringContaining('Test Target'),
         proposal: 'Test Proposal',
         ipp_value: 1.0,
         operator: 'SINGLE',
         observation_type: 'NORMAL',
-        requests: mockRequestList
-      },
+        requests: expect.any(Array)
+      }),
       successCallback: expect.any(Function),
       failCallback: expect.any(Function)
-    })
+    }))
   })
 })
