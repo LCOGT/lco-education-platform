@@ -20,7 +20,6 @@ const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const currentDisplay = ref(null)
-const isSubmitting = ref(false)
 const isCadenceValid = ref(false)
 const cadenceSelection = ref('none')
 
@@ -60,7 +59,6 @@ const onSubmit = async () => {
   if (cadenceObj) {
     requestList = await requestExpansion(requestList, cadenceObj)
   }
-  isSubmitting.value = true
   submitRequest(requestList)
 }
 
@@ -93,7 +91,6 @@ const requestExpansion = async (payload, cadenceObj) => {
       expandedRequest = data
     },
     failCallback: () => {
-      isSubmitting.value = false
       errorMessage.value = 'Failed to generate cadence requests. Please check your cadence settings.'
     }
   })
@@ -124,11 +121,9 @@ const submitRequest = async (payload) => {
     successCallback: () => {
       showScheduled.value = true
       router.push('/dashboard')
-      isSubmitting.value = false
     },
     failCallback: () => {
       showScheduled.value = false
-      isSubmitting.value = false
       errorMessage.value = 'At least one of the targets is not visible during this period'
     }
   })
