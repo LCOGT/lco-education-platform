@@ -134,11 +134,19 @@ const handleUserSelections = (data) => {
 }
 
 const canSubmit = computed(() => {
-  if (level.value === 'advanced') {
+  if (level.value === 'advanced' && cadenceSelection.value === 'none') {
     return (
-      cadenceSelection.value === 'none' &&
       currentDisplay.value === 5 &&
       observationData.value &&
+      observationData.value.targets &&
+      observationData.value.targets.every(target => target.exposures.length > 0)
+    )
+  } else if (level.value === 'advanced' && cadenceSelection.value !== 'none') {
+    return (
+      currentDisplay.value === 5 &&
+      observationData.value &&
+      observationData.value.isCadenceRequest === true &&
+      isCadenceValid.value === true &&
       observationData.value.targets &&
       observationData.value.targets.every(target => target.exposures.length > 0)
     )
@@ -159,14 +167,6 @@ const handleDisplay = (display) => {
     errorMessage.value = ''
   }
   previousDisplay.value = display
-}
-
-const resetView = () => {
-  level.value = ''
-  observationData.value = null
-  showScheduled.value = false
-  operatorValue.value = ''
-  errorMessage.value = ''
 }
 
 </script>
@@ -192,8 +192,6 @@ const resetView = () => {
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <button class=" button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="onSubmit">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
@@ -206,22 +204,22 @@ const resetView = () => {
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <button class="button red-bg restart-btn" @click="resetView">RESTART</button>
-        <v-btn v-if="canSubmit" color="indigo" class="submit-btn" @click="onSubmit">Submit my request</v-btn>
-                <v-btn
-          v-if="showGenerateCadence && cadenceSelection === 'simple-period'"
-          color="indigo"
-          class="cadence-btn submit-btn"
-          :disabled="!isCadenceValid"
-          @click="onSubmit"
-        >
-          submit my request
-        </v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />
       </div>
     </div>
+      <footer class="footer-submit">
+        <v-btn
+          v-if="canSubmit"
+          color="indigo"
+          class="submit-btn"
+          :disabled="level === 'advanced' && showGenerateCadence && cadenceSelection === 'simple-period' && !isCadenceValid"
+          @click="onSubmit"
+        >
+        Submit my request
+      </v-btn>
+      </footer>
   </section>
 </template>
 
@@ -233,14 +231,16 @@ const resetView = () => {
 .level-btns {
   margin: 1em;
 }
-.restart-btn {
-  position: absolute;
-  margin-top: 12%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
 .submit-btn {
   margin-top: 2.5em;
+}
+.footer-submit {
+  position: fixed;
+  left: 25%;
+  bottom: 4%;
+  width: 100%;
+  padding: 1em 0;
+  text-align: center;
+  z-index: 100;
 }
 </style>

@@ -192,12 +192,11 @@ onMounted(() => {
       @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
     />
   <StepNavigation
-  :show-previous="step >= 2"
-  :show-next="step >= 3 && step < 5"
-  :disable-next-step-btn="disableNextStepBtn"
-  @previous="handleDisplay(step - 1)"
-  @next="handleDisplay(step + 1)"
-
+    :show-previous="step >= 2"
+    :show-next="step >= 3 && step < 5"
+    :disable-next-step-btn="disableNextStepBtn"
+    @previous="handleDisplay(step - 1)"
+    @next="handleDisplay(step + 1)"
   />
 </template>
 
