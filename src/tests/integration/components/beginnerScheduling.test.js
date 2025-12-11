@@ -123,7 +123,7 @@ describe('BeginnerScheduling.vue', () => {
 
     expect(wrapper.emitted().selectionsComplete).toBeTruthy()
     expect(wrapper.emitted().selectionsComplete[0][0]).toEqual({
-      target: { name: 'Target 1' },
+      targets: [{ name: 'Target 1' }],
       settings: [{ filter: 'Filter 1', exposureTime: 300 }],
       startDate: '2024-11-18T00:00:00',
       endDate: '2024-11-19T00:00:00',

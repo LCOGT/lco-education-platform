@@ -6,7 +6,7 @@ import { fetchApiCall } from '../../utils/api.js'
 import DashboardView from './DashboardView.vue'
 import { useRouter } from 'vue-router'
 import { useConfigurationStore } from '../../stores/configuration.js'
-import { createTargetPayloadForNonSiderealRequest, createPayloadForSiderealRequests } from '../../utils/payloadForRequestedObservations.js'
+import { createTargetPayload } from '../../utils/payloadForRequestedObservations.js'
 
 const configurationStore = useConfigurationStore()
 
@@ -20,89 +20,113 @@ const errorMessage = ref('')
 // Used to clear error message when going back to previous display
 const previousDisplay = ref(null)
 const currentDisplay = ref(null)
-const isSubmitting = ref(false)
+const isCadenceValid = ref(false)
+const cadenceSelection = ref('none')
+
+const showGenerateCadence = computed(() => {
+  return observationData.value && observationData.value.isCadenceRequest === true
+})
 
 const getProjectName = () => {
   let targetName = ''
   const today = new Date()
   const formattedDate = today.toISOString().split('T')[0]
-  if (observationData.value.target) {
-    targetName = observationData.value.target.name || ''
-  } else if (observationData.value.targets && observationData.value.targets.length) {
-    targetName = observationData.value.targets[0].name || ''
+  if (observationData.value.targets) {
+    targetName = observationData.value.targets[0].name || observationData.value.targets[0].simbadResponse.name
   }
   if (!targetName) {
-    const ra = observationData.value.target
-      ? observationData.value.target.ra
-      : observationData.value.targets[0].ra
-    const dec = observationData.value.target
-      ? observationData.value.target.dec
-      : observationData.value.targets[0].dec
+    const ra = observationData.value.targets[0].ra
+    const dec = observationData.value.targets[0].dec
     targetName = `${ra}_${dec}`
   }
   return `${targetName}_${formattedDate}`
 }
 
-const sendObservationRequest = async () => {
-  if (observationData.value) {
-    const requestList = []
-
-    if (observationData.value.objectType === 'nonsidereal') {
-      const { targets, startDate, endDate } = observationData.value
-      requestList.push(...targets.map(target => {
-        const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
-        return createTargetPayloadForNonSiderealRequest(target.simbadResponse, schemeRequest, target.exposures, startDate, endDate)
-      }))
-    }
-    else if (observationData.value.objectType === 'sidereal') {
-      const { targets, startDate, endDate } = observationData.value
-      requestList.push(...targets.map(target =>
-        createPayloadForSiderealRequests(target, target.exposures, startDate, endDate)
-      ))
-      isSubmitting.value = true
-    } else if (observationData.value.isSidereal === false) {
-      const { target, scheme, settings, startDate, endDate } = observationData.value
-      requestList.push(
-        createTargetPayloadForNonSiderealRequest(target, scheme, settings, startDate, endDate)
-      )
-      isSubmitting.value = true
-    } else if (observationData.value.target && observationData.value.isSidereal) {
-      const { target, settings, startDate, endDate } = observationData.value
-      requestList.push(createPayloadForSiderealRequests(target, settings, startDate, endDate))
-      isSubmitting.value = true
-    }
-
-    if (observationData.value.targets && observationData.value.targets.length > 1) {
-      operatorValue.value = 'MANY'
-    } else {
-      operatorValue.value = 'SINGLE'
-    }
-
-    await fetchApiCall({
-      url: `${configurationStore.observationPortalUrl}requestgroups/`,
-      method: 'POST',
-      body: {
-        // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
-        // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
-        'name': getProjectName(),
-        'proposal': observationData.value.proposal,
-        'ipp_value': 1.0,
-        'operator': operatorValue.value,
-        'observation_type': 'NORMAL',
-        'requests': requestList
-      },
-      successCallback: () => {
-        showScheduled.value = true
-        router.push('/dashboard')
-        isSubmitting.value = false
-      },
-      failCallback: () => {
-        showScheduled.value = false
-        isSubmitting.value = false
-        errorMessage.value = 'At least one of the targets is not visible during this period'
-      }
-    })
+const onSubmit = async () => {
+  const targets = observationData.value.targets
+  const { startDate, endDate } = observationData.value
+  const cadenceObj = observationData.value.cadence ? observationData.value.cadence : null
+  let requestList = []
+  requestList = targets.map(target => {
+    const exposures = target.exposures || observationData.value.settings
+    return createTargetPayload(
+      target,
+      exposures,
+      startDate,
+      endDate
+    )
+  })
+  if (cadenceObj) {
+    requestList = await requestExpansion(requestList, cadenceObj)
   }
+  submitRequest(requestList)
+}
+
+const requestExpansion = async (payload, cadenceObj) => {
+  let expandedRequest = []
+  if (cadenceObj) {
+    payload[0].cadence = { ...cadenceObj }
+    payload[0].windows = []
+  }
+  const requestUrl = `${configurationStore.observationPortalUrl}requestgroups/cadence/`
+  if (observationData.value.targets && observationData.value.targets.length > 1) {
+    operatorValue.value = 'MANY'
+  } else {
+    operatorValue.value = 'SINGLE'
+  }
+  await fetchApiCall({
+    url: requestUrl,
+    method: 'POST',
+    body: {
+    // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
+    // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
+      'name': getProjectName(),
+      'proposal': observationData.value.proposal,
+      'ipp_value': 1.0,
+      'operator': operatorValue.value,
+      'observation_type': 'NORMAL',
+      'requests': payload
+    },
+    successCallback: (data) => {
+      expandedRequest = data
+    },
+    failCallback: () => {
+      errorMessage.value = 'Failed to generate cadence requests. Please check your cadence settings.'
+    }
+  })
+  return expandedRequest
+}
+
+const submitRequest = async (payload) => {
+  if (observationData.value.targets && observationData.value.targets.length > 1) {
+    operatorValue.value = 'MANY'
+  } else {
+    operatorValue.value = 'SINGLE'
+  }
+  const reqBody = {
+    // There are a few different scenarios of what the user might select as a target or targets. The name of the project will be the name of the first target (regardless of how many targets there are) or if there isn't a target name,
+    // then it's the first target's RA/Dec. The start date is appended in YYYY-MM-DD format to the end of the name
+    'name': getProjectName(),
+    'proposal': observationData.value.proposal,
+    'ipp_value': 1.0,
+    'operator': operatorValue.value,
+    'observation_type': 'NORMAL',
+    'requests': payload
+  }
+
+  await fetchApiCall({
+    url: `${configurationStore.observationPortalUrl}requestgroups/`,
+    method: 'POST',
+    body: observationData.value.cadence ? payload : reqBody,
+    successCallback: () => {
+      showScheduled.value = true
+      router.push('/dashboard')
+    },
+    failCallback: () => {
+      showScheduled.value = false
+      errorMessage.value = 'At least one of the targets is not visible during this period'
+    }
+  })
 }
 
 const handleUserSelections = (data) => {
@@ -110,10 +134,19 @@ const handleUserSelections = (data) => {
 }
 
 const canSubmit = computed(() => {
-  if (level.value === 'advanced') {
+  if (level.value === 'advanced' && cadenceSelection.value === 'none') {
     return (
       currentDisplay.value === 5 &&
       observationData.value &&
+      observationData.value.targets &&
+      observationData.value.targets.every(target => target.exposures.length > 0)
+    )
+  } else if (level.value === 'advanced' && cadenceSelection.value !== 'none') {
+    return (
+      currentDisplay.value === 5 &&
+      observationData.value &&
+      observationData.value.isCadenceRequest === true &&
+      isCadenceValid.value === true &&
       observationData.value.targets &&
       observationData.value.targets.every(target => target.exposures.length > 0)
     )
@@ -134,14 +167,6 @@ const handleDisplay = (display) => {
     errorMessage.value = ''
   }
   previousDisplay.value = display
-}
-
-const resetView = () => {
-  level.value = ''
-  observationData.value = null
-  showScheduled.value = false
-  operatorValue.value = ''
-  errorMessage.value = ''
 }
 
 </script>
@@ -167,34 +192,54 @@ const resetView = () => {
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <v-btn color="indigo" @click="resetView"> Restart</v-btn>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
     </div>
 
       <div v-else-if="level === 'advanced' && !showScheduled">
         <AdvancedScheduling
           @selectionsComplete="handleUserSelections"
           @updateDisplay="handleDisplay"
+          @cadenceValid="isCadenceValid = $event"
+          @cadenceSelection="cadenceSelection = $event"
         />
         <div v-if="errorMessage && !showScheduled">
           <p class="error-message">Error: {{ errorMessage }}</p>
         </div>
-        <v-btn color="indigo" @click="resetView">Restart</v-btn>
-        <v-btn v-if="canSubmit" color="indigo" @click="sendObservationRequest">Submit my request!</v-btn>
       </div>
       <div v-if="showScheduled">
         <DashboardView />
       </div>
     </div>
   </section>
+      <footer class="footer">
+        <v-btn
+          v-if="canSubmit"
+          color="indigo"
+          class="submit-btn"
+          :disabled="level === 'advanced' && showGenerateCadence && cadenceSelection === 'simple-period' && !isCadenceValid"
+          @click="onSubmit"
+        >
+        Submit my request
+      </v-btn>
+      </footer>
 </template>
 
 <style scoped>
 .level-buttons-wrapper {
-  margin: 1em;
+  margin-top: 1em;
   gap: 1em;
 }
 .level-btns {
   margin: 1em;
+}
+.submit-btn {
+  margin-top: 2.5em;
+}
+.footer {
+  position: fixed;
+  left: 25%;
+  bottom: 4%;
+  width: 100%;
+  padding: 1em 0;
+  text-align: center;
 }
 </style>

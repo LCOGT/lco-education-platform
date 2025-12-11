@@ -1,3 +1,4 @@
+/* eslint-disable object-shorthand */
 import { formatToUTC } from './formatTime.js'
 
 function createInstrumentConfigs (exposures) {
@@ -19,7 +20,7 @@ function createInstrumentConfigs (exposures) {
 }
 
 function createBasePayload (exposures, startDate, endDate) {
-  return {
+  const payload = {
     acceptability_threshold: 90,
     configuration_repeats: 1,
     optimization_type: 'TIME',
@@ -50,6 +51,7 @@ function createBasePayload (exposures, startDate, endDate) {
       telescope_class: '0m4'
     }
   }
+  return payload
 }
 
 function createSiderealTarget (target) {
@@ -101,14 +103,13 @@ function createNonSiderealTarget (simbadResponse, schemeRequest) {
   return baseTarget
 }
 
-export function createPayloadForSiderealRequests (target, exposures, startDate, endDate) {
+export function createTargetPayload (target, exposures, startDate, endDate) {
   const payload = createBasePayload(exposures, startDate, endDate)
-  payload.configurations[0].target = createSiderealTarget(target)
-  return payload
-}
-
-export function createTargetPayloadForNonSiderealRequest (simbadResponse, schemeRequest, exposures, startDate, endDate) {
-  const payload = createBasePayload(exposures, startDate, endDate)
-  payload.configurations[0].target = createNonSiderealTarget(simbadResponse, schemeRequest)
+  if (target.ra && target.dec) {
+    payload.configurations[0].target = createSiderealTarget(target)
+  } else {
+    const schemeRequest = target.simbadResponse.mean_daily_motion ? 'JPL_MAJOR_PLANET' : 'MPC_MINOR_PLANET'
+    payload.configurations[0].target = createNonSiderealTarget(target.simbadResponse, schemeRequest)
+  }
   return payload
 }

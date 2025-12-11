@@ -173,7 +173,7 @@ const loadMoreTargets = () => {
 
 const emitSelections = () => {
   const payload = {
-    target: selectedCategory.value === 'Non-sidereal target' ? simbadResponse.value : targetSelection.value,
+    targets: selectedCategory.value === 'Non-sidereal target' ? [{ simbadResponse: simbadResponse.value }] : [targetSelection.value],
     scheme: selectedCategory.value === 'Non-sidereal target' ? schemeRequest.value : null,
     settings: exposureSettings.value,
     startDate: startDate.value,
