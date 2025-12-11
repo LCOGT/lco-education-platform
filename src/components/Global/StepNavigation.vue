@@ -22,7 +22,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="step-btns">
+  <div class="step-btns footer-left">
     <v-btn
       color="indigo"
       @click="$emit('previous')"
@@ -32,10 +32,8 @@ const props = defineProps({
     </v-btn>
     <v-btn
       color="indigo"
-      class="nextstep"
       :disabled="props.disableNextStepBtn"
       @click="$emit('next')"
-      v-if="props.showNext"
     >
       Next step
     </v-btn>
@@ -46,6 +44,18 @@ const props = defineProps({
 .step-btns {
   display: flex;
   gap: 1em;
-  margin-top: 2em;
 }
+.footer-left {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 4%;
+  z-index: 101;
+  max-width: 45%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.25rem;
+}
+
 </style>
