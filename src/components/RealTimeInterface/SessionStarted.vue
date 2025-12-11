@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, defineProps } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import AladinSkyMap from '../RealTimeInterface/AladinSkyMap.vue'
 import SkyChart from '../RealTimeInterface/CelestialMap/SkyChart.vue'
@@ -15,6 +15,7 @@ import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
 import { useUserDataStore } from '../../stores/userData'
 import emailjs from '@emailjs/browser'
 import { detect } from 'detect-browser'
+import debounce from 'lodash.debounce'
 
 const realTimeSessionsStore = useRealTimeSessionsStore()
 const configurationStore = useConfigurationStore()
@@ -29,6 +30,15 @@ const isCapturingImages = computed(() => {
     return realTimeSessionsStore.isCapturingImagesForCurrentSession
   }
 })
+
+const props = defineProps({
+  draftMode: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emits = defineEmits(['doneDrafting'])
 
 const aladinRef = ref(null)
 const ra = ref('')
@@ -62,9 +72,15 @@ const bugPayload = ref(null)
 const showToast = ref(false)
 const toastMessage = ref('')
 const isSubmittingBug = ref(false)
+let pendingSave = false
+const nameYourTargetHint = ref(false)
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
+
+// This has to be computed because when the user deletes, the store updates but the frontend doesn't
+// I tested without it being computed
+const draftedTargets = computed(() => realTimeSessionsStore.draftedTargets[realTimeSessionsStore.currentSessionId])
 
 const categories = ref([
   {
@@ -85,17 +101,17 @@ function getRaDecFromTargetName () {
     .then(data => {
       if (data.error) {
         targeterror.value = true
-        targeterrorMsg.value = 'Target not found. Enter coordinates or try a different target.'
+        targeterrorMsg.value = 'Target not found. Try a different target or coordinates.'
       } else {
         const lat = siteInfo.lat
         const lon = siteInfo.lon
-        ra.value = parseFloat(data.ra_d).toFixed(5)
-        dec.value = parseFloat(data.dec_d).toFixed(5)
+        ra.value = parseFloat(data.ra_d)
+        dec.value = parseFloat(data.dec_d)
         skyCoordinatesStore.setTargetNameEntered(targetName.value)
         const vals = calcAltAz(data.ra_d, data.dec_d, lat, lon)
         if (vals[1] < 30.0) {
           targeterror.value = true
-          targeterrorMsg.value = 'Target not visible. Try a different target.'
+          targeterrorMsg.value = 'Target not visible. Try a different target or coordinates.'
         } else {
           validTarget.value = true
         }
@@ -104,21 +120,20 @@ function getRaDecFromTargetName () {
       goToLocation()
     })
     .catch(error => {
-      console.error('Error:', error)
       targeterror.value = true
+      targeterrorMsg.value = error
     })
 }
 
-// ask Edward what units this is in
 function areRaAndDecInSky () {
   if (ra.value && dec.value) {
     skyCoordinatesStore.setCoordinates(ra.value, dec.value)
-    ra.value = parseFloat(ra.value).toFixed(5)
-    dec.value = parseFloat(dec.value).toFixed(5)
+    ra.value = parseFloat(ra.value)
+    dec.value = parseFloat(dec.value)
     const vals = calcAltAz(ra.value, dec.value, siteInfo.lat, siteInfo.lon)
     if (vals[1] < 30.0) {
       targeterror.value = true
-      targeterrorMsg.value = 'Target not visible. Try a different target.'
+      targeterrorMsg.value = 'Target not visible. Try a different target or coordinates.'
       validTarget.value = false
     } else {
       targeterror.value = false
@@ -143,6 +158,7 @@ function setRaDecfromTargetList (event) {
     exposureCount.value = 1
     exposureTime.value = Object.values(selectedTarget.value.filters).map(f => f.exposure)
     selectedFilter.value = Object.values(selectedTarget.value.filters).map(f => f.name)
+    validTarget.value = true
   }
 }
 
@@ -151,7 +167,7 @@ function goToLocation () {
   if (aladinRef.value && ra.value && dec.value) {
     aladinRef.value.goToRaDec(ra.value, dec.value)
   } else {
-    console.error('AladinSkyMap component not fully loaded or goToRaDec method not exposed')
+    targeterrorMsg.value = 'AladinSkyMap component not fully loaded or goToRaDec method not exposed'
   }
 }
 
@@ -388,14 +404,15 @@ onMounted(async () => {
 })
 
 function handleUpdateCoordinates ({ ra: newRa, dec: newDec }) {
-  ra.value = parseFloat(newRa).toFixed(5)
-  dec.value = parseFloat(newDec).toFixed(5)
+  ra.value = parseFloat(newRa)
+  dec.value = parseFloat(newDec)
+  areRaAndDecInSky()
 }
 
 function updateCoordinatesStore () {
   if (ra.value && dec.value) {
-    const parsedRa = parseFloat(ra.value).toFixed(5)
-    const parsedDec = parseFloat(dec.value).toFixed(5)
+    const parsedRa = parseFloat(ra.value)
+    const parsedDec = parseFloat(dec.value)
     ra.value = parsedRa
     dec.value = parsedDec
     skyCoordinatesStore.setCoordinates(parsedRa, parsedDec)
@@ -410,6 +427,40 @@ function onRaBlur () {
 function onDecBlur () {
   isDecFocused.value = false
   updateCoordinatesStore()
+}
+
+function saveTargetDetails () {
+  if (!targetName.value && props.draftMode) {
+    nameYourTargetHint.value = true
+    return
+  }
+  realTimeSessionsStore.addDraftTarget(targetName.value, ra.value, dec.value)
+  resetSuggestionSettings()
+  targetName.value = ''
+  ra.value = ''
+  dec.value = ''
+  pendingSave = false
+}
+
+const deleteDraftTarget = (index) => {
+  realTimeSessionsStore.removeDraftTargetByIndex(index)
+}
+
+function resetSuggestionSettings () {
+  suggestionOrManual.value = ''
+  suggestionByType.value = ''
+  targetsByType.value = []
+  suggestionTargetSet.value = false
+  validTarget.value = false
+}
+
+function populateAladinData (target) {
+  ra.value = target.raValue
+  dec.value = target.decValue
+  targetName.value = target.name
+  goToLocation()
+  suggestionOrManual.value = 'manual'
+  validTarget.value = true
 }
 
 watch(
@@ -429,7 +480,7 @@ watch(
   () => skyCoordinatesStore.ra,
   (newRa) => {
     if (!isRaFocused.value && newRa !== null) {
-      ra.value = parseFloat(newRa).toFixed(5)
+      ra.value = parseFloat(newRa)
     }
   }
 )
@@ -438,10 +489,22 @@ watch(
   () => skyCoordinatesStore.dec,
   (newDec) => {
     if (!isDecFocused.value && newDec !== null) {
-      dec.value = parseFloat(newDec).toFixed(5)
+      dec.value = parseFloat(newDec)
     }
   }
 )
+
+const debouncedCheck = debounce(() => {
+  if (ra.value && dec.value) {
+    areRaAndDecInSky()
+  }
+}, 500)
+
+watch([ra, dec], () => {
+  if (isRaFocused.value || isDecFocused.value) {
+    debouncedCheck()
+  }
+})
 </script>
 
 <template>
@@ -451,15 +514,41 @@ watch(
           <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
       </div>
       <div class="column grey-bg">
-        <div v-show="suggestionOrManual === 'manual' || suggestionTargetSet">
-        <AladinSkyMap ref="aladinRef" />
+        <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && !props.draftMode)">
+          <AladinSkyMap ref="aladinRef" />
         </div>
         <div v-if="suggestionOrManual === ''">
-          <h3>How would you like to select your target?</h3>
-          <p>Would you like us to give you some suggestions for what to observe, or do you already know?</p>
+          <h3 v-if="!props.draftMode">How would you like to select your target?</h3>
+          <h3 v-if="props.draftMode">Draft your targets below</h3>
+          <p v-if="!props.draftMode">Would you like us to give you some suggestions for what to observe, or do you already know?</p>
           <div class="buttons are-medium">
           <button class="button" @click="setSuggestionsOrManual('suggestions')">Target Suggestions</button>
           <button class="button" @click="setSuggestionsOrManual('manual')">I'll enter the details</button>
+          <div v-if="draftedTargets && draftedTargets.length" class="mt-4 targets-container">
+            <h4 v-if="props.draftMode">your drafted targets</h4>
+            <h4 v-if="!props.draftMode">Select from your drafted targets</h4>
+            <div class="drafted-targets-list">
+            <div v-for="(target, idx) of draftedTargets" :key="idx">
+              <tr class="draft-target-row">
+                <td>
+                  <div class="draft-target-actions">
+                    <button
+                    class="button draft-button"
+                    @click="populateAladinData(target)"
+                    :disabled="props.draftMode"
+                    :class="{ 'unclickable': props.draftMode }"
+                    >
+                    {{ target.name }}
+                  </button>
+                    <button class="deleteButton" @click="deleteDraftTarget(idx)">
+                      <font-awesome-icon icon="fa-solid fa-trash-can" class="icon red" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </div>
+            </div>
+          </div>
         </div>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
@@ -481,6 +570,7 @@ watch(
           </a>
           </div>
         </div>
+          <v-btn @click="resetSuggestionSettings()">go back</v-btn>
         </div>
         <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
           <div v-if="!suggestionTargetSet">
@@ -501,8 +591,8 @@ watch(
                   <h3>{{ selectedTarget.name }}</h3>
                   <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
                   <p>{{  selectedTarget.desc }}</p>
-                    <div class="highlight-small-region">
-                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"  /> <strong>Exposure settings:</strong>
+                    <div class="highlight-small-region" v-if="!props.draftMode">
+                      <FontAwesomeIcon icon="fa-regular fa-camera-retro"/> <strong>Exposure settings:</strong>
                       <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
                         <li>{{ filter.name }} filter for {{ filter.exposure }} seconds</li>
                       </ul>
@@ -514,17 +604,21 @@ watch(
           <h3>Enter Target Details</h3>
           <div class="field is-horizontal">
             <div class="field-label is-normal">
-                <label class="label">Target</label>
+                <label class="label">Target Name</label>
             </div>
             <div class="field-body">
               <div class="field has-addons">
                   <div class="control">
-                    <input class="input" type="text" placeholder="e.g. NGC891" v-model="targetName">
-                  </div>
-                  <div class="control">
-                    <button :disabled="!targetName" @click="getRaDecFromTargetName" class="button blue-bg">
-                      Find coordinates
-                    </button>
+                    <input
+                      class="input"
+                      type="text"
+                      placeholder="e.g. NGC891"
+                      v-model="targetName"
+                      @blur="getRaDecFromTargetName"
+                      @input="nameYourTargetHint = false"
+                      :class="{ 'highlight-border': nameYourTargetHint && props.draftMode }"
+                    >
+                      <small v-if="nameYourTargetHint && props.draftMode" class="name-hint">Give your target a name</small>
                   </div>
                 </div>
               </div>
@@ -538,7 +632,7 @@ watch(
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="ra" placeholder="Right Ascension" @input="validTarget = false" @focus="isRaFocused = true" @blur="onRaBlur">
+                <input class="input" v-model="ra" placeholder="Right Ascension" @input="validTarget = false" @focus="isRaFocused = true" @blur="onRaBlur">
               </p>
             </div>
           </div>
@@ -550,15 +644,15 @@ watch(
           <div class="field-body">
             <div class="field">
               <p class="control is-expanded">
-                <input class="input" type="number" v-model="dec" placeholder="Declination" @input="validTarget = false" @focus="isDecFocused = true" @blur="onDecBlur" >
+                <input class="input" v-model="dec" placeholder="Declination" @input="validTarget = false" @focus="isDecFocused = true" @blur="onDecBlur" >
               </p>
             </div>
           </div>
         </div>
         <div class="field">
-      <button class="button blue-bg" @click="areRaAndDecInSky">Check Coordinates</button>
+      <v-btn v-if="props.draftMode" @click="suggestionOrManual = ''; validTarget = false">go back</v-btn>
     </div>
-        <div v-if="ra && dec && !targeterror && validTarget">
+        <div v-if="ra && dec && !targeterror && validTarget && !props.draftMode">
           <div class="field is-horizontal">
                 <div class="field-label is-normal">
                     <label class="label">Filter</label>
@@ -601,11 +695,15 @@ watch(
           </div>
         </div>
         <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
-        <div class="buttons are-medium" v-if="suggestionOrManual != ''">
+        <div class="buttons are-medium" v-if="suggestionOrManual != '' && !props.draftMode">
           <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
           <button class="button" @click="resetSuggestionOrManual">Start Again</button>
         </div>
+        <div v-if="props.draftMode && validTarget">
+          <v-btn color="green-lighten-1" @click="saveTargetDetails()">save target</v-btn>
+        </div>
         <v-progress-circular v-if="loading" indeterminate color="white"/>
+        <v-btn v-if="props.draftMode" class="blue-bg draft-btn" @click="emits('doneDrafting')">Done drafting</v-btn>
       </div>
       <div v-if="showBugModal" class="modal is-active">
         <div class="modal-background" @click="showBugModal = false"></div>
@@ -686,6 +784,41 @@ p.mosaic {
 .go-button {
   margin-top: 1.25em;
 }
+
+.highlight-border {
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.85);
+  animation: fadeOutBorder 3s forwards;
+  transition: box-shadow 0.7s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes fadeOutBorder {
+  0% { box-shadow: 0 0 0 3px rgba(255,255,255,0.85); }
+  70% { box-shadow: 0 0 0 3px rgba(255,255,255,0.85); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+
+.name-hint {
+  color: #fff;
+  font-size: 0.8em;
+  margin-top: 2px;
+  margin-left: 2px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
 @media (max-width: 900px) {
   .maps-container {
     display: flex;
@@ -731,5 +864,43 @@ p.mosaic {
 .toast-leave-from {
   opacity: 1;
   transform: translateY(0);
+}
+.draft-btn {
+  margin-bottom: 1em;
+  margin-top: 1em;
+  align-self: flex-start;
+}
+.draft-target-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.draft-target-row td {
+  padding: 0.5em 0;
+}
+
+.targets-container {
+  width: 100%;
+}
+
+.drafted-targets-list {
+  max-height: 45vh;
+  overflow-y: scroll;
+  margin-bottom: 1em;
+  border-radius: 6px;
+  background-color: rgb(102, 107, 112);
+  padding: 0.5em;
+}
+
+.draft-button {
+  border: transparent;
+}
+.unclickable {
+  pointer-events: none;
+  opacity: 1 !important;
+  cursor: default !important;
+  border: none;
 }
 </style>

@@ -11,7 +11,7 @@ onMounted(() => {
   initializeAladin(aladinContainer.value, {
     survey: 'P/DSS2/color',
     fov: 1,
-    target: 'M33',
+    target: '',
     cooFrame: 'ICRSd',
     showProjectionControl: false,
     showZoomControl: true,
