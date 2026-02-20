@@ -233,7 +233,7 @@ onMounted(() => {
                 </ul>
               </span>
               <div v-if="cadencePayload && cadencePayload.period && cadencePayload.jitter">
-                <ul><li>Cadence settings: every {{ cadencePayload.period }} hour<span v-if="cadencePayload.period > 1">s</span> give or take {{ cadencePayload.jitter }} hour<span v-if="cadencePayload.jitter > 1">s</span></li></ul>
+                <ul><li>Cadence settings: a period of {{ cadencePayload.period }} hour<span v-if="cadencePayload.period > 1">s</span> with a {{ cadencePayload.jitter }} hour jitter</li></ul>
               </div>
             </span>
           </div>
