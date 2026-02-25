@@ -6,6 +6,7 @@ import Calendar from './Calendar.vue'
 import CadenceSettings from './CadenceSettings.vue'
 import StepNavigation from '../Global/StepNavigation.vue'
 import { useProposalStore } from '../../stores/proposalManagement.js'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const proposalStore = useProposalStore()
 
@@ -198,6 +199,46 @@ onMounted(() => {
     @previous="handleDisplay(step - 1)"
     @next="handleDisplay(step + 1)"
   />
+  <div v-if="step === 5 && targetsData.length > 0 && startDate && endDate && targetsData.every(target => target.exposures.length > 0)" class="grey-bg content px-2 py-2 review-selections">
+    <h4>Review Your Selections</h4>
+        <div class="columns">
+          <div class="column is-half">
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
+              </span>
+              <span>Any 0.35m telescope</span>
+            </span>
+            <p></p>
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
+              </span>
+              <span>Between {{ startDate }} and {{ endDate }}</span>
+            </span>
+          </div>
+          <div class="column">
+            <span class="icon-text">
+              <span class="icon is-large">
+                <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
+              </span>
+              <span class="icon-text-list">
+                <ul v-for="(target, idx) in targetsData" :key="idx">
+                  <li>
+                    {{ target.name }}:
+                    <span v-for="(settings, sIdx) in target.exposures" :key="sIdx">
+                      {{ settings.count }} x {{ settings.exposureTime }}s with {{ settings.filter }} filter<span v-if="sIdx < target.exposures.length - 1">, </span>
+                    </span>
+                  </li>
+                </ul>
+              </span>
+              <div v-if="cadencePayload && cadencePayload.period && cadencePayload.jitter">
+                <ul><li>Cadence settings: a period of {{ cadencePayload.period }} hour<span v-if="cadencePayload.period > 1">s</span> with a {{ cadencePayload.jitter }} hour jitter</li></ul>
+              </div>
+            </span>
+          </div>
+        </div>
+  </div>
 </template>
 
 <style scoped>
@@ -214,5 +255,11 @@ onMounted(() => {
   box-sizing: border-box;
   border: 1px solid gray;
   border-radius: 0.2em;
+}
+.review-selections {
+  margin-top: 2em;
+  position: fixed;
+  bottom: 30%;
+  width: 80%;
 }
 </style>
