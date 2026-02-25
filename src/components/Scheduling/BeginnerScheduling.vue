@@ -64,7 +64,10 @@ const categories = ref([
       { name: 'Uranus', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '799', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: uranusIcon },
       { name: 'Neptune', type: 'planet', scheme: 'JPL_MAJOR_PLANET', command: '899', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: neptuneIcon },
       { name: 'Pluto', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '999', availability: null, filters: [{ exposure: 5, name: 'rp' }], icon: moonIcon },
-      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon }
+      { name: 'Ceres', type: 'dwarf', scheme: 'MPC_MINOR_PLANET', command: '134340', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon },
+      { name: 'Pallas', type: 'asteroid', scheme: 'MPC_MINOR_PLANET', command: 'pallas', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon },
+      { name: 'Vesta', type: 'asteroid', scheme: 'MPC_MINOR_PLANET', command: 'vesta', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon },
+      { name: 'Hygiea', type: 'asteroid', scheme: 'MPC_MINOR_PLANET', command: 'hygiea', availability: null, filters: [{ exposure: 10, name: 'V' }], icon: asteroidIcon }
     ]
   }
 ])
