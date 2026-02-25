@@ -329,19 +329,20 @@ onMounted(async () => {
       <div v-for="category in categories" :key="category.location" class="content">
         <h4>{{ category.location }}</h4>
         <div class="buttons">
-         <a
+         <v-col
             v-for="option in category.options"
             :key="option.shortname || option.name"
             @click="option.availability === false ? null : handleObjectSelection(option.shortname, option.name, category.location, option.scheme)"
             class="button suggestion"
             :class="{ 'disabled': option.availability === false }"
             :style="option.availability === false ? 'pointer-events: none; opacity: 0.5;' : ''"
+            cols="2"
           >
             <span>
               <img :src="option.icon" alt="icon" />
             </span>
             <span>{{ option.name }}</span>
-        </a>
+          </v-col>
         </div>
       </div>
     </div>
