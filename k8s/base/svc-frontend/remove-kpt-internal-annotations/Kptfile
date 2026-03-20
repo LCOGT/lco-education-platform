@@ -17,4 +17,4 @@ upstreamLock:
     repo: https://github.com/LCOGT/kpt-pkg-catalog
     directory: /remove-kpt-internal-annotations
     ref: main
-    commit: c58213d7a52130c977fdff0a51f4bd4fb5ca73a3
+    commit: 8b89fb7ae3f697300ea8f230aef2f266a0862ed8

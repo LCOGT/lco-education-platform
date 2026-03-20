@@ -1,10 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/deployment-apps-v1.json
 apiVersion: apps/v1
 kind: Deployment
-metadata:
+metadata: # kpt-merge: /frontend
   name: frontend
   labels:
     app.kubernetes.io/component: frontend
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'apps|Deployment|default|frontend'
 spec:
   selector:
     matchLabels:
