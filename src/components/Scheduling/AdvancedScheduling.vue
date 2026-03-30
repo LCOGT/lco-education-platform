@@ -199,7 +199,7 @@ onMounted(() => {
     @previous="handleDisplay(step - 1)"
     @next="handleDisplay(step + 1)"
   />
-  <div v-if="step === 5 && targetsData.length > 0 && startDate && endDate && targetsData.every(target => target.exposures.length > 0)" class="grey-bg content px-2 py-2 review-selections">
+  <div class="grey-bg content px-2 py-2 review-selections">
     <h4>Review Your Selections</h4>
         <div class="columns">
           <div class="column is-half">
@@ -257,9 +257,9 @@ onMounted(() => {
   border-radius: 0.2em;
 }
 .review-selections {
-  margin-top: 2em;
-  position: fixed;
-  bottom: 30%;
-  width: 80%;
+  margin-top: 2rem;
+  position: sticky;
+  bottom: 5%;
+  /* width: 80%; */
 }
 </style>

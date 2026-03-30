@@ -282,7 +282,6 @@ const handleDisplay = (display) => {
       </div>
     </div>
   </section>
-      <footer class="footer">
         <v-btn
           v-if="canSubmit"
           color="indigo"
@@ -292,7 +291,6 @@ const handleDisplay = (display) => {
         >
         Submit my request
       </v-btn>
-      </footer>
       <div v-if="showBugModal" class="modal is-active">
         <div class="modal-background" @click="showBugModal = false"></div>
         <div class="modal-card">
@@ -350,14 +348,6 @@ const handleDisplay = (display) => {
 }
 .submit-btn {
   margin-top: 2.5em;
-}
-.footer {
-  position: fixed;
-  left: 25%;
-  bottom: 4%;
-  width: 100%;
-  padding: 1em 0;
-  text-align: center;
 }
 .bug-toast {
   position: fixed;

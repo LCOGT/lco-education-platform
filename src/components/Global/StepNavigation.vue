@@ -48,14 +48,14 @@ const props = defineProps({
 .footer-left {
   position: fixed;
   left: 1.5rem;
-  bottom: 4%;
-  z-index: 101;
-  max-width: 45%;
+  bottom: 1.5rem;
+  /* z-index: 101; */
   box-sizing: border-box;
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-  padding: 0.25rem;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  box-shadow: none;
 }
 
 </style>
