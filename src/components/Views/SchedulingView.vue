@@ -241,104 +241,125 @@ const handleDisplay = (display) => {
 </script>
 
 <template>
-  <section class="section highlight">
-  <div class="container">
-    <h2>Schedule an Observation</h2>
-    <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
-      <p>What level are you?</p>
-      <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
-      <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
-    </div>
-  </div>
-  </section>
-  <section class="section">
+  <div class="scheduling-view">
+    <section class="section highlight">
     <div class="container">
-    <div v-if="level === 'beginner' && !showScheduled">
-        <BeginnerScheduling
-          @selectionsComplete="handleUserSelections"
-          @clearErrorMessage="errorMessage = ''"
-        />
+      <h2>Schedule an Observation</h2>
     </div>
-      <div v-else-if="level === 'advanced' && !showScheduled">
-        <AdvancedScheduling
-          @selectionsComplete="handleUserSelections"
-          @updateDisplay="handleDisplay"
-          @cadenceValid="isCadenceValid = $event"
-          @cadenceSelection="cadenceSelection = $event"
-        />
+    </section>
+    <section class="section scheduling-stage">
+      <div v-if="!level && !showScheduled" class="level-buttons-wrapper">
+        <h3>What level are you?</h3>
+        <v-btn @click="level = 'beginner'" color="indigo" class="level-btns">Beginner</v-btn>
+        <v-btn @click="level = 'advanced'" color="indigo" class="level-btns">Advanced</v-btn>
       </div>
-      <div v-if="errorMessage && !showScheduled" class="error-row">
-        <p class="error-message">Error: {{ errorMessage }}</p>
-        <button
-          v-if="showReportIssueBtn"
-          class="button is-danger bug-btn"
-          @click="showBugModal = true"
-        >
-          Report an issue
-        </button>
+      <div class="container">
+      <div v-if="level === 'beginner' && !showScheduled">
+          <BeginnerScheduling
+            @selectionsComplete="handleUserSelections"
+            @clearErrorMessage="errorMessage = ''"
+          />
       </div>
-      <div v-if="showScheduled">
-        <DashboardView />
-      </div>
-    </div>
-  </section>
-        <v-btn
-          v-if="canSubmit"
-          color="indigo"
-          class="submit-btn"
-          :disabled="level === 'advanced' && showGenerateCadence && cadenceSelection === 'simple-period' && !isCadenceValid"
-          @click="onSubmit"
-        >
-        Submit my request
-      </v-btn>
-      <div v-if="showBugModal" class="modal is-active">
-        <div class="modal-background" @click="showBugModal = false"></div>
-        <div class="modal-card">
-          <div v-if="isSubmittingBug" class="modal-spinner-overlay" aria-hidden="true">
-      <v-progress-circular indeterminate color="white" />
-    </div>
-          <header class="modal-card-head">
-            <h3 class="modal-card-title">
-              Sorry, we cannot process your request.<br>
-              If you would like us to look into this, <br>
-              please submit a bug report below.<br>
-            </h3>
-            <button class="delete" @click="showBugModal = false"></button>
-          </header>
-          <section class="modal-card-body">
-            <textarea
-              v-model="bugDescription"
-              class="textarea"
-              rows="4"
-              placeholder="Please briefly describe your issue."
-            ></textarea>
-          </section>
-          <footer class="modal-card-foot">
-            <button
-              class="button is-danger"
-              :disabled="!bugDescription"
-              @click="confirmSubmitBug"
-            >
-              Submit bug report
-            </button>
-            <button class="button" @click="showBugModal = false">
-              Cancel
-            </button>
-          </footer>
+        <div v-else-if="level === 'advanced' && !showScheduled">
+          <AdvancedScheduling
+            @selectionsComplete="handleUserSelections"
+            @updateDisplay="handleDisplay"
+            @cadenceValid="isCadenceValid = $event"
+            @cadenceSelection="cadenceSelection = $event"
+          />
+        </div>
+        <div v-if="errorMessage && !showScheduled" class="error-row">
+          <p class="error-message">Error: {{ errorMessage }}</p>
+          <button
+            v-if="showReportIssueBtn"
+            class="button is-danger bug-btn"
+            @click="showBugModal = true"
+          >
+            Report an issue
+          </button>
+        </div>
+        <div v-if="showScheduled">
+          <DashboardView />
         </div>
       </div>
-        <transition name="toast">
-          <div v-if="showToast"
-            class="bug-toast"
-            role="status"
-            aria-live="polite"
-          >
-          {{ toastMessage }}
-          </div>
-        </transition>
+    </section>
+    <v-btn
+      v-if="canSubmit"
+      color="indigo"
+      class="submit-btn"
+      :disabled="level === 'advanced' && showGenerateCadence && cadenceSelection === 'simple-period' && !isCadenceValid"
+      @click="onSubmit"
+    >
+    Submit my request
+    </v-btn>
+  <div v-if="showBugModal" class="modal is-active">
+    <div class="modal-background" @click="showBugModal = false"></div>
+    <div class="modal-card">
+      <div v-if="isSubmittingBug" class="modal-spinner-overlay" aria-hidden="true">
+  <v-progress-circular indeterminate color="white" />
+</div>
+      <header class="modal-card-head">
+        <h3 class="modal-card-title">
+          Sorry, we cannot process your request.<br>
+          If you would like us to look into this, <br>
+          please submit a bug report below.<br>
+        </h3>
+        <button class="delete" @click="showBugModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <textarea
+          v-model="bugDescription"
+          class="textarea"
+          rows="4"
+          placeholder="Please briefly describe your issue."
+        ></textarea>
+      </section>
+      <footer class="modal-card-foot">
+        <button
+          class="button is-danger"
+          :disabled="!bugDescription"
+          @click="confirmSubmitBug"
+        >
+          Submit bug report
+        </button>
+        <button class="button" @click="showBugModal = false">
+          Cancel
+        </button>
+      </footer>
+    </div>
+  </div>
+    <transition name="toast">
+      <div v-if="showToast"
+        class="bug-toast"
+        role="status"
+        aria-live="polite"
+      >
+      {{ toastMessage }}
+      </div>
+    </transition>
+  </div>
 </template>
 
 <style scoped>
+.scheduling-view {
+  height: calc(100vh - var(--bulma-navbar-height));
+  max-height: calc(100vh - var(--bulma-navbar-height));
+  overflow-x: hidden;
+  overflow-y: hidden;
+  overflow: hidden;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: auto;
+  position: relative;
+}
+.scheduling-view :deep(.section) {
+  margin-bottom: 0;
+}
+.scheduling-stage {
+  min-height: auto;
+  padding-top: 0;
+  padding-bottom: 4rem;
+  overflow-y: hidden !important;
+}
 .level-buttons-wrapper {
   margin-top: 1em;
   gap: 1em;
@@ -347,7 +368,10 @@ const handleDisplay = (display) => {
   margin: 1em;
 }
 .submit-btn {
-  margin-top: 2.5em;
+  position: fixed;
+  right: clamp(1.5rem, 4vw, 3rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  z-index: 101;
 }
 .bug-toast {
   position: fixed;
@@ -375,5 +399,16 @@ const handleDisplay = (display) => {
 }
 .bug-btn {
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .scheduling-stage {
+    padding-bottom: 3.5rem;
+  }
+
+  .submit-btn {
+    right: 1rem;
+    bottom: 1rem;
+  }
 }
 </style>
