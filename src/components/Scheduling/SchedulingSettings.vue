@@ -41,6 +41,10 @@ const props = defineProps({
   currentStep: {
     type: Number,
     required: true
+  },
+  useWideSelectedTargetsLayout: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -303,51 +307,99 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="columns">
+    <div class="columns" :class="{ 'wide-target-layout': props.useWideSelectedTargetsLayout }">
+      <div class="column is-one-third">
+      <div v-if="props.target || currentStep === 5" class="exposure-settings-panel">
+      <h3 class="section-title">Exposure Settings</h3>
+      <!-- Exposure settings -->
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Filter</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-narrow">
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select id="filter" v-model="settings.filter" :disabled="disableFilterList">
+                  <option disabled value="">Choose a filter for {{ targetList[activeTargetIndex]?.name }}</option>
+                    <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
+                      {{ filter?.name }}
+                    </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+          <label class="label">Exposure</label>
+        </div>
+        <div class="field-body">
+          <div class="field is-narrow">
+            <p class="control is-expanded">
+              <input id="exposureTime" type="number" min="1" class="input input-exposure" v-model="settings.exposureTime" placeholder="Seconds">
+            </p>
+            <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
+          </div>
+          <div class="times">
+            <FontAwesomeIcon icon="fa-solid fa-xmark" />
+          </div>
+          <div class="field is-narrow">
+            <p class="control is-expanded">
+              <input id="exposureCount" type="number" class="input input-exposure" v-model="settings.count" min="1" placeholder="Count">
+            </p>
+          </div>
+        </div>
+      </div>
+      <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
+      <v-btn v-if="props.showTitleField" @click="addAnotherTarget" color="indigo" :disabled="addTargetBtnDisabled" class="add-target" :class="{ 'highlight-border': disableFilterList }">Add Another Target</v-btn>
+      </div>
+      </div>
       <div class="column is-one-third">
       <!-- Render saved targets and exposures -->
       <div v-if="currentStep === 5 || props.target">
-        <div v-if="disableFilterList" class="notification is-warning warning-box">
-          Please add a target before selecting exposure settings.
-        </div>
-        <div
-          v-for="(target, tIndex) in filteredTargets"
-          :key="tIndex"
-          class="highlight-box"
-        >
-          <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
-          {{ target.name || `${target.ra}_${target.dec}` }}
-          <v-btn
-            v-if="!props.target"
-            @click="editTarget(tIndex)"
-            color="indigo"
+        <div class="saved-targets-grid">
+          <div
+            v-for="(target, tIndex) in filteredTargets"
+            :key="tIndex"
+            class="highlight-box"
           >
-            Change Target
-          </v-btn>
-          <table class="table is-fullwidth">
-            <thead>
-              <tr>
-                <th>Filter</th>
-                <th>Exposure Time (s)</th>
-                <th colspan="2">Count</th>
-              </tr>
-            </thead>
-            <tbody>
-          <tr v-for="(exposure, index) in target.exposures" :key="index" class="exposure-item">
-              <td>{{ exposure.filterName }}</td><td>{{ exposure.exposureTime }}s</td><td> x {{ exposure.count }}</td>
-            <td><a
-              @click="deleteExposure(tIndex, index)"
-              class="delete-exposure red"
+            <FontAwesomeIcon icon="fa-regular fa-camera-retro" />
+            {{ target.name || `${target.ra}_${target.dec}` }}
+            <v-btn
+              v-if="!props.target"
+              @click="editTarget(tIndex)"
+              color="indigo"
             >
-              <FontAwesomeIcon icon="fa-solid fa-trash-can" />
-          </a></td>
-        </tr>
-        </tbody>
-      </table>
+              Change Target
+            </v-btn>
+            <table class="table is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Filter</th>
+                  <th>Exposure Time (s)</th>
+                  <th colspan="2">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+            <tr v-for="(exposure, index) in target.exposures" :key="index" class="exposure-item">
+                <td>{{ exposure.filterName }}</td><td>{{ exposure.exposureTime }}s</td><td> x {{ exposure.count }}</td>
+              <td><a
+                @click="deleteExposure(tIndex, index)"
+                class="delete-exposure red"
+              >
+                <FontAwesomeIcon icon="fa-solid fa-trash-can" />
+            </a></td>
+          </tr>
+          </tbody>
+        </table>
+          </div>
         </div>
       </div>
       <!-- Target input -->
       <div v-if="showTitleField && currentStep === 4" class="input-wrapper">
+        <h3 class="section-title">Search for a target</h3>
         <div class="field is-horizontal">
           <div class="field-label is-normal">
               <label for="target-list" class="label">Target</label>
@@ -394,55 +446,6 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-    <div class="column is-one-third">
-
-      <!-- Exposure settings -->
-      <div v-if="props.target || currentStep === 5">
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Filter</label>
-        </div>
-        <div class="field-body">
-          <div class="field is-narrow">
-            <div class="control">
-              <div class="select is-fullwidth">
-                <select id="filter" v-model="settings.filter" :disabled="disableFilterList">
-                  <option disabled value="">Choose a filter for {{ targetList[activeTargetIndex]?.name }}</option>
-                    <option v-for="filter in filterList" :key="filter.code" :value="filter.code">
-                      {{ filter?.name }}
-                    </option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="field is-horizontal">
-        <div class="field-label is-normal">
-          <label class="label">Exposure</label>
-        </div>
-        <div class="field-body">
-          <div class="field is-narrow">
-            <p class="control is-expanded">
-              <input id="exposureTime" type="number" min="1" class="input" v-model="settings.exposureTime" placeholder="Seconds">
-            </p>
-            <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
-          </div>
-          <div class="times">
-            <FontAwesomeIcon icon="fa-solid fa-xmark" />
-          </div>
-          <div class="field is-narrow">
-            <p class="control is-expanded">
-              <input id="exposureCount" type="number" class="input" v-model="settings.count" min="1" placeholder="Count">
-            </p>
-          </div>
-        </div>
-      </div>
-      <!-- Add exposure button -->
-      <v-btn @click="addExposure" color="indigo" :disabled="!addExposuresEnabled" class="add-exposure">Add Exposure</v-btn>
-      <v-btn v-if="props.showTitleField" @click="addAnotherTarget" color="indigo" :disabled="addTargetBtnDisabled" class="add-target" :class="{ 'highlight-border': disableFilterList }">Add Another Target</v-btn>
-      </div>
-    </div>
     </div>
 </template>
 
@@ -456,7 +459,30 @@ onMounted(async () => {
 .input-wrapper .field-label {
   min-width: 80px;
   text-align: left;
-  padding-right: 1em;
+}
+
+.input-wrapper {
+  padding-left: 0.5rem;
+}
+
+.columns {
+  margin-top: 0;
+}
+
+.column {
+  padding-top: 0;
+}
+
+.wide-target-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  column-gap: 3.75rem;
+  align-items: start;
+}
+
+.wide-target-layout .column.is-one-third {
+  width: auto;
+  flex: initial;
 }
 
 .input-wrapper .field-body .input,
@@ -475,8 +501,29 @@ onMounted(async () => {
   display: flex;
 }
 
+.input-exposure {
+  max-width: 8.5vw;
+  text-align: center;
+}
+
 .add-target, .add-exposure {
   margin: 0.5em;
+}
+
+.section-title {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.saved-targets-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.wide-target-layout .saved-targets-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.5rem;
+  row-gap: 1.25rem;
 }
 
 @keyframes borderFadeOnce {
@@ -506,6 +553,10 @@ onMounted(async () => {
 
 .highlight-border {
   animation: borderFadeOnce 2.2s forwards;
+}
+
+.highlight-box {
+  margin-bottom: 5px;
 }
 
 </style>
