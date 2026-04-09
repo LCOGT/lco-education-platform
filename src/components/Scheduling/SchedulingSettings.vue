@@ -307,6 +307,54 @@ onMounted(async () => {
 </script>
 
 <template>
+    <div>
+    <h3 v-if="showTitleField && currentStep === 4" class="section-title">Search for a target</h3>
+    <div v-if="showTitleField && currentStep === 4" class="input-wrapper search-fields">
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+            <label for="target-list" class="label">Target</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input
+                id="target-list"
+                v-model="targetInput.name"
+                @blur="updateTarget()"
+                class="scheduling-inputs input"
+                placeholder="Enter target"
+              />
+              </div>
+            </div>
+          </div>
+          <v-btn color="indigo" @click="() => { getTargetDetails(); updateTarget() }">Find Target</v-btn>
+      </div>
+      <p v-if="targetError" class="error-text">{{ targetError }}</p>
+      <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
+        <div class="field-label is-normal">
+          <label class="label">RA</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input v-model="targetInput.ra" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertRaToDeg(targetInput.ra) }" class="scheduling-inputs input"/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
+        <div class="field-label is-normal">
+          <label class="label">Dec</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="control">
+              <input v-model="targetInput.dec" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertDecToDeg(targetInput.dec) }" class="scheduling-inputs input"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="columns" :class="{ 'wide-target-layout': props.useWideSelectedTargetsLayout }">
       <div class="column is-one-third">
       <div v-if="props.target || currentStep === 5" class="exposure-settings-panel">
@@ -397,54 +445,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-      <!-- Target input -->
-      <div v-if="showTitleField && currentStep === 4" class="input-wrapper">
-        <h3 class="section-title">Search for a target</h3>
-        <div class="field is-horizontal">
-          <div class="field-label is-normal">
-              <label for="target-list" class="label">Target</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input
-                  id="target-list"
-                  v-model="targetInput.name"
-                  @blur="updateTarget()"
-                  class="scheduling-inputs input"
-                  placeholder="Enter target"
-                />
-                </div>
-              </div>
-            </div>
-            <v-btn color="indigo" @click="() => { getTargetDetails(); updateTarget() }">Find Target</v-btn>
-        </div>
-        <p v-if="targetError" class="error-text">{{ targetError }}</p>
-        <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
-          <div class="field-label is-normal">
-            <label class="label">RA</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input v-model="targetInput.ra" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertRaToDeg(targetInput.ra) }" class="scheduling-inputs input"/>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field is-horizontal" v-if="props.objectType === 'sidereal'">
-          <div class="field-label is-normal">
-            <label class="label">Dec</label>
-          </div>
-          <div class="field-body">
-            <div class="field">
-              <div class="control">
-                <input v-model="targetInput.dec" @input="() => { clearTargetName(); updateTarget() }" @blur="() => { convertDecToDeg(targetInput.dec) }" class="scheduling-inputs input"/>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    </div>
     </div>
     </div>
 </template>
@@ -512,7 +513,13 @@ onMounted(async () => {
 
 .section-title {
   margin-top: 0;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.search-fields {
+  margin-bottom: 1rem;
+  max-width: 32rem;
+  padding-left: 0;
 }
 
 .saved-targets-grid {
