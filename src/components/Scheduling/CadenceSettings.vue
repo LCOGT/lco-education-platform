@@ -40,7 +40,7 @@ watch(cadenceSelection, (val) => {
 
 <template>
     <div>
-        <h3>Cadence Settings</h3>
+        <h3 class="section-title">Cadence Settings</h3>
         <div class="field">
             <div class="control">
             <div class="select">
@@ -85,6 +85,11 @@ watch(cadenceSelection, (val) => {
 </template>
 
 <style scoped>
+.section-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
 .input {
   padding: 0.5em;
   box-sizing: border-box;

@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, watch } from 'vue'
+import { defineProps } from 'vue'
 
 const props = defineProps({
   disableNextStepBtn: {
@@ -31,6 +31,7 @@ const props = defineProps({
       Previous step
     </v-btn>
     <v-btn
+      v-if="props.showNext"
       color="indigo"
       :disabled="props.disableNextStepBtn"
       @click="$emit('next')"
@@ -44,18 +45,26 @@ const props = defineProps({
 .step-btns {
   display: flex;
   gap: 1em;
+  flex-wrap: wrap;
 }
 .footer-left {
   position: fixed;
-  left: 1.5rem;
-  bottom: 4%;
-  z-index: 101;
-  max-width: 45%;
+  left: clamp(1.5rem, 4vw, 3rem);
+  bottom: clamp(1.5rem, 5vh, 3.5rem);
+  z-index: 100;
   box-sizing: border-box;
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-  padding: 0.25rem;
+  padding: 0.75rem 0;
+  background: none;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .footer-left {
+    left: 1rem;
+    bottom: 1rem;
+  }
 }
 
 </style>

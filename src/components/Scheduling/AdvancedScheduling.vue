@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick, computed, watch } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import SchedulingSettings from './SchedulingSettings.vue'
 import ProposalDropdown from '../Global/ProposalDropdown.vue'
 import Calendar from './Calendar.vue'
@@ -27,6 +27,17 @@ const canAddCadence = computed(() =>
   targetsData.value[0].exposures.length > 0
 )
 const canAddAnotherTarget = computed(() => targetsData.value.length === 0 || cadenceSelection.value === 'none' || cadenceSelection.value === null || canAddCadence.value === false)
+const showReviewSelections = computed(() =>
+  step.value === 5 &&
+  targetsData.value.length > 0 &&
+  startDate.value &&
+  endDate.value &&
+  targetsData.value.every(target => target.exposures.length > 0)
+)
+// For step 5, if there are multiple targets, we want to use the wide layout for selected targets to give more room for exposure settings
+const useWideSelectedTargetsLayout = computed(() =>
+  step.value === 5 && targetsData.value.length > 1
+)
 
 const emits = defineEmits(['selectionsComplete', 'cadenceValid'])
 
@@ -165,85 +176,109 @@ onMounted(() => {
 
 <template>
   <ProposalDropdown v-if="hasManyProposals && step === 1" :isItRealTime="false" @selectionsComplete="handleProposalSelection"/>
-  <div v-if="step === 2" class="field is-horizontal">
-    <div class="button btn" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
-    <div class="button btn" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
+  <div v-if="step === 2" class="object-selection">
+    <h3 class="section-title">Select Object Type</h3>
+    <div class="object-selection-buttons">
+      <div class="button btn" @click="handleObjectSelection('nonsidereal')">Solar System Object</div>
+      <div class="button btn" @click="handleObjectSelection('sidereal')">Outer Space Object</div>
+    </div>
   </div>
   <Calendar @updateDateRange="handleDateRangeUpdate" v-if="step === 3"/>
-  <SchedulingSettings v-if="selectedProposal && step >= 4"
-    :current-step="step"
-    :show-project-field="true"
-    :show-title-field="true"
-    :start-date="startDate"
-    :end-date="endDate"
-    :object-type="selectedObject"
-    :can-add-another-target="canAddAnotherTarget"
-    @targetUpdated="handleTargetUpdate"
-    @exposuresUpdated="handleExposuresUpdate"
-    @updateDisplay="handleDisplay"
-    @targetListUpdated="targetsData = [...$event]"
-    @cadenceSelection="handleCadenceSelection"
-  />
-    <CadenceSettings
-      v-if="canAddCadence"
+  <div v-if="selectedProposal && step >= 4" class="advanced-layout">
+    <SchedulingSettings
+      class="advanced-settings"
+      :class="{ 'advanced-settings--wide': useWideSelectedTargetsLayout }"
+      :current-step="step"
+      :show-project-field="true"
+      :show-title-field="true"
       :start-date="startDate"
       :end-date="endDate"
-      @buildCadencePayload="handleCadencePayload"
-      @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
-      @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
+      :object-type="selectedObject"
+      :can-add-another-target="canAddAnotherTarget"
+      :use-wide-selected-targets-layout="useWideSelectedTargetsLayout"
+      @targetUpdated="handleTargetUpdate"
+      @exposuresUpdated="handleExposuresUpdate"
+      @updateDisplay="handleDisplay"
+      @targetListUpdated="targetsData = [...$event]"
+      @cadenceSelection="handleCadenceSelection"
     />
-  <StepNavigation
-    :show-previous="step >= 2"
-    :show-next="step >= 3 && step < 5"
-    :disable-next-step-btn="disableNextStepBtn"
-    @previous="handleDisplay(step - 1)"
-    @next="handleDisplay(step + 1)"
-  />
-  <div v-if="step === 5 && targetsData.length > 0 && startDate && endDate && targetsData.every(target => target.exposures.length > 0)" class="grey-bg content px-2 py-2 review-selections">
+    <div v-if="canAddCadence" class="advanced-sidebar">
+      <CadenceSettings
+        class="advanced-panel"
+        :start-date="startDate"
+        :end-date="endDate"
+        @buildCadencePayload="handleCadencePayload"
+        @cadenceValid="val => { isCadenceValid = val; emits('cadenceValid', val) }"
+        @cadenceSelection="val => { cadenceSelection = val; emits('cadenceSelection', val); handleCadenceSelection(val) }"
+      />
+    </div>
+  </div>
+  <div v-if="showReviewSelections" class="grey-bg content px-2 py-2 review-selections">
     <h4>Review Your Selections</h4>
         <div class="columns">
           <div class="column is-half">
             <span class="icon-text">
               <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-gear" class="blue fa-2xl" />
+                <FontAwesomeIcon icon="fa-solid fa-gear" class="blue review-icon" />
               </span>
               <span>Any 0.35m telescope</span>
             </span>
             <p></p>
             <span class="icon-text">
               <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue fa-2xl" />
+                <FontAwesomeIcon icon="fa-solid fa-calendar-days" class="blue review-icon" />
               </span>
               <span>Between {{ startDate }} and {{ endDate }}</span>
             </span>
           </div>
           <div class="column">
-            <span class="icon-text">
+            <div class="icon-text review-details">
               <span class="icon is-large">
-                <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue fa-2xl" />
+                <FontAwesomeIcon icon="fa-solid fa-sliders" class="blue review-icon" />
               </span>
-              <span class="icon-text-list">
-                <ul v-for="(target, idx) in targetsData" :key="idx">
-                  <li>
+              <div class="icon-text-list review-list">
+                <ul>
+                  <li v-for="(target, idx) in targetsData" :key="idx">
                     {{ target.name }}:
                     <span v-for="(settings, sIdx) in target.exposures" :key="sIdx">
                       {{ settings.count }} x {{ settings.exposureTime }}s with {{ settings.filter }} filter<span v-if="sIdx < target.exposures.length - 1">, </span>
                     </span>
                   </li>
                 </ul>
-              </span>
-              <div v-if="cadencePayload && cadencePayload.period && cadencePayload.jitter">
-                <ul><li>Cadence settings: a period of {{ cadencePayload.period }} hour<span v-if="cadencePayload.period > 1">s</span> with a {{ cadencePayload.jitter }} hour jitter</li></ul>
+                <div v-if="cadencePayload && cadencePayload.period && cadencePayload.jitter" class="cadence-summary">
+                  <ul><li>Cadence settings: a period of {{ cadencePayload.period }} hour<span v-if="cadencePayload.period > 1">s</span> with a {{ cadencePayload.jitter }} hour jitter</li></ul>
+                </div>
               </div>
-            </span>
+            </div>
           </div>
         </div>
-  </div>
+      </div>
+  <StepNavigation
+    :show-previous="step >= 2"
+    :show-next="step >= 3 && step < 5"
+    :disable-next-step-btn="disableNextStepBtn"
+    @previous="handleDisplay(step - 1)"
+    @next="handleDisplay(step + 1)"
+    class="step-nav"
+  />
 </template>
 
 <style scoped>
+.section-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
 .btn {
   margin: 0.5em;
+}
+.object-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.object-selection-buttons {
+  display: flex;
+  flex-wrap: wrap;
 }
 .p-text {
   margin-right: 1em;
@@ -256,10 +291,84 @@ onMounted(() => {
   border: 1px solid gray;
   border-radius: 0.2em;
 }
+.advanced-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 3.75rem;
+  row-gap: 2rem;
+  align-items: start;
+  margin-top: 0;
+  padding-top: 0.75rem;
+}
+.advanced-settings {
+  grid-column: 1 / span 2;
+  min-width: 0;
+}
+.advanced-settings--wide {
+  grid-column: 1 / -1;
+}
+.advanced-settings :deep(.columns) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 3.75rem;
+  row-gap: 2rem;
+  margin: 0;
+  align-items: start;
+}
+.advanced-settings :deep(.column.is-one-third) {
+  width: auto;
+  flex: 1 1 auto;
+  padding: 0;
+}
+.advanced-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  padding-top: 0;
+}
+.advanced-panel {
+  width: 100%;
+}
+.step-nav {
+  z-index: 100;
+}
 .review-selections {
-  margin-top: 2em;
-  position: fixed;
-  bottom: 30%;
-  width: 80%;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+  padding-bottom: 0.75rem !important;
+}
+.review-icon {
+  font-size: 1.35rem;
+}
+.review-details {
+  align-items: flex-start;
+}
+.review-list ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.review-list li {
+  margin: 0;
+  line-height: 1.35;
+}
+.review-list li + li,
+.cadence-summary {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 1023px) {
+  .advanced-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-settings {
+    grid-column: auto;
+  }
+
+  .advanced-settings :deep(.columns) {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
