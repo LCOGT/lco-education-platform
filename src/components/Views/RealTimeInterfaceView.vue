@@ -91,7 +91,7 @@ const telescopeMessage = computed(() => {
 const telescopeMsgState = computed(() => {
   let msgstate = 'notification '
   if (availability.value === 'AVAILABLE') {
-    msgstate += 'green-bg'
+    msgstate += 'green-bg telescope-status-message'
   } else if (availability.value === 'UNAVAILABLE' || availability.value === 'NOT_OK_TO_OPEN') {
     msgstate += 'is-danger'
   }
@@ -264,5 +264,11 @@ onMounted(async () => {
   background-color: var(--grey-level4);
   border-radius: 8px;
   padding: 1rem;
+}
+
+.telescope-status-message {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
 }
 </style>
