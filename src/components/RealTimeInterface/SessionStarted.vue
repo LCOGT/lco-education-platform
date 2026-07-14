@@ -831,15 +831,13 @@ watch([ra, dec], () => {
           </div>
         </div>
         <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
-        <div class="buttons are-medium" v-if="suggestionOrManual != '' && !props.draftMode">
-          <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
-        </div>
         <div
           v-if="suggestionOrManual != '' && !props.draftMode"
           class="buttons are-medium explore-targets-actions"
         >
           <v-btn class="button" @click="resetSuggestionOrManual">&lt;&lt;</v-btn>
           <v-btn class="button" @click="goBackOneSelectionStep()">&lt;</v-btn>
+          <button :disabled="incompleteSelection" class="button red-bg go-action-button" @click="sendGoCommand()">Go</button>
         </div>
         <div v-if="props.draftMode && validTarget">
           <v-btn color="green-lighten-1" @click="saveTargetDetails()">save target</v-btn>
@@ -939,9 +937,14 @@ p.mosaic {
 }
 
 .explore-targets-actions {
-  align-self: flex-start;
+  align-self: stretch;
   margin-top: auto;
   margin-bottom: 0;
+  width: 100%;
+}
+
+.go-action-button {
+  margin-left: auto;
 }
 
 .highlight-border {
