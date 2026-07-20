@@ -68,7 +68,7 @@ describe('nonsiderealRequest utils', () => {
       semimajor_axis: 5.203
     }, 'JPL_MAJOR_PLANET')
 
-    expect(pointing.orbitalElements.dailymot).toEqual({ value: 0.083, units: 'deg/day' })
+    expect(pointing.orbitalElements.dailymot).toEqual({ value: 0.083, units: 'deg' })
     expect(pointing.orbitalElements).not.toHaveProperty('nonsiderealFraction')
   })
 

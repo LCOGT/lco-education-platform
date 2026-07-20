@@ -89,7 +89,7 @@ export const createRealTimeNonSiderealPointing = (simbadResponse, scheme) => {
   }
 
   if (scheme === 'JPL_MAJOR_PLANET' && simbadResponse.mean_daily_motion) {
-    orbitalElements.dailymot = withUnits(simbadResponse.mean_daily_motion, 'deg/day')
+    orbitalElements.dailymot = withUnits(simbadResponse.mean_daily_motion, 'deg')
   } else {
     orbitalElements.nonsiderealFraction = 1.0
   }
