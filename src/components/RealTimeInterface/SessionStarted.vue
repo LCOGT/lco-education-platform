@@ -113,12 +113,8 @@ const categories = computed(() => [
 
 const isNonSiderealTarget = computed(() => !!nonSiderealPointing.value)
 
-function clearNonSiderealTarget () {
-  nonSiderealPointing.value = null
-}
-
 function getRaDecFromTargetName () {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   targeterror.value = false
   fetch(configurationStore.targetNameUrl + `${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
@@ -170,7 +166,7 @@ function areRaAndDecInSky () {
 }
 
 function setRaDecfromTargetList (event) {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   const target = event.target
   const id = target.getAttribute('data-targetid')
   selectedTarget.value = targets[id]
@@ -202,7 +198,7 @@ const resetValues = () => {
   dec.value = ''
   targetName.value = ''
   selectedTarget.value = {}
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   exposureTime.value = ''
   exposureCount.value = 1
   selectedFilter.value = ''
@@ -367,12 +363,12 @@ const sendGoCommand = async () => {
 }
 
 function setSuggestionsOrManual (mode) {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   suggestionOrManual.value = mode
 }
 
 function resetSuggestionOrManual () {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   suggestionOrManual.value = ''
   suggestionByType.value = ''
   targetsByType.value = []
@@ -393,7 +389,7 @@ function getVisibleTargets () {
 }
 
 function setSuggestionType (type) {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   suggestionByType.value = type
   if (Object.keys(targetList.value).length === 0) {
     getVisibleTargets()
@@ -418,7 +414,7 @@ function setNonSiderealTarget (target) {
   targeterrorMsg.value = ''
 
   if (!target.nonSiderealPointing) {
-    clearNonSiderealTarget()
+    nonSiderealPointing.value = null
     targeterror.value = true
     targeterrorMsg.value = 'Target is not available. Try a different target.'
     validTarget.value = false
@@ -550,7 +546,7 @@ const deleteDraftTarget = (index) => {
 }
 
 function resetSuggestionSettings () {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   suggestionOrManual.value = ''
   suggestionByType.value = ''
   targetsByType.value = []
@@ -561,7 +557,7 @@ function resetSuggestionSettings () {
 
 function goBackOneSelectionStep () {
   if (suggestionTargetSet.value) {
-    clearNonSiderealTarget()
+    nonSiderealPointing.value = null
     suggestionTargetSet.value = false
     selectedTarget.value = {}
     targetName.value = ''
@@ -588,7 +584,7 @@ function goBackOneSelectionStep () {
 }
 
 function populateAladinData (target) {
-  clearNonSiderealTarget()
+  nonSiderealPointing.value = null
   ra.value = target.raValue
   dec.value = target.decValue
   targetName.value = target.name
