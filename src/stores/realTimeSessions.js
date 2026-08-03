@@ -72,15 +72,16 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
         method: 'POST',
         body: requestBody
       })
-      if (!this.getTokenForCurrentSession) {
+      if (response?.token) {
         this.sessionTokens[this.currentSessionId] = response.token
       }
     },
     async fetchSessionStatus () {
       const configurationStore = useConfigurationStore()
-      const token = this.getTokenForCurrentSession
+      let token = this.getTokenForCurrentSession
       if (!token) {
         await this.fetchSessionToken()
+        token = this.getTokenForCurrentSession
       }
 
       const response = await fetchApiCall({
@@ -88,7 +89,9 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
         method: 'GET',
         header: { Authorization: `Token ${token}` }
       })
-      this.currentStatus = response.session_status
+      if (response?.session_status) {
+        this.currentStatus = response.session_status
+      }
     },
     startPolling () {
       this.stopPolling()

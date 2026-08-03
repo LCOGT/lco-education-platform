@@ -13,6 +13,14 @@ import { getFilterList } from '../../utils/populateInstrumentsUtils'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useSkyCoordinatesStore } from '../../stores/skyCoordinates'
 import { useUserDataStore } from '../../stores/userData'
+import {
+  getVisibleRealTimeNonSiderealTargets,
+  nonSiderealSolarSystemTargets
+} from '../../utils/nonsiderealRequest.js'
+import galaxyIcon from '@/assets/Icons/galaxy.png'
+import starClusterIcon from '@/assets/Icons/star-cluster.png'
+import supernovaIcon from '@/assets/Icons/supernova.png'
+import nebulaIcon from '@/assets/Icons/nebula.png'
 import emailjs from '@emailjs/browser'
 import { detect } from 'detect-browser'
 import debounce from 'lodash.debounce'
@@ -74,6 +82,11 @@ const toastMessage = ref('')
 const isSubmittingBug = ref(false)
 let pendingSave = false
 const nameYourTargetHint = ref(false)
+const nonSiderealPointing = ref(null)
+const visibleNonSiderealTargets = ref([])
+const nonSiderealTargetsLoading = ref(false)
+const nonSiderealTargetsError = ref('')
+const rejectedNonSiderealTargets = ref({})
 
 const currentSession = realTimeSessionsStore.currentSession
 const siteInfo = sites[currentSession.site]
@@ -82,19 +95,26 @@ const siteInfo = sites[currentSession.site]
 // I tested without it being computed
 const draftedTargets = computed(() => realTimeSessionsStore.draftedTargets[realTimeSessionsStore.currentSessionId])
 
-const categories = ref([
+const categories = computed(() => [
   {
     location: 'Deep Space',
     options: [
-      { name: 'Galaxy', icon: require('@/assets/Icons/galaxy.png'), shortname: 'galaxies' },
-      { name: 'Star Cluster', icon: require('@/assets/Icons/star-cluster.png'), shortname: 'clusters' },
-      { name: 'Supernova', icon: require('@/assets/Icons/supernova.png'), shortname: 'supernovae' },
-      { name: 'Nebula', icon: require('@/assets/Icons/nebula.png'), shortname: 'nebulae' }
+      { name: 'Galaxy', icon: galaxyIcon, shortname: 'galaxies' },
+      { name: 'Star Cluster', icon: starClusterIcon, shortname: 'clusters' },
+      { name: 'Supernova', icon: supernovaIcon, shortname: 'supernovae' },
+      { name: 'Nebula', icon: nebulaIcon, shortname: 'nebulae' }
     ]
+  },
+  {
+    location: 'Solar System',
+    options: visibleNonSiderealTargets.value
   }
 ])
 
+const isNonSiderealTarget = computed(() => !!nonSiderealPointing.value)
+
 function getRaDecFromTargetName () {
+  nonSiderealPointing.value = null
   targeterror.value = false
   fetch(configurationStore.targetNameUrl + `${targetName.value}?target_type=sidereal`)
     .then(response => response.json())
@@ -146,6 +166,7 @@ function areRaAndDecInSky () {
 }
 
 function setRaDecfromTargetList (event) {
+  nonSiderealPointing.value = null
   const target = event.target
   const id = target.getAttribute('data-targetid')
   selectedTarget.value = targets[id]
@@ -176,6 +197,8 @@ const resetValues = () => {
   ra.value = ''
   dec.value = ''
   targetName.value = ''
+  selectedTarget.value = {}
+  nonSiderealPointing.value = null
   exposureTime.value = ''
   exposureCount.value = 1
   selectedFilter.value = ''
@@ -290,15 +313,20 @@ const sendGoCommand = async () => {
   await realTimeSessionsStore.fetchObservationParams(exposTime.map(Number))
 
   const requestBody = {
-    dec: Number(dec.value),
     expFilter: exposFilter,
     expTime: exposTime,
     name: targetName.value || `${(Number(ra.value).toFixed(4)).toString()}_${(Number(dec.value).toFixed(4)).toString()}`,
-    ra: Number(ra.value) / 15,
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
     requestId: realTimeSessionsStore.currentSession.request.id,
     observationId: realTimeSessionsStore.currentSession.id
+  }
+
+  if (isNonSiderealTarget.value) {
+    requestBody.nonSiderealPointing = nonSiderealPointing.value
+  } else {
+    requestBody.dec = Number(dec.value)
+    requestBody.ra = Number(ra.value) / 15
   }
 
   if (configurationStore.demo === true) {
@@ -335,14 +363,17 @@ const sendGoCommand = async () => {
 }
 
 function setSuggestionsOrManual (mode) {
+  nonSiderealPointing.value = null
   suggestionOrManual.value = mode
 }
 
 function resetSuggestionOrManual () {
+  nonSiderealPointing.value = null
   suggestionOrManual.value = ''
   suggestionByType.value = ''
   targetsByType.value = []
   suggestionTargetSet.value = false
+  selectedTarget.value = {}
   exposureError.value = ''
   isExposureTimeValid.value = true
 }
@@ -358,6 +389,7 @@ function getVisibleTargets () {
 }
 
 function setSuggestionType (type) {
+  nonSiderealPointing.value = null
   suggestionByType.value = type
   if (Object.keys(targetList.value).length === 0) {
     getVisibleTargets()
@@ -369,8 +401,72 @@ function setSuggestionType (type) {
   }
 }
 
+function selectSuggestionOption (option) {
+  if (option.scheme) {
+    setNonSiderealTarget(option)
+  } else {
+    setSuggestionType(option.shortname)
+  }
+}
+
+function setNonSiderealTarget (target) {
+  targeterror.value = false
+  targeterrorMsg.value = ''
+
+  if (!target.nonSiderealPointing) {
+    nonSiderealPointing.value = null
+    targeterror.value = true
+    targeterrorMsg.value = 'Target is not available. Try a different target.'
+    validTarget.value = false
+    return
+  }
+
+  nonSiderealPointing.value = target.nonSiderealPointing
+  selectedTarget.value = target
+  targetName.value = target.name
+  ra.value = ''
+  dec.value = ''
+  suggestionOrManual.value = 'suggestions'
+  suggestionTargetSet.value = true
+  targetsByType.value = []
+  suggestionByType.value = 'Solar System'
+  exposureCount.value = 1
+  exposureTime.value = Object.values(target.filters).map(f => f.exposure)
+  selectedFilter.value = Object.values(target.filters).map(f => f.name)
+  validTarget.value = true
+}
+
+async function refreshVisibleNonSiderealTargets () {
+  nonSiderealTargetsLoading.value = true
+  nonSiderealTargetsError.value = ''
+  rejectedNonSiderealTargets.value = {}
+
+  await getVisibleRealTimeNonSiderealTargets({
+    bridgeUrl: configurationStore.rtiBridgeUrl,
+    token: realTimeSessionsStore.getTokenForCurrentSession,
+    targets: nonSiderealSolarSystemTargets,
+    successCallback: (response) => {
+      visibleNonSiderealTargets.value = response?.visibleTargets || []
+      rejectedNonSiderealTargets.value = response?.rejectedTargets || {}
+      if (visibleNonSiderealTargets.value.length === 0) {
+        console.info('[RTI non-sidereal diagnostics] No visible Solar System targets', {
+          rejectedTargets: rejectedNonSiderealTargets.value,
+          diagnostics: response?.diagnostics || {}
+        })
+      }
+      nonSiderealTargetsLoading.value = false
+    },
+    failCallback: () => {
+      visibleNonSiderealTargets.value = []
+      rejectedNonSiderealTargets.value = {}
+      nonSiderealTargetsError.value = 'Solar System targets are unavailable right now.'
+      nonSiderealTargetsLoading.value = false
+    }
+  })
+}
+
 const incompleteSelection = computed(() => {
-  return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === '' || isExposureTimeValid.value === false
+  return exposureTime.value === '' || exposureCount.value === '' || selectedFilter.value === '' || validTarget.value === false || isExposureTimeValid.value === false
 })
 
 watch(exposureTime, () => {
@@ -396,6 +492,9 @@ onMounted(async () => {
   // Adds rgb to the top of the filter list
   filterList.value.unshift({ name: 'RGB', code: 'rgb' })
   getVisibleTargets()
+  if (!props.draftMode) {
+    await refreshVisibleNonSiderealTargets()
+  }
   skyCoordinatesStore.clearCoordinates()
   // TO DO: fetch telescope status every 5 seconds if it's available. If it's not available, fetch every second.
   // also if not available, render a different view
@@ -447,14 +546,45 @@ const deleteDraftTarget = (index) => {
 }
 
 function resetSuggestionSettings () {
+  nonSiderealPointing.value = null
   suggestionOrManual.value = ''
   suggestionByType.value = ''
   targetsByType.value = []
   suggestionTargetSet.value = false
+  selectedTarget.value = {}
   validTarget.value = false
 }
 
+function goBackOneSelectionStep () {
+  if (suggestionTargetSet.value) {
+    nonSiderealPointing.value = null
+    suggestionTargetSet.value = false
+    selectedTarget.value = {}
+    targetName.value = ''
+    ra.value = ''
+    dec.value = ''
+    exposureTime.value = ''
+    exposureCount.value = 1
+    selectedFilter.value = ''
+    validTarget.value = false
+
+    if (suggestionByType.value === 'Solar System') {
+      suggestionByType.value = ''
+    }
+    return
+  }
+
+  if (targetsByType.value.length > 0 && !suggestionTargetSet.value) {
+    suggestionByType.value = ''
+    targetsByType.value = []
+    return
+  }
+
+  resetSuggestionSettings()
+}
+
 function populateAladinData (target) {
+  nonSiderealPointing.value = null
   ra.value = target.raValue
   dec.value = target.decValue
   targetName.value = target.name
@@ -513,8 +643,8 @@ watch([ra, dec], () => {
       <div class="column is-two-thirds">
           <SkyChart :ra="ra" :dec="dec" @update-coordinates="handleUpdateCoordinates" />
       </div>
-      <div class="column grey-bg">
-        <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && !props.draftMode)">
+      <div class="column grey-bg target-selection-panel">
+        <div v-show="suggestionOrManual === 'manual' || (suggestionTargetSet && !props.draftMode && !isNonSiderealTarget)">
           <AladinSkyMap ref="aladinRef" />
         </div>
         <div v-if="suggestionOrManual === ''">
@@ -551,28 +681,30 @@ watch([ra, dec], () => {
           </div>
         </div>
         </div>
-        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0">
+        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length === 0 && !suggestionTargetSet" class="explore-targets-box">
           <h3>What would you like to Explore?</h3>
           <p>Choose a type of target to see suggestions</p>
           <div v-for="category in categories" :key="category.location" class="content">
           <h4>{{ category.location }}</h4>
+          <p v-if="category.location === 'Solar System' && nonSiderealTargetsLoading">Checking what is visible now...</p>
+          <p v-else-if="category.location === 'Solar System' && nonSiderealTargetsError" class="help is-danger">{{ nonSiderealTargetsError }}</p>
+          <p v-else-if="category.location === 'Solar System' && category.options.length === 0">No Solar System targets are visible right now.</p>
           <div class="buttons">
             <a
               v-for="option in category.options"
-              :key="option.shortname"
-              @click="setSuggestionType(option.shortname)"
+              :key="option.shortname || option.name"
+              @click="selectSuggestionOption(option)"
               class="button suggestion"
             >
-            <span>
+            <span v-if="option.icon">
               <img :src=option.icon alt='icon' />
             </span>
             <span>{{ option.name }}</span>
           </a>
           </div>
         </div>
-          <v-btn @click="resetSuggestionSettings()">go back</v-btn>
         </div>
-        <div v-if="suggestionOrManual === 'suggestions' && targetsByType.length > 0">
+        <div v-if="suggestionOrManual === 'suggestions' && (targetsByType.length > 0 || suggestionTargetSet)">
           <div v-if="!suggestionTargetSet">
             <h3>Target Suggestions</h3>
             <p>Here are a random selection of 5 <strong>{{ suggestionByType }}</strong> from our list.</p>
@@ -589,8 +721,8 @@ watch([ra, dec], () => {
             <div v-if="suggestionTargetSet">
                 <div>
                   <h3>{{ selectedTarget.name }}</h3>
-                  <p><strong>Type:</strong> {{ selectedTarget.avmdesc }}</p>
-                  <p>{{  selectedTarget.desc }}</p>
+                  <p v-if="selectedTarget.avmdesc || selectedTarget.type"><strong>Type:</strong> {{ selectedTarget.avmdesc || selectedTarget.type }}</p>
+                  <p v-if="selectedTarget.desc">{{  selectedTarget.desc }}</p>
                     <div class="highlight-small-region" v-if="!props.draftMode">
                       <FontAwesomeIcon icon="fa-regular fa-camera-retro"/> <strong>Exposure settings:</strong>
                       <ul v-for="(filter, index) in selectedTarget.filters" :key="index">
@@ -695,9 +827,13 @@ watch([ra, dec], () => {
           </div>
         </div>
         <p class="help is-danger" v-if="!isExposureTimeValid">{{ exposureError }}</p>
-        <div class="buttons are-medium" v-if="suggestionOrManual != '' && !props.draftMode">
-          <button :disabled="incompleteSelection" class="button red-bg" @click="sendGoCommand()">Go</button>
-          <button class="button" @click="resetSuggestionOrManual">Start Again</button>
+        <div
+          v-if="suggestionOrManual != '' && !props.draftMode"
+          class="buttons are-medium explore-targets-actions"
+        >
+          <v-btn class="button" @click="resetSuggestionOrManual">&lt;&lt;</v-btn>
+          <v-btn class="button" @click="goBackOneSelectionStep()">&lt;</v-btn>
+          <button :disabled="incompleteSelection" class="button red-bg go-action-button" @click="sendGoCommand()">Go</button>
         </div>
         <div v-if="props.draftMode && validTarget">
           <v-btn color="green-lighten-1" @click="saveTargetDetails()">save target</v-btn>
@@ -783,6 +919,28 @@ p.mosaic {
 }
 .go-button {
   margin-top: 1.25em;
+}
+
+.target-selection-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-targets-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.explore-targets-actions {
+  align-self: stretch;
+  margin-top: auto;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.go-action-button {
+  margin-left: auto;
 }
 
 .highlight-border {
