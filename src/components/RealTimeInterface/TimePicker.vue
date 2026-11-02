@@ -22,10 +22,11 @@ const configurationStore = useConfigurationStore()
 const proposalStore = useProposalStore()
 
 const date = ref(null)
-const dateStr = computed(() => { return date.value.toDateString() })
+const dateStr = computed(() => date.value ? date.value.toDateString() : '')
 const startTime = ref(null)
 const errorMessage = ref(null)
 const selectedSite = ref(null)
+const selectedTelescopeSize = ref(null)
 const availableTimes = ref({})
 const localTimes = ref([])
 const selectedProposal = ref()
@@ -37,10 +38,13 @@ const bookingInProgess = ref(null)
 
 const emits = defineEmits(['timeSelected'])
 
-// Loads template only after the obs portal has returned available times
-const hasAvailableTimes = computed(() => {
-  return Object.keys(availableTimes.value).length > 0
-})
+const telescopeSizeLabels = {
+  '0m4': '40 centimeters',
+  '1m0': '1 meter',
+  '2m0': '2 meters',
+  '4m0': '4 meters'
+}
+
 // Rounds times from the obs portal to the nearest 30 minutes (for now) because they are in time ranges
 function roundToNearestMinutes (date, direction = 'up', minutes = timeInterval) {
   const ms = 1000 * 60 * minutes
@@ -86,7 +90,8 @@ function processTelescopeAvailability (data) {
         processedData[dateStr][time].resources.push({
           site,
           enclosure,
-          telescope: telescopeSize
+          telescope: telescopeSize,
+          telescopeSize: telescopeSize.slice(0, 3)
         })
       })
     })
@@ -132,6 +137,8 @@ const refreshTimes = () => {
 const resetSession = () => {
   errorMessage.value = null
   selectedSite.value = null
+  selectedTelescopeSize.value = null
+  startTime.value = null
   realTimeSessionsStore.currentSessionId = null
 }
 
@@ -157,7 +164,9 @@ const blockRti = async () => {
         // Gets the resources available at this time
         const resources = timeEntries[timeKey].resources
         // Finds the resource that matches the selected site
-        const matchedResource = resources.find(resource => resource.site === selectedSite.value.site)
+        const matchedResource = resources.find(resource => {
+          return resource.site === selectedSite.value.site && resource.telescopeSize === selectedTelescopeSize.value
+        })
         if (matchedResource) {
           // Gets enclosure and telescope from matchedResource
           enclosure = matchedResource.enclosure
@@ -202,33 +211,40 @@ const bookDate = () => {
   }
 }
 
+const availableTelescopeSizes = computed(() => {
+  const dateKey = dateStr.value
+  const daySlots = availableTimes.value[dateKey] || {}
+  const telescopeSizes = new Set()
+  Object.values(daySlots).forEach(({ resources }) => {
+    resources.forEach(({ telescopeSize }) => telescopeSizes.add(telescopeSize))
+  })
+  const telescopeOrder = ['0m4', '1m0', '2m0', '4m0']
+  return Array.from(telescopeSizes).sort((a, b) => telescopeOrder.indexOf(a) - telescopeOrder.indexOf(b))
+})
+
 const siteTimes = computed(() => {
   const dateKey = dateStr.value
   const daySlots = availableTimes.value[dateKey] || {}
   const groupedSiteTimes = {}
-  // Iterates over the available times (dayslots) for the selected date
-  // timeKey is the time in ISO format (e.g. Thu Apr 24 2025 21:45:00 GMT-0700 (Pacific Daylight Time))
-  // and resources are the telescopes available per site (e.g. {site: 'tfn', enclosure: 'aqwa', telescope: '0m4a'}, {site: 'tfn', enclosure: 'aqwa', telescope: '0m4b'})
   Object.entries(daySlots).forEach(([timeKey, { resources }]) => {
-    const slot = new Date(timeKey)
-    resources.forEach(({ site }) => {
-      // If the site is not already in the grouped object, create a new Set for it
-      if (!groupedSiteTimes[site]) groupedSiteTimes[site] = new Set()
-      // Adds the timestamp to the Set (automatically deduplicating [some sites have multiple telescopes and therefore more of the same time availability. So say, for example, 2 telescopes are available at 10:00, we only want to show that time once])
-      groupedSiteTimes[site].add(slot.getTime())
+    resources.forEach(({ site, telescopeSize }) => {
+      if (telescopeSize === selectedTelescopeSize.value) {
+        if (!groupedSiteTimes[site]) groupedSiteTimes[site] = new Set()
+        groupedSiteTimes[site].add(new Date(timeKey).getTime())
+      }
     })
   })
-  // convert sets back into sorted arrays of Date
-  return Object.fromEntries(
-    // Converts the grouped object into an array of entries, where each entry is an array containing the site and an array of times
-    Object.entries(groupedSiteTimes).map(([site, timesSet]) => {
-      const arr = Array.from(timesSet)
-        .map(ms => new Date(ms))
-        .sort((a, b) => a - b)
-      return [site, arr]
-    })
-  )
+  return Object.fromEntries(Object.entries(groupedSiteTimes).map(([site, times]) => [
+    site,
+    Array.from(times).map(time => new Date(time)).sort((a, b) => a - b)
+  ]))
 })
+
+function onTelescopeChange () {
+  selectedSite.value = null
+  startTime.value = null
+  errorMessage.value = null
+}
 
 function onTimeClick (site, time) {
   selectedSite.value = { site, lat: sites[site].lat, lon: sites[site].lon }
@@ -311,7 +327,7 @@ onMounted(() => {
     />
     <div class="columns">
       <div v-if="selectedProposal" class="column is-one-third">
-        <h4>Select a date and time:</h4>
+        <h4 class="section-heading">Select a date and time:</h4>
         <div>
           <VDatePicker
             v-model="date"
@@ -322,6 +338,17 @@ onMounted(() => {
             @update:model-value="refreshTimes"
             expanded
           />
+        </div>
+        <div v-if="date" class="field section-heading">
+          <h4 class="section-heading" for="live-telescope" >Select a telescope</h4>
+          <div class="select">
+            <select id="live-telescope" v-model="selectedTelescopeSize" @change="onTelescopeChange">
+              <option :value="null"></option>
+              <option v-for="size in availableTelescopeSizes" :key="size" :value="size">
+                {{ telescopeSizeLabels[size] || size }}
+              </option>
+            </select>
+          </div>
         </div>
         <div v-if="startTime" class="column">
           <div class="card highlight-box">
@@ -373,6 +400,13 @@ onMounted(() => {
       </div>
       <div class="column">
         <div v-if="date">
+          <div v-if="selectedTelescopeSize" class="map-wrapper">
+            <LeafletMap
+              :availableTimes="availableTimes"
+              :selectedTime="startTime?.toISOString()"
+              :highlightedSite="selectedSite?.site"
+            />
+          </div>
           <div v-for="(times, site) in siteTimes" :key="site" class="site-times">
             <h3>{{ displaySiteName(site) }}</h3>
             <div class="grid">
@@ -387,11 +421,6 @@ onMounted(() => {
               </button>
             </div>
           </div>
-          <LeafletMap
-            :availableTimes="availableTimes"
-            :selectedTime="startTime?.toISOString()"
-            :highlightedSite="selectedSite?.site"
-          />
         </div>
       </div>
     </div>
@@ -404,5 +433,15 @@ onMounted(() => {
 .button.is-selected {
   background-color: rgb(77, 170, 233);
   color: white;
+}
+.map-wrapper {
+  position: sticky;
+  top: 1rem;
+  margin-top: 1.5rem;
+  z-index: 1;
+  background: white;
+}
+.section-heading {
+  margin-top: 1.5rem;
 }
 </style>
