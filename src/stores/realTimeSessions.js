@@ -137,9 +137,7 @@ export const useRealTimeSessionsStore = defineStore('realTimeSessions', {
           'Authorization': token
         },
         body: {
-          expTime: exposureTime.map(Number),
-          sub_expose: true,
-          sub_exposure_time: 20
+          expTime: exposureTime.map(Number)
         },
         successCallback: resp => {
           const secs = resp.observation_params.observation_length
