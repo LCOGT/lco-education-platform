@@ -160,6 +160,8 @@ describe('SessionStarted.vue', () => {
       requestGroupId: 1234,
       requestId: 5678,
       observationId: 123,
+      sub_expose: true,
+      sub_exposure_time: 20,
       nonSiderealPointing: {
         orbitalElements: {
           scheme: 'MPC_MINOR_PLANET',
@@ -212,9 +214,12 @@ describe('SessionStarted.vue', () => {
       proposalId: 'LCOEPO1234',
       requestGroupId: 1234,
       requestId: 5678,
-      observationId: 123
+      observationId: 123,
+      sub_expose: true,
+      sub_exposure_time: 0
     })
     expect(goCall.body).not.toHaveProperty('nonSiderealPointing')
+    expect(goCall.body).not.toHaveProperty('extra_params')
   })
 
   it('logs non-sidereal rejection diagnostics when no Solar System targets are visible', async () => {
