@@ -36,7 +36,7 @@ onMounted(() => {
 <template>
   <!-- Only rendering if there is more than one proposal, otherwise it's automatically selected -->
   <template v-if="proposals.length > 1">
-    <h3>Select your project</h3>
+    <h3 class="section-heading">Select your project</h3>
     <div class="field">
       <label for="proposalSelect">We have found multiple projects on your account. Please select the one to use for these observations.</label>
         <div class="control">
@@ -65,3 +65,9 @@ onMounted(() => {
     </div>
   </template>
 </template>
+
+<style scoped>
+.section-heading {
+  margin-top: 1.5rem;
+}
+</style>

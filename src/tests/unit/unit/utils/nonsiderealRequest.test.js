@@ -1,13 +1,13 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { fetchApiCall } from '../../../utils/api.js'
+import { fetchApiCall } from '@/utils/api.js'
 import {
   createRealTimeNonSiderealPointing,
   getVisibleRealTimeNonSiderealTargets,
   getNonSiderealRequestBodyDetails,
   nonSiderealSolarSystemTargets
-} from '../../../utils/nonsiderealRequest.js'
+} from '@/utils/nonsiderealRequest.js'
 
-vi.mock('../../../utils/api.js', () => ({
+vi.mock('@/utils/api.js', () => ({
   fetchApiCall: vi.fn()
 }))
 

@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { fetchApiCall } from '../../../utils/api.js'
-import { createTestStores } from '../../../utils/testUtils'
+import { fetchApiCall } from '@/utils/api.js'
+import { createTestStores } from '@/utils/testUtils.js'
 
 // Make sure the API mock path matches your project structure
 vi.mock('@/utils/api', () => ({

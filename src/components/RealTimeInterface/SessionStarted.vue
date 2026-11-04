@@ -319,7 +319,9 @@ const sendGoCommand = async () => {
     proposalId: realTimeSessionsStore.currentSession.proposal,
     requestGroupId: realTimeSessionsStore.currentSession.request_group_id,
     requestId: realTimeSessionsStore.currentSession.request.id,
-    observationId: realTimeSessionsStore.currentSession.id
+    observationId: realTimeSessionsStore.currentSession.id,
+    sub_expose: true,
+    sub_exposure_time: 20
   }
 
   if (isNonSiderealTarget.value) {

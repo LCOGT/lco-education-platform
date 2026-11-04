@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDateTime, formatToUTC, formatCountdown, calculateSessionCountdown } from '../../../utils/formatTime'
+import { formatDateTime, formatToUTC, formatCountdown, calculateSessionCountdown } from '@/utils/formatTime.js'
 
 describe('formatUtils.js', () => {
   describe('formatDateTime', () => {

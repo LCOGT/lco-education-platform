@@ -5,8 +5,6 @@ import PolledThumbnails from './PolledThumbnails.vue'
 import { fetchApiCall } from '../../utils/api.js'
 import { useConfigurationStore } from '../../stores/configuration'
 import { useRealTimeSessionsStore } from '../../stores/realTimeSessions'
-import { LottieAnimation } from 'lottie-web-vue'
-import GalaxyJSON from '@/assets/galaxy_loading_pixels.json'
 
 const props = defineProps({
   exposureSettings: {
@@ -196,17 +194,6 @@ const setSiteState = computed(() => {
             </button>
           </div>
           <div class="column">
-            <LottieAnimation v-if="!imagesDone"
-              ref="anim"
-              :animation-data="GalaxyJSON"
-              :loop="true"
-              :auto-play="true"
-              :speed="1"
-              @loopComplete="loopComplete"
-              @complete="complete"
-              @enterFrame="enterFrame"
-              @segmentStart="segmentStart"
-              @stopped="stopped"/>
             <PolledThumbnails @thumbnailsFetched="handleThumbnailsFetched"/>
           </div>
         </div>

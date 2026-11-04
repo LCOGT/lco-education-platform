@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { fetchApiCall } from '../../../utils/api.js'
-import { fetchSemesterData, currentSemesterEnd, currentSemesterStart } from '../../../utils/calendarUtils.js'
-import { createTestStores } from '../../../utils/testUtils'
+import { fetchApiCall } from '@/utils/api.js'
+import { fetchSemesterData, currentSemesterEnd, currentSemesterStart } from '@/utils/calendarUtils.js'
+import { createTestStores } from '@/utils/testUtils.js'
 
 vi.mock('@/utils/api.js', () => ({
   fetchApiCall: vi.fn()
