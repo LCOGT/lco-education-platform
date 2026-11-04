@@ -216,7 +216,7 @@ describe('SessionStarted.vue', () => {
       requestId: 5678,
       observationId: 123,
       sub_expose: true,
-      sub_exposure_time: 0
+      sub_exposure_time: 20
     })
     expect(goCall.body).not.toHaveProperty('nonSiderealPointing')
     expect(goCall.body).not.toHaveProperty('extra_params')
