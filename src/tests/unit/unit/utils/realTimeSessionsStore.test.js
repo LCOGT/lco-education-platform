@@ -1,8 +1,8 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { fetchApiCall } from '../../../utils/api.js'
-import { createTestStores } from '../../../utils/testUtils'
+import { fetchApiCall } from '@/utils/api.js'
+import { createTestStores } from '@/utils/testUtils.js'
 import flushPromises from 'flush-promises'
-import { useObsPortalDataStore } from '../../../stores/obsPortalData' // Adjust the import path if necessary
+import { useObsPortalDataStore } from '@/stores/obsPortalData.js'
 
 vi.mock('@/utils/api', () => ({
   fetchApiCall: vi.fn()
